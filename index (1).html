@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1A1A2E" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>SplitEasy — Split Bills with Friends</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── RESET & BASE ─────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    :root {
+      --bg:          #F7F5F0;
+      --card:        #FFFFFF;
+      --accent:      #FF5C3A;
+      --accent-lt:   #FFF0ED;
+      --accent-soft: #FFD6CE;
+      --sage:        #4CAF7D;
+      --sage-lt:     #E8F5EE;
+      --ink:         #1A1A2E;
+      --muted:       #8A8A9A;
+      --border:      #EDEAE4;
+      --danger:      #FF3B5C;
+      --gold:        #F5A623;
+      --gold-lt:     #FEF6E8;
+    }
+    html { height: 100%; }
+    body {
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 0; }
+    input, button, select, textarea { font-family: inherit; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    /* ── APP SHELL ────────────────────────────────────────────── */
+    #app {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg);
+      position: relative;
+    }
+
+    /* ── SCREENS ──────────────────────────────────────────────── */
+    .screen {
+      min-height: 100vh;
+      padding-bottom: 90px;
+      animation: slideUp .3s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .hidden { display: none !important; }
+
+    /* ── CARDS ────────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 2px 12px rgba(26,26,46,.06);
+    }
+    .gap-col { display:flex; flex-direction:column; gap:14px; }
+
+    /* ── BUTTONS ──────────────────────────────────────────────── */
+    .btn { width:100%; border:none; cursor:pointer; transition:transform .12s,opacity .12s; border-radius:16px; font-size:15px; font-weight:600; padding:15px 20px; }
+    .btn:active { transform:scale(.97); }
+    .btn-primary  { background:var(--accent); color:#fff; }
+    .btn-primary:disabled  { opacity:.45; pointer-events:none; }
+    .btn-secondary{ background:var(--accent-lt); color:var(--accent); }
+    .btn-ghost    { background:transparent; color:var(--muted); border:1.5px solid var(--border); border-radius:14px; }
+    .btn-ghost:active { background:var(--border); }
+    .btn-danger   { background:#FEE2E2; color:var(--danger); border:none; border-radius:14px; padding:10px 16px; font-size:13px; font-weight:600; cursor:pointer; }
+    .btn-icon     { background:var(--bg); border:none; border-radius:12px; width:40px; height:40px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .btn-sm       { width:auto; padding:8px 16px; font-size:13px; border-radius:12px; }
+
+    /* ── INPUTS ───────────────────────────────────────────────── */
+    .input {
+      width:100%; background:var(--bg); border:1.5px solid var(--border);
+      border-radius:14px; padding:13px 15px; font-size:16px; color:var(--ink);
+      outline:none; transition:border-color .2s; -webkit-appearance:none;
+    }
+    .input:focus { border-color:var(--accent); background:#fff; }
+    .input::placeholder { color:var(--muted); }
+    .input-row { display:flex; gap:10px; }
+    .input-row .input { flex:1; }
+
+    /* ── LABEL ────────────────────────────────────────────────── */
+    .lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:8px; }
+
+    /* ── AVATAR ───────────────────────────────────────────────── */
+    .av {
+      width:40px; height:40px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; font-weight:700; flex-shrink:0;
+    }
+    .av-sm { width:32px; height:32px; font-size:11px; }
+    .av-lg { width:56px; height:56px; font-size:20px; }
+
+    /* ── AVATAR PALETTE ───────────────────────────────────────── */
+    .av-0  { background:#FFD6CE; color:#FF5C3A; }
+    .av-1  { background:#D6E8FF; color:#2563EB; }
+    .av-2  { background:#D6F5E3; color:#16A34A; }
+    .av-3  { background:#FEF3C7; color:#D97706; }
+    .av-4  { background:#EDE9FE; color:#7C3AED; }
+    .av-5  { background:#FCE7F3; color:#DB2777; }
+    .av-6  { background:#CCFBF1; color:#0D9488; }
+    .av-7  { background:#FEE2E2; color:#DC2626; }
+
+    /* ── ROWS ─────────────────────────────────────────────────── */
+    .row {
+      display:flex; align-items:center; gap:12px;
+      background:var(--card); border-radius:16px; padding:13px 14px;
+      box-shadow:0 1px 6px rgba(26,26,46,.05);
+      cursor:pointer; transition:transform .12s;
+    }
+    .row:active { transform:scale(.98); }
+    .row + .row { margin-top:8px; }
+
+    /* ── PILL SELECTOR ────────────────────────────────────────── */
+    .pills { display:flex; background:var(--bg); border-radius:14px; padding:4px; gap:3px; }
+    .pill  { flex:1; padding:10px 6px; border-radius:11px; border:none; background:transparent; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; transition:all .18s; text-align:center; }
+    .pill.on { background:var(--card); color:var(--accent); font-weight:700; box-shadow:0 2px 8px rgba(26,26,46,.08); }
+
+    /* ── CHECK CIRCLE ─────────────────────────────────────────── */
+    .chk { width:24px; height:24px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s; flex-shrink:0; font-size:12px; color:transparent; }
+    .chk.on { background:var(--sage); border-color:var(--sage); color:#fff; }
+
+    /* ── PROGRESS ─────────────────────────────────────────────── */
+    .prog-track { background:var(--border); border-radius:100px; height:8px; overflow:hidden; }
+    .prog-fill  { height:100%; border-radius:100px; background:var(--sage); transition:width .6s cubic-bezier(.22,1,.36,1); }
+
+    /* ── BOTTOM NAV ───────────────────────────────────────────── */
+    #bottom-nav {
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+      width:100%; max-width:430px;
+      background:rgba(255,255,255,.92); backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      border-top:1px solid var(--border);
+      padding:10px 0 20px; z-index:100;
+      display:flex; justify-content:space-around;
+    }
+    .nav-btn { display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; cursor:pointer; padding:4px 14px; transition:transform .12s; color:var(--muted); }
+    .nav-btn:active { transform:scale(.88); }
+    .nav-btn.on { color:var(--accent); }
+    .nav-btn .ni { font-size:22px; line-height:1; }
+    .nav-btn .nl { font-size:10px; font-weight:500; }
+    .nav-btn.on .nl { font-weight:700; }
+
+    /* ── BOTTOM SHEET ─────────────────────────────────────────── */
+    .overlay {
+      position:fixed; inset:0; background:rgba(26,26,46,.45);
+      z-index:200; display:flex; align-items:flex-end;
+      animation:fadeIn .2s ease;
+    }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    .sheet {
+      width:100%; max-width:430px; margin:0 auto;
+      background:var(--card); border-radius:28px 28px 0 0;
+      padding:20px 20px 36px;
+      animation:sheetUp .3s cubic-bezier(.22,1,.36,1);
+      max-height:90vh; overflow-y:auto;
+    }
+    @keyframes sheetUp { from{transform:translateY(100%);} to{transform:translateY(0);} }
+    .sheet-handle { width:36px; height:4px; background:var(--border); border-radius:100px; margin:0 auto 18px; }
+
+    /* ── TOAST ────────────────────────────────────────────────── */
+    #toast {
+      position:fixed; top:56px; left:50%; transform:translateX(-50%);
+      background:var(--ink); color:#fff; padding:11px 20px;
+      border-radius:100px; font-size:14px; font-weight:500;
+      z-index:999; white-space:nowrap; pointer-events:none;
+      box-shadow:0 4px 20px rgba(26,26,46,.2);
+      transition:opacity .3s;
+    }
+    #toast.hide { opacity:0; }
+
+    /* ── HERO HEADER ──────────────────────────────────────────── */
+    .hero {
+      background:linear-gradient(145deg,#1A1A2E 0%,#2D2D4E 100%);
+      padding:58px 20px 24px; position:relative; overflow:hidden;
+    }
+    .hero::before {
+      content:''; position:absolute; top:-40px; right:-40px;
+      width:180px; height:180px; border-radius:50%;
+      background:radial-gradient(circle,rgba(255,92,58,.27),transparent 70%);
+    }
+    .hero::after {
+      content:''; position:absolute; bottom:-20px; left:20px;
+      width:120px; height:120px; border-radius:50%;
+      background:radial-gradient(circle,rgba(76,175,125,.2),transparent 70%);
+    }
+
+    /* ── GLASS CARD ───────────────────────────────────────────── */
+    .glass {
+      background:rgba(255,255,255,.1); backdrop-filter:blur(10px);
+      border-radius:18px; padding:16px 18px;
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    /* ── EMOJI GRID ───────────────────────────────────────────── */
+    .emoji-grid { display:flex; flex-wrap:wrap; gap:8px; }
+    .emoji-btn  {
+      width:48px; height:48px; border-radius:14px; font-size:22px;
+      border:2px solid transparent; background:var(--bg);
+      cursor:pointer; transition:all .15s;
+    }
+    .emoji-btn.on { border-color:var(--accent); background:var(--accent-lt); }
+
+    /* ── SECTION HEADER ───────────────────────────────────────── */
+    .sec-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .sec-hdr h3 { font-family:'Fraunces',serif; font-size:19px; font-weight:700; }
+
+    /* ── EDIT ACTION BAR ──────────────────────────────────────── */
+    .action-bar { display:flex; gap:8px; margin-top:8px; }
+    .action-bar .btn { padding:10px 14px; font-size:13px; border-radius:12px; }
+
+    /* ── DRAG HANDLE ──────────────────────────────────────────── */
+    .drag-handle { color:var(--border); font-size:18px; cursor:grab; padding:0 4px; flex-shrink:0; }
+    .drag-handle:active { cursor:grabbing; }
+    .row.drag-over { border:2px dashed var(--accent); }
+
+    /* ── EMPTY STATE ──────────────────────────────────────────── */
+    .empty { text-align:center; padding:40px 20px; color:var(--muted); }
+    .empty .ei { font-size:44px; margin-bottom:10px; }
+    .empty p   { font-size:14px; }
+
+    /* ── UTIL ─────────────────────────────────────────────────── */
+    .txt-muted { color:var(--muted); }
+    .txt-accent { color:var(--accent); }
+    .txt-sage   { color:var(--sage); }
+    .txt-danger { color:var(--danger); }
+    .fw7  { font-weight:700; }
+    .ff-s { font-family:'Fraunces',serif; }
+    .fs-big { font-family:'Fraunces',serif; font-size:38px; font-weight:700; letter-spacing:-1px; line-height:1; }
+    .divider { height:1px; background:var(--border); margin:6px 0; }
+    .px16 { padding-left:16px; padding-right:16px; }
+    .py16 { padding-top:16px; padding-bottom:16px; }
+    .flex { display:flex; } .items-center { align-items:center; } .gap8 { gap:8px; } .gap12 { gap:12px; }
+    .flex1 { flex:1; min-width:0; }
+    .text-right { text-align:right; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+    .w-full { width:100%; }
+    .mt4  { margin-top:4px; }
+    .mt8  { margin-top:8px; }
+    .mt12 { margin-top:12px; }
+    .mt16 { margin-top:16px; }
+    .mb8  { margin-bottom:8px; }
+    .mb12 { margin-bottom:12px; }
+    .p20  { padding:20px; }
+    .p24  { padding:24px; }
+    .pt56 { padding-top:56px; }
+    .rounded-xl  { border-radius:16px; }
+    .rounded-2xl { border-radius:20px; }
+
+    /* ── MEMBER ROW EDITOR ────────────────────────────────────── */
+    .member-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+    .member-row:last-child { border-bottom:none; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- screens injected here by JS -->
+  <div id="bottom-nav" class="hidden"></div>
+  <div id="toast" class="hide"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── CONSTANTS ──────────────────────────────────────────────────────── */
+const AV_COLORS = [
+  'av-0','av-1','av-2','av-3','av-4','av-5','av-6','av-7'
+];
+const GROUP_EMOJIS   = ['👥','🍕','✈️','🏠','🎉','🎮','🏋️','🚗','🎸','🌴','⛺','🎓'];
+const EXPENSE_EMOJIS = [
+  {e:'🍽️',l:'Food'},{e:'🍕',l:'Pizza'},{e:'🍺',l:'Drinks'},{e:'🛒',l:'Grocery'},
+  {e:'🚗',l:'Transport'},{e:'🏠',l:'Rent'},{e:'✈️',l:'Travel'},{e:'🎬',l:'Fun'},
+  {e:'💊',l:'Health'},{e:'🎁',l:'Gift'},{e:'⚡',l:'Utilities'},{e:'📦',l:'Other'},
+];
+
+/* ── STATE ──────────────────────────────────────────────────────────── */
+let state = {
+  screen: 'home',
+  prevScreen: null,
+  activeNav: 'home',
+  selectedGroupId: null,
+  groups: [],
+};
+
+/* ── LOCALSTORAGE ───────────────────────────────────────────────────── */
+function saveData() {
+  try { localStorage.setItem('spliteasy_v2', JSON.stringify(state.groups)); } catch(e){}
+}
+function loadData() {
+  try {
+    const raw = localStorage.getItem('spliteasy_v2');
+    if (raw) { state.groups = JSON.parse(raw); return; }
+  } catch(e){}
+  // Seed data on first load
+  const u1={id:'u1',name:'You',isMe:true}, u2={id:'u2',name:'Alex'},
+        u3={id:'u3',name:'Mia'}, u4={id:'u4',name:'Sam'};
+  state.groups = [{
+    id:'g1', name:'Bali Trip', emoji:'✈️',
+    members:[u1,u2,u3,u4], installments:[],
+    expenses:[
+      {id:'e1',title:'Hotel Night 1',amount:240,emoji:'🏠',paidById:'u1',splitType:'equal',participants:['u1','u2','u3','u4'],date:new Date(Date.now()-86400000*3).toISOString()},
+      {id:'e2',title:'Dinner at Merah',amount:88,emoji:'🍽️',paidById:'u2',splitType:'equal',participants:['u1','u2','u3','u4'],date:new Date(Date.now()-86400000*2).toISOString()},
+      {id:'e3',title:'Scooter Rental',amount:60,emoji:'🚗',paidById:'u3',splitType:'equal',participants:['u1','u2','u3'],date:new Date(Date.now()-86400000).toISOString()},
+    ],
+  }];
+}
+
+/* ── HELPERS ────────────────────────────────────────────────────────── */
+const uid  = () => Math.random().toString(36).slice(2,9);
+const fmt  = n  => '$'+Math.abs(+n||0).toFixed(2);
+const esc  = s  => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const avCls= i  => AV_COLORS[i % AV_COLORS.length];
+
+function getGroup(id) { return state.groups.find(g=>g.id===id); }
+function updateGroup(grp) {
+  state.groups = state.groups.map(g=>g.id===grp.id?grp:g);
+  saveData();
+}
+
+function computeBalances(members, expenses) {
+  const bal = {};
+  members.forEach(m => bal[m.id] = 0);
+  expenses.forEach(exp => {
+    const amt = parseFloat(exp.amount)||0;
+    if (!amt) return;
+    const ids = exp.participants || members.map(m=>m.id);
+    bal[exp.paidById] = (bal[exp.paidById]||0) + amt;
+    if (exp.splitType==='equal') {
+      const share = amt/ids.length;
+      ids.forEach(id=>{ bal[id]=(bal[id]||0)-share; });
+    } else if (exp.splitType==='percentage') {
+      ids.forEach(id=>{ bal[id]=(bal[id]||0)-amt*((exp.percentages?.[id]||0)/100); });
+    } else if (exp.splitType==='custom') {
+      ids.forEach(id=>{ bal[id]=(bal[id]||0)-(parseFloat(exp.customAmounts?.[id])||0); });
+    }
+  });
+  return bal;
+}
+
+function simplifyDebts(balances) {
+  const pos=[], neg=[];
+  Object.entries(balances).forEach(([id,b])=>{
+    if(b>0.005) pos.push({id,b});
+    else if(b<-0.005) neg.push({id,b:-b});
+  });
+  const txns=[]; let pi=0,ni=0;
+  while(pi<pos.length&&ni<neg.length){
+    const p=pos[pi],n=neg[ni],amt=Math.min(p.b,n.b);
+    txns.push({from:n.id,to:p.id,amount:amt});
+    p.b-=amt; n.b-=amt;
+    if(p.b<0.005)pi++; if(n.b<0.005)ni++;
+  }
+  return txns;
+}
+
+/* ── TOAST ──────────────────────────────────────────────────────────── */
+let _toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.remove('hide');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>el.classList.add('hide'), 2300);
+}
+
+/* ── NAVIGATE ───────────────────────────────────────────────────────── */
+function go(screen, groupId) {
+  state.prevScreen = state.screen;
+  state.screen = screen;
+  if (groupId !== undefined) state.selectedGroupId = groupId;
+  render();
+}
+
+/* ── BOTTOM NAV ─────────────────────────────────────────────────────── */
+function renderNav() {
+  const noNav = ['create-group','add-expense','edit-expense','edit-group'];
+  const nav = document.getElementById('bottom-nav');
+  if (noNav.includes(state.screen)) { nav.classList.add('hidden'); return; }
+  nav.classList.remove('hidden');
+  const items = [
+    {k:'home',i:'🏠',l:'Home'},
+    {k:'activity',i:'📋',l:'Activity'},
+    {k:'profile',i:'👤',l:'Profile'},
+  ];
+  nav.innerHTML = items.map(({k,i,l})=>`
+    <button class="nav-btn${state.activeNav===k?' on':''}" onclick="navClick('${k}')">
+      <span class="ni">${i}</span>
+      <span class="nl">${l}</span>
+    </button>`).join('');
+}
+
+function navClick(key) {
+  state.activeNav = key;
+  if (key==='home') { state.screen='home'; state.selectedGroupId=null; }
+  else state.screen = key;
+  render();
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SCREENS
+══════════════════════════════════════════════════════════════════════ */
+
+/* ── HOME ───────────────────────────────────────────────────────────── */
+function screenHome() {
+  const totalOwed = state.groups.reduce((acc,g)=>{
+    const b = computeBalances(g.members,g.expenses);
+    return acc + (b[g.members[0]?.id]||0);
+  },0);
+
+  const groupCards = state.groups.length === 0
+    ? `<div class="empty"><div class="ei">🤝</div>
+        <p class="ff-s fw7" style="font-size:20px;margin-bottom:8px">No groups yet</p>
+        <p style="margin-bottom:20px">Create a group to start splitting.</p>
+        <button class="btn btn-primary btn-sm" onclick="go('create-group')">Create First Group</button>
+       </div>`
+    : state.groups.map((g,gi)=>{
+        const bals = computeBalances(g.members,g.expenses);
+        const myBal = bals[g.members[0]?.id]||0;
+        const total = g.expenses.reduce((a,e)=>a+(+e.amount||0),0);
+        const sign  = myBal>=0?'+':'';
+        const col   = myBal>=0?'var(--sage)':'var(--danger)';
+        return `
+        <div class="row" onclick="go('group','${g.id}')">
+          <div style="width:48px;height:48px;border-radius:16px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${g.emoji}</div>
+          <div class="flex1">
+            <p class="fw7" style="font-size:15px">${esc(g.name)}</p>
+            <p class="txt-muted" style="font-size:12px;margin-top:2px">${g.members.length} people · ${fmt(total)}</p>
+          </div>
+          <div class="text-right">
+            <p class="ff-s fw7" style="font-size:17px;color:${col}">${sign}${fmt(myBal)}</p>
+            <p class="txt-muted" style="font-size:11px">${myBal>=0?'owed to you':'you owe'}</p>
+          </div>
+        </div>`;
+      }).join('');
+
+  return `
+  <div class="screen">
+    <div class="hero">
+      <p style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:4px">Good day 👋</p>
+      <h1 class="ff-s" style="color:#fff;font-size:32px;font-weight:700;margin-bottom:22px">Split<span style="color:var(--accent)">Easy</span></h1>
+      <div class="glass">
+        <p style="color:rgba(255,255,255,.55);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Net Balance</p>
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <span class="fs-big" style="color:${totalOwed>=0?'var(--sage)':'var(--danger)'}">${totalOwed>=0?'+':'−'}${fmt(totalOwed)}</span>
+          <span style="color:rgba(255,255,255,.45);font-size:13px">${totalOwed>=0?'you\'re owed':'you owe'}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="p20">
+      <div class="sec-hdr">
+        <h3>Groups</h3>
+        <button class="btn btn-ghost btn-sm" onclick="go('create-group')">+ New</button>
+      </div>
+      ${groupCards}
+    </div>
+  </div>`;
+}
+
+/* ── CREATE GROUP ───────────────────────────────────────────────────── */
+function screenCreateGroup() {
+  return `
+  <div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('home')" style="background:var(--bg)">←</button>
+      <h1 class="ff-s" style="font-size:26px;font-weight:700">New Group</h1>
+    </div>
+    <div class="px16 gap-col">
+
+      <div class="card">
+        <p class="lbl">Group Icon</p>
+        <div class="emoji-grid" id="grp-emoji-grid">
+          ${GROUP_EMOJIS.map((e,i)=>`<button class="emoji-btn${i===0?' on':''}" data-e="${e}" onclick="pickGroupEmoji(this,'${e}')">${e}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="card gap-col">
+        <div>
+          <p class="lbl">Group Name</p>
+          <input class="input" id="grp-name" placeholder="e.g. Bali Trip 2026" oninput="checkCreateGroup()" />
+        </div>
+      </div>
+
+      <div class="card gap-col" id="members-card">
+        <p class="lbl">Friends <span class="txt-muted" style="font-weight:400;text-transform:none;font-size:12px">(You are included automatically)</span></p>
+        <div id="members-list"></div>
+        <button class="btn btn-ghost" onclick="addMemberField()">+ Add friend</button>
+      </div>
+
+      <button class="btn btn-primary" id="create-group-btn" disabled onclick="doCreateGroup()">Create Group 🎉</button>
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+
+let _memberCount = 1;
+function initCreateGroup() {
+  _memberCount = 1;
+  document.getElementById('members-list').innerHTML = '';
+  addMemberField();
+}
+function addMemberField() {
+  _memberCount++;
+  const id = 'mf-'+uid();
+  const div = document.createElement('div');
+  div.className='member-row'; div.id=id;
+  div.innerHTML=`
+    <span class="av av-sm ${avCls(_memberCount)}" style="font-size:10px">M${_memberCount-1}</span>
+    <input class="input flex1" placeholder="Friend name" style="padding:10px 12px" oninput="checkCreateGroup()" />
+    <button onclick="removeMemberField('${id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>`;
+  document.getElementById('members-list').appendChild(div);
+}
+function removeMemberField(id) {
+  document.getElementById(id)?.remove();
+  checkCreateGroup();
+}
+function checkCreateGroup() {
+  const n = (document.getElementById('grp-name')?.value||'').trim();
+  document.getElementById('create-group-btn').disabled = !n;
+}
+function pickGroupEmoji(btn, e) {
+  document.querySelectorAll('#grp-emoji-grid .emoji-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function doCreateGroup() {
+  const name  = document.getElementById('grp-name').value.trim();
+  const emoji = document.querySelector('#grp-emoji-grid .emoji-btn.on')?.dataset.e || '👥';
+  if (!name) return;
+  const inputs = document.querySelectorAll('#members-list input');
+  const friends = [...inputs].map(i=>i.value.trim()).filter(Boolean).map(n=>({id:uid(),name:n}));
+  const you   = {id:uid(),name:'You',isMe:true};
+  const grp   = {id:uid(),name,emoji,members:[you,...friends],expenses:[],installments:[]};
+  state.groups.push(grp); saveData();
+  state.selectedGroupId = grp.id;
+  showToast(`"${name}" created! 🎉`);
+  go('group',grp.id);
+}
+
+/* ── EDIT GROUP ─────────────────────────────────────────────────────── */
+function screenEditGroup() {
+  const g = getGroup(state.selectedGroupId);
+  if (!g) return go('home');
+  const membersHTML = g.members.map((m,i)=>`
+    <div class="member-row" id="em-${m.id}">
+      <span class="av av-sm ${avCls(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</span>
+      ${m.isMe
+        ? `<span class="flex1" style="font-size:14px;font-weight:600">You (owner)</span>`
+        : `<input class="input flex1" value="${esc(m.name)}" style="padding:10px 12px" data-mid="${m.id}" />`
+      }
+      ${m.isMe ? '' : `<button onclick="removeMember('${m.id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>`}
+    </div>`).join('');
+
+  return `
+  <div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <h1 class="ff-s" style="font-size:22px;font-weight:700">Edit Group</h1>
+    </div>
+    <div class="px16 gap-col">
+
+      <div class="card">
+        <p class="lbl">Icon</p>
+        <div class="emoji-grid" id="eg-emoji-grid">
+          ${GROUP_EMOJIS.map(e=>`<button class="emoji-btn${e===g.emoji?' on':''}" data-e="${e}" onclick="pickEGEmoji(this)">${e}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="lbl">Group Name</p>
+        <input class="input" id="eg-name" value="${esc(g.name)}" />
+      </div>
+
+      <div class="card gap-col">
+        <p class="lbl">Members</p>
+        <div id="eg-members">${membersHTML}</div>
+        <button class="btn btn-ghost" onclick="addEGMember()">+ Add member</button>
+      </div>
+
+      <button class="btn btn-primary" onclick="doEditGroup('${g.id}')">Save Changes ✓</button>
+      <button class="btn btn-danger w-full" onclick="confirmDeleteGroup('${g.id}')">Delete Group</button>
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+
+function pickEGEmoji(btn) {
+  document.querySelectorAll('#eg-emoji-grid .emoji-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function addEGMember() {
+  const div = document.createElement('div');
+  div.className='member-row'; div.id='egm-'+uid();
+  div.innerHTML=`
+    <span class="av av-sm av-1" style="font-size:10px">N</span>
+    <input class="input flex1" placeholder="Friend name" style="padding:10px 12px" data-mid="new-${uid()}" />
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>`;
+  document.getElementById('eg-members').appendChild(div);
+}
+function removeMember(mid) {
+  document.getElementById('em-'+mid)?.remove();
+  showToast('Member removed (save to confirm)');
+}
+function doEditGroup(gid) {
+  const g = getGroup(gid);
+  const name  = document.getElementById('eg-name').value.trim() || g.name;
+  const emoji = document.querySelector('#eg-emoji-grid .emoji-btn.on')?.dataset.e || g.emoji;
+  // Collect members
+  const rows  = document.querySelectorAll('#eg-members .member-row');
+  const members = [];
+  rows.forEach(row=>{
+    const input = row.querySelector('input[data-mid]');
+    if (!input) { // "You" row
+      members.push(g.members.find(m=>m.isMe));
+      return;
+    }
+    const mid = input.dataset.mid;
+    const val = input.value.trim();
+    if (!val) return;
+    if (mid.startsWith('new-')) {
+      members.push({id:uid(),name:val});
+    } else {
+      const existing = g.members.find(m=>m.id===mid);
+      if (existing) members.push({...existing,name:val});
+    }
+  });
+  updateGroup({...g,name,emoji,members});
+  showToast('Group updated ✓');
+  go('group',gid);
+}
+function confirmDeleteGroup(gid) {
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:8px">Delete Group?</p>
+    <p class="txt-muted" style="font-size:14px;margin-bottom:20px">All expenses will be lost. This cannot be undone.</p>
+    <button class="btn btn-danger w-full" onclick="doDeleteGroup('${gid}')">Yes, Delete</button>
+    <button class="btn btn-ghost" style="margin-top:8px" onclick="closeSheet()">Cancel</button>
+  `);
+}
+function doDeleteGroup(gid) {
+  state.groups = state.groups.filter(g=>g.id!==gid);
+  saveData(); closeSheet();
+  showToast('Group deleted');
+  go('home');
+}
+
+/* ── GROUP DETAIL ───────────────────────────────────────────────────── */
+function screenGroup() {
+  const g = getGroup(state.selectedGroupId);
+  if (!g) return go('home');
+  const bals  = computeBalances(g.members,g.expenses);
+  const myId  = g.members[0]?.id;
+  const myBal = bals[myId]||0;
+  const col   = myBal>=0?'var(--sage)':'var(--danger)';
+  const sign  = myBal>=0?'+':'−';
+
+  const membersRow = g.members.slice(0,6).map((m,i)=>`
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div class="av av-sm ${avCls(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      <span style="color:rgba(255,255,255,.55);font-size:10px;font-weight:500">${m.isMe?'You':m.name.split(' ')[0]}</span>
+    </div>`).join('');
+
+  const expList = g.expenses.length===0
+    ? `<div class="empty"><div class="ei">🧾</div><p>No expenses yet</p></div>`
+    : [...g.expenses].reverse().map(exp=>{
+        const payer = g.members.find(m=>m.id===exp.paidById);
+        const pName = payer?.isMe?'You':payer?.name||'?';
+        return `
+        <div class="row">
+          <div style="width:44px;height:44px;border-radius:14px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${exp.emoji}</div>
+          <div class="flex1">
+            <p class="fw7" style="font-size:14px">${esc(exp.title)}</p>
+            <p class="txt-muted" style="font-size:12px;margin-top:2px">${pName} paid · ${exp.splitType}</p>
+          </div>
+          <div class="text-right">
+            <p class="ff-s fw7" style="font-size:16px">${fmt(exp.amount)}</p>
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button onclick="event.stopPropagation();openEditExpense('${g.id}','${exp.id}')" style="background:none;border:none;color:var(--accent);font-size:11px;cursor:pointer;font-weight:600">Edit</button>
+              <button onclick="event.stopPropagation();deleteExpense('${g.id}','${exp.id}')" style="background:none;border:none;color:var(--danger);font-size:11px;cursor:pointer;font-weight:600">Del</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  return `
+  <div class="screen">
+    <div style="background:linear-gradient(135deg,#1A1A2E 0%,#252545 100%);padding:56px 20px 24px">
+      <div class="flex items-center gap12" style="margin-bottom:18px">
+        <button onclick="go('home')" style="background:rgba(255,255,255,.12);border:none;width:38px;height:38px;border-radius:12px;cursor:pointer;font-size:16px;color:#fff;display:flex;align-items:center;justify-content:center">←</button>
+        <span style="font-size:26px">${g.emoji}</span>
+        <div>
+          <h1 class="ff-s" style="color:#fff;font-size:21px;font-weight:700;line-height:1">${esc(g.name)}</h1>
+          <p style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">${g.members.length} members</p>
+        </div>
+        <button onclick="go('edit-group','${g.id}')" style="margin-left:auto;background:rgba(255,255,255,.1);border:none;border-radius:10px;padding:7px 12px;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;cursor:pointer">Edit</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:18px">${membersRow}</div>
+      <div class="glass" style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:rgba(255,255,255,.6);font-size:13px">Your balance</span>
+        <span class="ff-s fw7" style="font-size:22px;color:${col}">${sign}${fmt(myBal)}</span>
+      </div>
+    </div>
+
+    <div class="p20">
+      <div class="grid3" style="margin-bottom:18px">
+        ${[
+          {icon:'➕',label:'Add Expense',fn:`go('add-expense','${g.id}')`},
+          {icon:'📊',label:'Summary',fn:`go('summary','${g.id}')`},
+          {icon:'📅',label:'Installments',fn:`go('installments','${g.id}')`},
+        ].map(({icon,label,fn})=>`
+          <button onclick="${fn}" style="background:var(--card);border:none;border-radius:16px;padding:14px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 2px 10px rgba(26,26,46,.06);transition:transform .12s" onmousedown="this.style.transform='scale(.95)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.95)'" ontouchend="this.style.transform=''">
+            <span style="font-size:22px">${icon}</span>
+            <span style="font-size:11px;font-weight:600;color:var(--muted)">${label}</span>
+          </button>`).join('')}
+      </div>
+
+      <div class="sec-hdr">
+        <h3>Expenses</h3>
+        <span class="txt-muted" style="font-size:13px">${g.expenses.length} items</span>
+      </div>
+      ${expList}
+    </div>
+  </div>`;
+}
+
+function deleteExpense(gid,eid) {
+  const g = getGroup(gid);
+  updateGroup({...g,expenses:g.expenses.filter(e=>e.id!==eid)});
+  showToast('Expense removed');
+  render();
+}
+
+function openEditExpense(gid,eid) {
+  state.editExpenseId = eid;
+  go('edit-expense',gid);
+}
+
+/* ── ADD EXPENSE ────────────────────────────────────────────────────── */
+function screenAddExpense(editId) {
+  const g    = getGroup(state.selectedGroupId);
+  if (!g) return go('home');
+  const isEdit = !!editId;
+  const exp  = isEdit ? g.expenses.find(e=>e.id===editId) : null;
+  const defaultEmoji = exp?.emoji || '🍽️';
+  const defaultSplit = exp?.splitType || 'equal';
+
+  const memberRows = g.members.map((m,i)=>{
+    const inc = !exp || (exp.participants||g.members.map(x=>x.id)).includes(m.id);
+    const customVal = exp?.customAmounts?.[m.id]||'';
+    const pctVal    = exp?.percentages?.[m.id]||'';
+    return `
+    <div class="member-row" id="pr-${m.id}">
+      <div class="chk${inc?' on':''}" id="chk-${m.id}" onclick="toggleParticipant('${m.id}')">✓</div>
+      <div class="av av-sm ${avCls(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      <span class="flex1" style="font-size:14px;font-weight:500">${m.isMe?'You':esc(m.name)}</span>
+      <span class="equal-share" id="eq-${m.id}" style="font-family:'Fraunces',serif;font-weight:700;color:var(--accent);font-size:13px"></span>
+      <input type="number" class="input custom-amt hidden" id="ca-${m.id}" placeholder="0.00" value="${customVal}" style="width:82px;padding:7px 10px;font-size:14px;text-align:right" oninput="updateCustomTotal()" />
+      <div class="hidden flex items-center gap8" id="pct-wrap-${m.id}">
+        <input type="number" class="input" id="pct-${m.id}" placeholder="0" value="${pctVal}" style="width:60px;padding:7px 8px;font-size:14px;text-align:right" oninput="updatePctTotal()" />
+        <span class="txt-muted" style="font-size:13px">%</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <h1 class="ff-s" style="font-size:22px;font-weight:700">${isEdit?'Edit':'Add'} Expense</h1>
+    </div>
+
+    <div class="px16 gap-col">
+      <!-- Amount -->
+      <div class="card" style="text-align:center;padding:24px 20px">
+        <p class="lbl" style="margin-bottom:12px">Amount</p>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px">
+          <span class="ff-s" style="font-size:36px;color:var(--muted);font-weight:700">$</span>
+          <input type="number" inputmode="decimal" placeholder="0.00" id="exp-amount"
+            value="${exp?exp.amount:''}"
+            style="font-family:'Fraunces',serif;font-size:46px;font-weight:700;border:none;background:transparent;outline:none;width:180px;text-align:center;color:var(--ink)"
+            oninput="updateSplitPreview()" />
+        </div>
+      </div>
+
+      <!-- Title + emoji -->
+      <div class="card">
+        <p class="lbl">Description</p>
+        <div style="display:flex;gap:10px">
+          <button id="exp-emoji-btn" onclick="openEmojiPicker()" style="width:52px;height:52px;border-radius:14px;font-size:24px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;flex-shrink:0" data-e="${defaultEmoji}">${defaultEmoji}</button>
+          <input class="input" id="exp-title" placeholder="What's this for?" value="${exp?esc(exp.title):''}" oninput="checkExpenseForm()" />
+        </div>
+      </div>
+
+      <!-- Paid by -->
+      <div class="card">
+        <p class="lbl">Paid by</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="payer-btns">
+          ${g.members.map((m,i)=>{
+            const sel = exp?exp.paidById===m.id:i===0;
+            return `<button class="payer-btn${sel?' payer-on':''}" data-id="${m.id}"
+              onclick="selectPayer('${m.id}')"
+              style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:100px;border:2px solid ${sel?'var(--accent)':'var(--border)'};background:${sel?'var(--accent-lt)':'white'};cursor:pointer;transition:all .15s">
+              <div class="av av-sm ${avCls(i)}" style="width:28px;height:28px;font-size:10px">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+              <span style="font-size:13px;font-weight:600;color:${sel?'var(--accent)':'var(--ink)'}">${m.isMe?'You':esc(m.name)}</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Split method -->
+      <div class="card gap-col">
+        <div>
+          <p class="lbl">Split Method</p>
+          <div class="pills">
+            <button class="pill${defaultSplit==='equal'?' on':''}" onclick="setSplitType('equal')">Equal</button>
+            <button class="pill${defaultSplit==='custom'?' on':''}" onclick="setSplitType('custom')">Custom $</button>
+            <button class="pill${defaultSplit==='percentage'?' on':''}" onclick="setSplitType('percentage')">By %</button>
+          </div>
+        </div>
+
+        <div>
+          <p class="lbl">Participants</p>
+          ${memberRows}
+        </div>
+
+        <div id="split-footer" style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between">
+          <span class="txt-muted" style="font-size:13px" id="split-footer-label">Per person</span>
+          <span class="ff-s fw7" id="split-footer-val" style="font-size:15px"></span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="save-exp-btn" disabled
+        onclick="doSaveExpense(${isEdit?`'${editId}'`:'null'},'${g.id}')">
+        ${isEdit?'Save Changes ✓':'Add Expense ✓'}
+      </button>
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+
+let _currentSplitType = 'equal';
+function initAddExpense() {
+  _currentSplitType = 'equal';
+  updateSplitPreview();
+  checkExpenseForm();
+}
+function selectPayer(mid) {
+  document.querySelectorAll('.payer-btn').forEach(b=>{
+    const sel = b.dataset.id===mid;
+    b.style.borderColor = sel?'var(--accent)':'var(--border)';
+    b.style.background  = sel?'var(--accent-lt)':'white';
+    b.querySelector('span').style.color = sel?'var(--accent)':'var(--ink)';
+    b.classList.toggle('payer-on',sel);
+  });
+}
+function toggleParticipant(mid) {
+  const chk = document.getElementById('chk-'+mid);
+  chk.classList.toggle('on');
+  updateSplitPreview();
+}
+function setSplitType(t) {
+  _currentSplitType = t;
+  document.querySelectorAll('.pill').forEach((p,i)=>{
+    const types=['equal','custom','percentage'];
+    p.classList.toggle('on', types[i]===t);
+  });
+  const g = getGroup(state.selectedGroupId);
+  g.members.forEach(m=>{
+    document.getElementById('eq-'+m.id)?.classList.toggle('hidden', t!=='equal');
+    document.getElementById('ca-'+m.id)?.classList.toggle('hidden', t!=='custom');
+    document.getElementById('pct-wrap-'+m.id)?.classList.toggle('hidden', t!=='percentage');
+  });
+  const fl = document.getElementById('split-footer-label');
+  const fv = document.getElementById('split-footer-val');
+  if (t==='equal')      { fl.textContent='Per person'; fv.style.color='var(--accent)'; }
+  if (t==='custom')     { fl.textContent='Assigned / Total'; fv.style.color='var(--accent)'; }
+  if (t==='percentage') { fl.textContent='Total %'; }
+  updateSplitPreview();
+}
+function getParticipants() {
+  const g = getGroup(state.selectedGroupId);
+  return g.members.filter(m=>document.getElementById('chk-'+m.id)?.classList.contains('on')).map(m=>m.id);
+}
+function updateSplitPreview() {
+  const amt  = parseFloat(document.getElementById('exp-amount')?.value)||0;
+  const pts  = getParticipants();
+  const fv   = document.getElementById('split-footer-val');
+  if (!fv) return;
+  if (_currentSplitType==='equal') {
+    const share = pts.length?amt/pts.length:0;
+    pts.forEach(id=>{ const el=document.getElementById('eq-'+id); if(el) el.textContent=fmt(share); });
+    const g = getGroup(state.selectedGroupId);
+    g.members.filter(m=>!pts.includes(m.id)).forEach(m=>{ const el=document.getElementById('eq-'+m.id); if(el) el.textContent=''; });
+    fv.textContent = fmt(share);
+  } else if (_currentSplitType==='custom') { updateCustomTotal(); }
+  else if (_currentSplitType==='percentage') { updatePctTotal(); }
+  checkExpenseForm();
+}
+function updateCustomTotal() {
+  const amt  = parseFloat(document.getElementById('exp-amount')?.value)||0;
+  const g    = getGroup(state.selectedGroupId);
+  const pts  = getParticipants();
+  let total  = 0;
+  pts.forEach(id=>{ total+=parseFloat(document.getElementById('ca-'+id)?.value)||0; });
+  const ok   = Math.abs(total-amt)<0.01;
+  const fv   = document.getElementById('split-footer-val');
+  if (fv) { fv.textContent=`${fmt(total)} / ${fmt(amt)}`; fv.style.color=ok?'var(--sage)':'var(--danger)'; }
+  checkExpenseForm();
+}
+function updatePctTotal() {
+  const pts  = getParticipants();
+  let total  = 0;
+  pts.forEach(id=>{ total+=parseFloat(document.getElementById('pct-'+id)?.value)||0; });
+  const ok   = Math.abs(total-100)<0.5;
+  const fv   = document.getElementById('split-footer-val');
+  if (fv) { fv.textContent=`${total.toFixed(0)}%`; fv.style.color=ok?'var(--sage)':'var(--danger)'; }
+  checkExpenseForm();
+}
+function checkExpenseForm() {
+  const amt   = parseFloat(document.getElementById('exp-amount')?.value)||0;
+  const title = (document.getElementById('exp-title')?.value||'').trim();
+  const pts   = getParticipants();
+  let valid   = amt>0 && title && pts.length>0;
+  if (_currentSplitType==='custom') {
+    let ct=0; pts.forEach(id=>{ct+=parseFloat(document.getElementById('ca-'+id)?.value)||0;});
+    valid = valid && Math.abs(ct-amt)<0.01;
+  }
+  if (_currentSplitType==='percentage') {
+    let pt=0; pts.forEach(id=>{pt+=parseFloat(document.getElementById('pct-'+id)?.value)||0;});
+    valid = valid && Math.abs(pt-100)<0.5;
+  }
+  const btn = document.getElementById('save-exp-btn');
+  if (btn) btn.disabled = !valid;
+}
+function doSaveExpense(editId, gid) {
+  const g       = getGroup(gid);
+  const amt     = parseFloat(document.getElementById('exp-amount').value)||0;
+  const title   = document.getElementById('exp-title').value.trim();
+  const emoji   = document.getElementById('exp-emoji-btn').dataset.e || '🍽️';
+  const paidById= document.querySelector('.payer-on')?.dataset.id || g.members[0].id;
+  const pts     = getParticipants();
+  const customAmounts={}, percentages={};
+  pts.forEach(id=>{
+    customAmounts[id]=parseFloat(document.getElementById('ca-'+id)?.value)||0;
+    percentages[id]=parseFloat(document.getElementById('pct-'+id)?.value)||0;
+  });
+  const expData = {
+    id: editId||uid(), title, amount:amt, emoji,
+    paidById, splitType:_currentSplitType,
+    participants:pts, customAmounts, percentages,
+    date: editId?g.expenses.find(e=>e.id===editId)?.date:new Date().toISOString(),
+  };
+  if (editId) {
+    updateGroup({...g,expenses:g.expenses.map(e=>e.id===editId?expData:e)});
+    showToast('Expense updated ✓');
+  } else {
+    updateGroup({...g,expenses:[...g.expenses,expData]});
+    showToast('Expense added ✓');
+  }
+  go('group',gid);
+}
+
+/* ── EMOJI PICKER SHEET ─────────────────────────────────────────────── */
+function openEmojiPicker() {
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:16px">Choose Emoji</p>
+    <div class="emoji-grid">
+      ${EXPENSE_EMOJIS.map(({e,l})=>`
+        <button onclick="pickExpEmoji('${e}')" style="background:var(--bg);border:none;border-radius:14px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+          <span style="font-size:26px">${e}</span>
+          <span style="font-size:10px;color:var(--muted)">${l}</span>
+        </button>`).join('')}
+    </div>
+  `);
+}
+function pickExpEmoji(e) {
+  const btn = document.getElementById('exp-emoji-btn');
+  if (btn) { btn.textContent=e; btn.dataset.e=e; }
+  closeSheet();
+}
+
+/* ── SUMMARY ────────────────────────────────────────────────────────── */
+function screenSummary() {
+  const g = getGroup(state.selectedGroupId);
+  if (!g) return go('home');
+  const bals = computeBalances(g.members,g.expenses);
+  const txns = simplifyDebts(bals);
+  const total = g.expenses.reduce((a,e)=>a+(+e.amount||0),0);
+  const getName = id => { const m=g.members.find(m=>m.id===id); return m?.isMe?'You':m?.name||'?'; };
+  const getIdx  = id => g.members.findIndex(m=>m.id===id);
+
+  const balRows = g.members.map((m,i)=>{
+    const b=bals[m.id]||0, col=b>=0?'var(--sage)':'var(--danger)';
+    return `
+    <div class="flex items-center gap12" style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div class="av ${avCls(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      <div class="flex1">
+        <p class="fw7" style="font-size:14px">${m.isMe?'You':esc(m.name)}</p>
+        <p class="txt-muted" style="font-size:12px">${b>=0?'gets back':'owes'}</p>
+      </div>
+      <span class="ff-s fw7" style="font-size:18px;color:${col}">${b>=0?'+':'−'}${fmt(b)}</span>
+    </div>`;
+  }).join('');
+
+  const settlRows = txns.length===0
+    ? `<div style="text-align:center;padding:20px;color:var(--sage)"><div style="font-size:28px">✅</div><p class="fw7" style="margin-top:8px">All settled up!</p></div>`
+    : txns.map((t,i)=>{
+        const fi=getIdx(t.from), ti=getIdx(t.to);
+        return `
+        <div class="flex items-center gap12" style="padding:12px 0;border-bottom:1px solid var(--border)">
+          <div class="av av-sm ${avCls(fi)}">${getName(t.from).slice(0,2).toUpperCase()}</div>
+          <div class="flex1" style="font-size:13px;font-weight:500">
+            <strong>${esc(getName(t.from))}</strong> → <strong>${esc(getName(t.to))}</strong>
+          </div>
+          <div class="av av-sm ${avCls(ti)}">${getName(t.to).slice(0,2).toUpperCase()}</div>
+          <span class="ff-s fw7 txt-accent" style="font-size:17px;margin-left:4px">${fmt(t.amount)}</span>
+        </div>`;
+      }).join('');
+
+  return `
+  <div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <h1 class="ff-s" style="font-size:24px;font-weight:700">Summary</h1>
+    </div>
+    <div class="px16 gap-col">
+
+      <div class="card" style="background:linear-gradient(135deg,#1A1A2E,#2D2D4E);padding:24px">
+        <p style="color:rgba(255,255,255,.55);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Total Spent</p>
+        <p class="fs-big" style="color:#fff;margin-top:6px">${fmt(total)}</p>
+        <p style="color:rgba(255,255,255,.45);font-size:13px;margin-top:6px">${g.expenses.length} expenses · ${g.members.length} people</p>
+      </div>
+
+      <div class="card">
+        <p class="lbl">Individual Balances</p>
+        ${balRows}
+      </div>
+
+      <div class="card">
+        <p class="lbl">Settlement Plan</p>
+        <p class="txt-muted" style="font-size:12px;margin-bottom:12px">Minimum transfers to clear all debts</p>
+        ${settlRows}
+      </div>
+
+      ${txns.length>0?`<button class="btn btn-primary" onclick="settleAll('${g.id}')">Mark All as Settled 🎉</button>`:''}
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+
+function settleAll(gid) {
+  const g = getGroup(gid);
+  updateGroup({...g,expenses:[]});
+  showToast('All settled! 🎉');
+  go('group',gid);
+}
+
+/* ── INSTALLMENTS ───────────────────────────────────────────────────── */
+function screenInstallments() {
+  const g = getGroup(state.selectedGroupId);
+  if (!g) return go('home');
+  if (!g.installments) g.installments=[];
+
+  const planCards = g.installments.map((p,pi)=>{
+    const paidAmt = p.paidMonths*(p.totalAmt/p.numMonths);
+    const rem     = p.totalAmt-paidAmt;
+    const prog    = Math.round((paidAmt/p.totalAmt)*100);
+    const ppMo    = p.totalAmt/p.numMonths/p.numMembers;
+    const done    = p.paidMonths>=p.numMonths;
+    return `
+    <div class="card gap-col">
+      <div class="flex" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <p class="fw7" style="font-size:16px">${esc(p.title)}</p>
+          <p class="txt-muted" style="font-size:12px;margin-top:2px">${p.numMembers} people · ${p.numMonths} months</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="ff-s fw7" style="font-size:20px">${fmt(p.totalAmt)}</span>
+          <button onclick="deleteInstallment('${g.id}','${p.id}')" style="background:none;border:none;color:var(--danger);font-size:14px;cursor:pointer">🗑</button>
+        </div>
+      </div>
+      <div>
+        <div class="prog-track"><div class="prog-fill" style="width:${prog}%"></div></div>
+        <div class="flex" style="justify-content:space-between;margin-top:6px">
+          <span style="font-size:12px;color:var(--sage);font-weight:600">${p.paidMonths}/${p.numMonths} months paid</span>
+          <span class="txt-muted" style="font-size:12px">${fmt(rem)} remaining</span>
+        </div>
+      </div>
+      <div style="background:var(--gold-lt);border-radius:12px;padding:10px 14px">
+        <p style="font-size:12px;color:var(--gold);font-weight:600">Each person pays ${fmt(ppMo)}/month</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" style="flex:1;padding:10px" ${p.paidMonths===0?'disabled':''}
+          onclick="updateInstallmentMonths('${g.id}','${p.id}',-1)">− Month</button>
+        <button class="btn ${done?'btn-ghost':'btn-secondary'}" style="flex:1" ${done?'disabled':''}
+          onclick="updateInstallmentMonths('${g.id}','${p.id}',1)">
+          ${done?'✅ Complete!':'+ Mark Paid'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <div>
+        <h1 class="ff-s" style="font-size:22px;font-weight:700">Installments</h1>
+        <p class="txt-muted" style="font-size:13px">${esc(g.name)}</p>
+      </div>
+    </div>
+
+    <div class="px16 gap-col">
+      <!-- New plan -->
+      <div class="card gap-col">
+        <p class="lbl">New Installment Plan</p>
+        <input class="input" id="inst-title" placeholder="Item name (e.g. PS5, New Sofa)" />
+        <div class="grid2">
+          <div>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:4px">Total Price</p>
+            <input class="input" type="number" inputmode="decimal" id="inst-total" placeholder="$0.00" oninput="previewInstallment()" />
+          </div>
+          <div>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:4px">Months</p>
+            <input class="input" type="number" inputmode="numeric" id="inst-months" value="6" oninput="previewInstallment()" />
+          </div>
+        </div>
+
+        <div id="inst-preview" class="hidden" style="background:var(--accent-lt);border-radius:14px;padding:14px">
+          <div class="grid2">
+            <div><p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px">Monthly (total)</p><p class="ff-s fw7" id="prev-mo" style="font-size:18px"></p></div>
+            <div><p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px">Per person/mo</p><p class="ff-s fw7" id="prev-pp" style="font-size:18px"></p></div>
+            <div><p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px">Each pays total</p><p class="ff-s fw7" id="prev-total" style="font-size:18px"></p></div>
+            <div><p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px">People</p><p class="ff-s fw7" id="prev-ppl" style="font-size:18px"></p></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="addInstallmentPlan('${g.id}')">Add Plan</button>
+      </div>
+
+      ${g.installments.length===0
+        ? `<div class="empty"><div class="ei">📅</div><p>No installment plans yet</p></div>`
+        : planCards}
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+
+function previewInstallment() {
+  const total  = parseFloat(document.getElementById('inst-total')?.value)||0;
+  const months = parseInt(document.getElementById('inst-months')?.value)||1;
+  const g      = getGroup(state.selectedGroupId);
+  const nm     = g.members.length;
+  const prev   = document.getElementById('inst-preview');
+  if (total>0) {
+    prev?.classList.remove('hidden');
+    const mo = total/months;
+    document.getElementById('prev-mo').textContent   = fmt(mo);
+    document.getElementById('prev-pp').textContent   = fmt(mo/nm);
+    document.getElementById('prev-total').textContent= fmt(total/nm);
+    document.getElementById('prev-ppl').textContent  = nm+' people';
+  } else {
+    prev?.classList.add('hidden');
+  }
+}
+function addInstallmentPlan(gid) {
+  const g      = getGroup(gid);
+  const title  = document.getElementById('inst-title').value.trim();
+  const total  = parseFloat(document.getElementById('inst-total').value)||0;
+  const months = parseInt(document.getElementById('inst-months').value)||1;
+  if (!title||!total) { showToast('Fill in title and amount'); return; }
+  const plan = {id:uid(),title,totalAmt:total,numMonths:months,numMembers:g.members.length,paidMonths:0};
+  updateGroup({...g,installments:[...(g.installments||[]),plan]});
+  showToast('Plan added ✓');
+  go('installments',gid);
+}
+function updateInstallmentMonths(gid,pid,delta) {
+  const g = getGroup(gid);
+  const plans = (g.installments||[]).map(p=>
+    p.id===pid?{...p,paidMonths:Math.max(0,Math.min(p.numMonths,p.paidMonths+delta))}:p
+  );
+  updateGroup({...g,installments:plans});
+  render();
+}
+function deleteInstallment(gid,pid) {
+  const g = getGroup(gid);
+  updateGroup({...g,installments:(g.installments||[]).filter(p=>p.id!==pid)});
+  showToast('Plan removed');
+  render();
+}
+
+/* ── ACTIVITY ───────────────────────────────────────────────────────── */
+function screenActivity() {
+  const all = state.groups.flatMap(g=>
+    g.expenses.map(e=>({...e,groupName:g.name,groupEmoji:g.emoji}))
+  ).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  const rows = all.length===0
+    ? `<div class="empty"><div class="ei">📭</div><p>No expenses yet</p></div>`
+    : all.map(exp=>`
+      <div class="row">
+        <div style="width:44px;height:44px;background:var(--accent-lt);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${exp.emoji}</div>
+        <div class="flex1">
+          <p class="fw7" style="font-size:14px">${esc(exp.title)}</p>
+          <p class="txt-muted" style="font-size:12px;margin-top:2px">${exp.groupEmoji} ${esc(exp.groupName)}</p>
+        </div>
+        <span class="ff-s fw7" style="font-size:16px">${fmt(exp.amount)}</span>
+      </div>`).join('');
+
+  return `
+  <div class="screen">
+    <div class="p20 pt56">
+      <h1 class="ff-s" style="font-size:28px;font-weight:700">Activity</h1>
+      <p class="txt-muted" style="font-size:14px;margin-top:4px">All recent expenses</p>
+    </div>
+    <div class="px16">${rows}</div>
+  </div>`;
+}
+
+/* ── PROFILE ────────────────────────────────────────────────────────── */
+function screenProfile() {
+  const totalExp   = state.groups.reduce((a,g)=>a+g.expenses.length,0);
+  const totalSpent = state.groups.reduce((a,g)=>a+g.expenses.reduce((b,e)=>b+(+e.amount||0),0),0);
+
+  return `
+  <div class="screen">
+    <div style="background:linear-gradient(145deg,var(--accent),#FF8A70);padding:56px 24px 36px;text-align:center">
+      <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:36px;border:3px solid rgba(255,255,255,.25)">🙋</div>
+      <h2 class="ff-s" style="color:#fff;font-size:24px;font-weight:700">You</h2>
+      <p style="color:rgba(255,255,255,.65);font-size:14px">SplitEasy user</p>
+    </div>
+    <div class="p20 gap-col">
+      <div class="grid3">
+        ${[
+          {l:'Groups',v:state.groups.length,i:'👥'},
+          {l:'Expenses',v:totalExp,i:'🧾'},
+          {l:'Total Spent',v:fmt(totalSpent),i:'💰'},
+        ].map(({l,v,i})=>`
+          <div class="card" style="text-align:center">
+            <div style="font-size:22px;margin-bottom:6px">${i}</div>
+            <p class="ff-s fw7" style="font-size:20px">${v}</p>
+            <p class="txt-muted" style="font-size:11px;font-weight:500">${l}</p>
+          </div>`).join('')}
+      </div>
+
+      <div class="card gap-col">
+        <p class="lbl">Features</p>
+        ${['✅ Equal / Custom / % splits','✅ Simplified debt settlement','✅ Installment tracker','✅ Edit & delete expenses','✅ Data saved locally','✅ Works offline'].map(f=>`
+          <p style="font-size:14px;padding:6px 0;border-bottom:1px solid var(--border)">${f}</p>`).join('')}
+      </div>
+
+      <button class="btn btn-danger w-full" onclick="confirmClearAll()">Clear All Data</button>
+    </div>
+  </div>`;
+}
+
+function confirmClearAll() {
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:8px">Clear All Data?</p>
+    <p class="txt-muted" style="font-size:14px;margin-bottom:20px">All groups and expenses will be deleted permanently.</p>
+    <button class="btn btn-danger w-full" onclick="doClearAll()">Yes, Clear Everything</button>
+    <button class="btn btn-ghost" style="margin-top:8px" onclick="closeSheet()">Cancel</button>
+  `);
+}
+function doClearAll() {
+  state.groups=[]; saveData(); closeSheet();
+  showToast('All data cleared');
+  state.screen='home'; state.activeNav='home';
+  render();
+}
+
+/* ── SHEET UTILITY ──────────────────────────────────────────────────── */
+function openSheet(html) {
+  closeSheet();
+  const ov = document.createElement('div');
+  ov.className='overlay'; ov.id='sheet-overlay';
+  ov.innerHTML=`<div class="sheet"><div class="sheet-handle"></div>${html}</div>`;
+  ov.addEventListener('click',e=>{ if(e.target===ov) closeSheet(); });
+  document.getElementById('app').appendChild(ov);
+}
+function closeSheet() {
+  document.getElementById('sheet-overlay')?.remove();
+}
+
+/* ── RENDER ─────────────────────────────────────────────────────────── */
+function render() {
+  let html = '';
+  switch(state.screen) {
+    case 'home':         html = screenHome();        state.activeNav='home';     break;
+    case 'create-group': html = screenCreateGroup(); break;
+    case 'edit-group':   html = screenEditGroup();   break;
+    case 'group':        html = screenGroup();       break;
+    case 'add-expense':  html = screenAddExpense();  break;
+    case 'edit-expense': html = screenAddExpense(state.editExpenseId); break;
+    case 'summary':      html = screenSummary();     break;
+    case 'installments': html = screenInstallments();break;
+    case 'activity':     html = screenActivity();    state.activeNav='activity'; break;
+    case 'profile':      html = screenProfile();     state.activeNav='profile';  break;
+    default:             html = screenHome();
+  }
+
+  // Replace main content (keep nav + toast)
+  const existing = document.getElementById('main-content');
+  if (existing) existing.remove();
+  const div = document.createElement('div');
+  div.id='main-content';
+  div.innerHTML=html;
+  document.getElementById('app').insertBefore(div, document.getElementById('bottom-nav'));
+
+  renderNav();
+
+  // Post-render inits
+  if (state.screen==='create-group') initCreateGroup();
+  if (state.screen==='add-expense')  initAddExpense();
+  if (state.screen==='edit-expense') {
+    _currentSplitType = getGroup(state.selectedGroupId)?.expenses.find(e=>e.id===state.editExpenseId)?.splitType||'equal';
+    setSplitType(_currentSplitType);
+    updateSplitPreview();
+    checkExpenseForm();
+  }
+  if (state.screen==='installments') previewInstallment();
+
+  // Scroll to top
+  window.scrollTo(0,0);
+}
+
+/* ── BOOT ───────────────────────────────────────────────────────────── */
+loadData();
+render();
+</script>
+</body>
+</html>
