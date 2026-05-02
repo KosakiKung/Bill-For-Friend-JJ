@@ -179,6 +179,16 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .note-ta{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--ink);outline:none;resize:none;min-height:72px;transition:border-color .2s;font-family:inherit}
 .note-ta:focus{border-color:var(--accent);background:#fff}
 .note-ta::placeholder{color:var(--muted)}
+
+/* ── SUB-ITEM CARD ─────────────────────────── */
+.sub-item-card{background:var(--bg);border-radius:14px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--border)}
+.sub-item-card:last-child{margin-bottom:0}
+.si-consumer-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.si-consumer-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:100px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:var(--muted)}
+.si-consumer-btn.on{border-color:var(--sage);background:var(--sage-lt);color:var(--sage)}
+.si-total-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:12px;margin-top:6px}
+.si-total-ok{background:var(--sage-lt);color:var(--sage)}
+.si-total-err{background:#FEE2E2;color:var(--danger)}
 </style>
 </head>
 <body>
@@ -286,6 +296,13 @@ const TR = {
     f12:'✅ Expense notes',
     f13:'✅ Category filter',
     f14:'✅ Monthly spending chart',
+    // Sub-items
+    subItems:'Bill Items',addSubItem:'+ Add Item',itemName:'Item name',
+    itemPrice:'Price',itemConsumers:'Who had this?',removeItem:'Remove',
+    subItemMode:'Item Breakdown',subItemDesc:'Add individual items & who consumed each',
+    subItemTotal:'Items total',subItemMismatch:'⚠ Items total must equal bill amount',
+    noSubItems:'No items yet — tap "+ Add Item"',
+    simpleMode:'Simple Mode',detailMode:'Item Detail',
   },
   th:{
     appName:'สปลิตอีซี่',goodDay:'สวัสดี 👋',netBalance:'ยอดสุทธิ',
@@ -382,6 +399,13 @@ const TR = {
     f12:'✅ หมายเหตุในรายจ่าย',
     f13:'✅ กรองตาม Category',
     f14:'✅ กราฟค่าใช้จ่ายรายเดือน',
+    // Sub-items
+    subItems:'รายการย่อย',addSubItem:'+ เพิ่มรายการ',itemName:'ชื่อรายการ',
+    itemPrice:'ราคา',itemConsumers:'ใครได้บ้าง?',removeItem:'ลบ',
+    subItemMode:'แยกรายการ',subItemDesc:'เพิ่มรายการย่อยและระบุว่าใครได้อะไร',
+    subItemTotal:'รวมรายการ',subItemMismatch:'⚠ ยอดรวมรายการต้องเท่ากับบิลรวม',
+    noSubItems:'ยังไม่มีรายการ — กด "+ เพิ่มรายการ"',
+    simpleMode:'แบบเร็ว',detailMode:'แยกรายการ',
   }
 };
 function t(k){return(TR[S.lang]||TR.en)[k]||k;}
@@ -449,15 +473,34 @@ function calcBal(members,expenses){
   const b={};members.forEach(m=>b[m.id]=0);
   expenses.forEach(exp=>{
     const amt=+exp.amount||0;if(!amt)return;
-    const ids=exp.participants||members.map(m=>m.id);
     const payers=exp.payers||[{id:exp.paidById,amt}];
-    payers.forEach(p=>{b[p.id]=(b[p.id]||0)+(+p.amt||0);});
-    if(exp.splitType==='equal'||exp.splitType==='multipayer'){
-      const sh=amt/ids.length;ids.forEach(id=>{b[id]=(b[id]||0)-sh;});
-    } else if(exp.splitType==='percentage'){
-      ids.forEach(id=>{b[id]=(b[id]||0)-amt*((exp.percentages?.[id]||0)/100);});
-    } else if(exp.splitType==='custom'){
-      ids.forEach(id=>{b[id]=(b[id]||0)-(+exp.customAmounts?.[id]||0);});
+
+    // 1) Credit each payer exactly what they paid
+    payers.forEach(p=>{ b[p.id]=(b[p.id]||0)+(+p.amt||0); });
+
+    // 2) Debit each person their actual share
+    if(exp.subItems && exp.subItems.length>0){
+      // Sub-item mode: debit per item per consumer
+      exp.subItems.forEach(item=>{
+        const consumers=item.consumers||[];
+        if(!consumers.length)return;
+        const share=(+item.price||0)/consumers.length;
+        consumers.forEach(id=>{ b[id]=(b[id]||0)-share; });
+      });
+    } else {
+      const ids=exp.participants||members.map(m=>m.id);
+      if(exp.splitType==='equal'){
+        const sh=amt/ids.length;
+        ids.forEach(id=>{ b[id]=(b[id]||0)-sh; });
+      } else if(exp.splitType==='multipayer'){
+        // multipayer = everyone splits equally regardless of who paid
+        const sh=amt/ids.length;
+        ids.forEach(id=>{ b[id]=(b[id]||0)-sh; });
+      } else if(exp.splitType==='percentage'){
+        ids.forEach(id=>{ b[id]=(b[id]||0)-amt*((exp.percentages?.[id]||0)/100); });
+      } else if(exp.splitType==='custom'){
+        ids.forEach(id=>{ b[id]=(b[id]||0)-(+exp.customAmounts?.[id]||0); });
+      }
     }
   });
   return b;
@@ -794,57 +837,12 @@ function scrGroup(){
 }
 function delExp(gid,eid){const g=getG(gid);updG({...g,expenses:g.expenses.filter(e=>e.id!==eid)});toast(t('expenseRemoved'));render();}
 
-/* ── Expense Detail Sheet ─────────────────────────── */
-function openExpDetail(gid,eid){
-  const g=getG(gid),exp=g.expenses.find(e=>e.id===eid);if(!exp)return;
-  const amt=+exp.amount||0;
-  const ids=exp.participants||g.members.map(m=>m.id);
-  const payers=exp.payers||[{id:exp.paidById,amt}];
-  const shares={};
-  if(exp.splitType==='equal'||exp.splitType==='multipayer'){const s=amt/ids.length;ids.forEach(id=>shares[id]=s);}
-  else if(exp.splitType==='percentage'){ids.forEach(id=>shares[id]=amt*((exp.percentages?.[id]||0)/100));}
-  else if(exp.splitType==='custom'){ids.forEach(id=>shares[id]=+exp.customAmounts?.[id]||0);}
-  const pm={};payers.forEach(p=>pm[p.id]=(pm[p.id]||0)+(+p.amt||0));
-
-  const pRows=payers.map((p,i)=>{
-    const idx=GI(g,p.id);
-    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div class="av av-sm ${avC(idx)}">${GN(g,p.id).slice(0,2).toUpperCase()}</div>
-      <span class="flex1 fw7" style="font-size:13px">${GN(g,p.id)}</span>
-      <span style="background:var(--accent-lt);color:var(--accent);padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700">${fmt(p.amt)}</span>
-    </div>`;
-  }).join('');
-
-  const oRows=ids.map(id=>{
-    const idx=GI(g,id);
-    const paid=pm[id]||0,owes=Math.max(0,(shares[id]||0)-paid);
-    return `<div class="owe-row">
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="av av-sm ${avC(idx)}">${GN(g,id).slice(0,2).toUpperCase()}</div>
-        <span class="fw7" style="font-size:13px">${GN(g,id)}</span>
-      </div>
-      <div class="text-right">
-        <p style="font-size:11px;color:var(--muted)">${t('share')}: ${fmt(shares[id]||0)}</p>
-        <p class="ff-s fw7" style="font-size:14px;color:${owes>0.5?'var(--danger)':'var(--sage)'}">${owes>0.5?t('owedAmt')+': '+fmt(owes):'✓ '+t('paid')}</p>
-      </div>
-    </div>`;
-  }).join('');
-
-  openSheet(`<p class="ff-s fw7" style="font-size:20px;margin-bottom:4px">${esc(exp.title)}</p>
-    <p class="txt-muted" style="font-size:13px;margin-bottom:16px">${exp.emoji} · ${fmt(amt)}</p>
-    <p class="lbl">${t('payer')}</p>${pRows}
-    <p class="lbl" style="margin-top:16px">${t('participants')}</p>
-    <div style="background:var(--card);border-radius:14px;border:1px solid var(--border);padding:0 4px">${oRows}</div>
-    <button class="btn btn-ghost mt8 w-full" onclick="closeSheet()">${t('cancel')}</button>`);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ADD / EDIT EXPENSE
-═══════════════════════════════════════════════════════════ */
+/* ── Add / Edit Expense ──────────────────────────── */
 function scrAddExp(editId){
   const g=getG(S.selectedGroupId);if(!g)return go('home');
   const isEdit=!!editId,exp=isEdit?g.expenses.find(e=>e.id===editId):null;
   const dEmoji=exp?.emoji||'🍽️',dSplit=exp?.splitType||'equal';
+  const hasSubItems=exp?.subItems&&exp.subItems.length>0;
   const exPayers=exp?.payers||[{id:g.members[0].id,amt:''}];
 
   const mRows=g.members.map((m,i)=>{
@@ -853,9 +851,9 @@ function scrAddExp(editId){
       <div class="chk${inc?' on':''}" id="chk-${m.id}" onclick="togPart('${m.id}')">✓</div>
       <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
       <span class="flex1" style="font-size:14px;font-weight:500">${m.isMe?t('youLabel'):esc(m.name)}</span>
-      <span id="eq-${m.id}" class="${dSplit==='equal'?'':'hidden'}" style="font-family:'Fraunces',serif;font-weight:700;color:var(--accent);font-size:13px"></span>
-      <input type="number" class="input ${dSplit==='custom'?'':'hidden'}" id="ca-${m.id}" placeholder="0" value="${exp?.customAmounts?.[m.id]||''}" style="width:82px;padding:7px 10px;font-size:14px;text-align:right" oninput="updCustom()"/>
-      <div class="${dSplit==='percentage'?'flex items-center gap8':'hidden'}" id="pw-${m.id}">
+      <span id="eq-${m.id}" class="${dSplit==='equal'&&!hasSubItems?'':'hidden'}" style="font-family:'Fraunces',serif;font-weight:700;color:var(--accent);font-size:13px"></span>
+      <input type="number" class="input ${dSplit==='custom'&&!hasSubItems?'':'hidden'}" id="ca-${m.id}" placeholder="0" value="${exp?.customAmounts?.[m.id]||''}" style="width:82px;padding:7px 10px;font-size:14px;text-align:right" oninput="updCustom()"/>
+      <div class="${dSplit==='percentage'&&!hasSubItems?'flex items-center gap8':'hidden'}" id="pw-${m.id}">
         <input type="number" class="input" id="pct-${m.id}" placeholder="0" value="${exp?.percentages?.[m.id]||''}" style="width:58px;padding:7px 8px;font-size:14px;text-align:right" oninput="updPct()"/>
         <span class="txt-muted" style="font-size:13px">%</span>
       </div>
@@ -871,12 +869,20 @@ function scrAddExp(editId){
     </div>`;
   }).join('');
 
+  // Pre-populate _subItems when editing
+  _subItems = hasSubItems ? exp.subItems.map(s=>({...s,consumers:[...(s.consumers||[])]})) : [];
+  _expMode  = hasSubItems ? 'detail' : 'simple';
+
+  const siHTML=_subItems.map((item,idx)=>renderSIRow(g,item,idx)).join('');
+
   return `<div class="screen">
     <div class="flex items-center gap12 p20 pt56">
       <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
       <h1 class="ff-s" style="font-size:22px;font-weight:700">${isEdit?t('editExpenseTitle'):t('addExpenseTitle')}</h1>
     </div>
     <div class="px16 gap-col">
+
+      <!-- Amount -->
       <div class="card" style="text-align:center;padding:24px 20px">
         <p class="lbl" style="margin-bottom:12px">${t('amount')}</p>
         <div style="display:flex;align-items:center;justify-content:center;gap:4px">
@@ -885,6 +891,8 @@ function scrAddExp(editId){
             style="font-family:'Fraunces',serif;font-size:46px;font-weight:700;border:none;background:transparent;outline:none;width:180px;text-align:center;color:var(--ink)" oninput="updSplit()"/>
         </div>
       </div>
+
+      <!-- Description -->
       <div class="card">
         <p class="lbl">${t('description')}</p>
         <div style="display:flex;gap:10px">
@@ -892,50 +900,73 @@ function scrAddExp(editId){
           <input class="input" id="et" placeholder="${t('whatsFor')}" value="${exp?esc(exp.title):''}" oninput="chkExpForm()"/>
         </div>
       </div>
+
+      <!-- Paid by (always shown) -->
+      <div class="card">
+        <p class="lbl">${t('paidBy')}</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="payer-btns">
+          ${g.members.map((m,i)=>{
+            const sel=exp?exp.paidById===m.id:i===0;
+            return `<button class="payer-btn${sel?' po':''}" data-id="${m.id}" onclick="selPayer('${m.id}')"
+              style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:100px;border:2px solid ${sel?'var(--accent)':'var(--border)'};background:${sel?'var(--accent-lt)':'white'};cursor:pointer;transition:all .15s">
+              <div class="av av-sm ${avC(i)}" style="width:28px;height:28px;font-size:10px">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+              <span style="font-size:13px;font-weight:600;color:${sel?'var(--accent)':'var(--ink)'}">${m.isMe?t('youLabel'):esc(m.name)}</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Split card -->
       <div class="card gap-col">
         <div>
           <p class="lbl">${t('splitMethod')}</p>
-          <div class="pills">
+          <div class="pills" id="mode-pills">
+            <button class="pill${!hasSubItems?' on':''}" id="mode-simple" onclick="setMode('simple')">${t('simpleMode')}</button>
+            <button class="pill${hasSubItems?' on':''}" id="mode-detail" onclick="setMode('detail')">🧾 ${t('detailMode')}</button>
+          </div>
+        </div>
+
+        <!-- SIMPLE MODE -->
+        <div id="simple-mode-sec" class="${hasSubItems?'hidden':''}">
+          <div class="pills" id="split-pills" style="margin-bottom:12px">
             <button class="pill${dSplit==='equal'?' on':''}" onclick="setST('equal')">${t('equal')}</button>
             <button class="pill${dSplit==='custom'?' on':''}" onclick="setST('custom')">${t('customAmt')}</button>
             <button class="pill${dSplit==='percentage'?' on':''}" onclick="setST('percentage')">${t('byPct')}</button>
             <button class="pill${dSplit==='multipayer'?' on':''}" onclick="setST('multipayer')">${t('multiPayer')}</button>
           </div>
-        </div>
-        <!-- Single payer -->
-        <div id="sp-sec" class="${dSplit==='multipayer'?'hidden':''}">
-          <p class="lbl">${t('paidBy')}</p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            ${g.members.map((m,i)=>{
-              const sel=exp&&exp.splitType!=='multipayer'?exp.paidById===m.id:i===0;
-              return `<button class="payer-btn${sel?' po':''}" data-id="${m.id}" onclick="selPayer('${m.id}')"
-                style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:100px;border:2px solid ${sel?'var(--accent)':'var(--border)'};background:${sel?'var(--accent-lt)':'white'};cursor:pointer;transition:all .15s">
-                <div class="av av-sm ${avC(i)}" style="width:28px;height:28px;font-size:10px">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
-                <span style="font-size:13px;font-weight:600;color:${sel?'var(--accent)':'var(--ink)'}">${m.isMe?t('youLabel'):esc(m.name)}</span>
-              </button>`;
-            }).join('')}
+          <!-- Multi-payer amounts -->
+          <div id="mp-sec" class="${dSplit==='multipayer'?'':'hidden'}">
+            <p class="lbl">${t('multiplePayers')}</p>
+            <p class="txt-muted" style="font-size:12px;margin-bottom:10px">${dSplit==='multipayer'?'Enter how much each person paid':''}</p>
+            ${mpRows}
+            <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;margin-top:8px">
+              <span class="txt-muted" style="font-size:13px">${t('totalPaid')} / ${t('totalBill')}</span>
+              <span class="ff-s fw7" id="mp-tv" style="font-size:15px"></span>
+            </div>
+          </div>
+          <!-- Participants -->
+          <div>
+            <p class="lbl">${t('participants')}</p>
+            ${mRows}
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;margin-top:4px">
+            <span class="txt-muted" style="font-size:13px" id="sf-lbl">${t('perPerson')}</span>
+            <span class="ff-s fw7" id="sf-val" style="font-size:15px"></span>
           </div>
         </div>
-        <!-- Multi-payer -->
-        <div id="mp-sec" class="${dSplit==='multipayer'?'':'hidden'}">
-          <p class="lbl">${t('multiplePayers')}</p>
-          <p class="txt-muted" style="font-size:12px;margin-bottom:10px">${S.lang==='th'?'ใส่จำนวนที่แต่ละคนจ่าย':'Enter how much each person paid'}</p>
-          ${mpRows}
-          <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;margin-top:8px">
-            <span class="txt-muted" style="font-size:13px">${t('totalPaid')} / ${t('totalBill')}</span>
-            <span class="ff-s fw7" id="mp-tv" style="font-size:15px"></span>
+
+        <!-- ITEM DETAIL MODE -->
+        <div id="detail-mode-sec" class="${hasSubItems?'':'hidden'}">
+          <p class="txt-muted" style="font-size:12px;margin-bottom:12px">${t('subItemDesc')}</p>
+          <div id="si-list">${siHTML}</div>
+          <button class="btn btn-ghost" style="margin-top:8px" onclick="addSI()">${t('addSubItem')}</button>
+          <div id="si-total-bar" class="si-total-bar" style="margin-top:10px;${_subItems.length>0?'':'display:none'}">
+            <span style="font-size:13px;font-weight:600">${t('subItemTotal')}</span>
+            <span class="ff-s fw7" id="si-total-val" style="font-size:16px"></span>
           </div>
-        </div>
-        <!-- Participants -->
-        <div>
-          <p class="lbl">${t('participants')}</p>
-          ${mRows}
-        </div>
-        <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between">
-          <span class="txt-muted" style="font-size:13px" id="sf-lbl">${t('perPerson')}</span>
-          <span class="ff-s fw7" id="sf-val" style="font-size:15px"></span>
         </div>
       </div>
+
       <button class="btn btn-primary" id="se-btn" disabled onclick="doSaveExp(${isEdit?`'${editId}'`:'null'},'${g.id}')">
         ${isEdit?t('saveChangesBtn'):t('addExpenseBtn')}
       </button>
@@ -944,8 +975,92 @@ function scrAddExp(editId){
   </div>`;
 }
 
+/* ── Sub-item state & helpers ───────────── */
+let _subItems=[];
+let _expMode='simple';
+
+function renderSIRow(g,item,idx){
+  const cBtns=g.members.map((m,mi)=>{
+    const on=(item.consumers||[]).includes(m.id);
+    return `<button class="si-consumer-btn${on?' on':''}" id="sic-${item.id}-${m.id}" onclick="togSIC('${item.id}','${m.id}')">
+      <span class="av av-sm ${avC(mi)}" style="width:20px;height:20px;font-size:9px">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</span>
+      ${m.isMe?t('youLabel'):m.name.split(' ')[0]}
+    </button>`;
+  }).join('');
+  return `<div class="sub-item-card" id="si-${item.id}">
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="input flex1" placeholder="${t('itemName')}" value="${esc(item.name||'')}"
+        style="padding:10px 12px;font-size:14px"
+        oninput="updSIName('${item.id}',this.value)"/>
+      <input type="number" inputmode="decimal" class="input" placeholder="0" value="${item.price||''}"
+        style="width:90px;padding:10px 12px;font-size:14px;font-family:'Fraunces',serif;font-weight:700;text-align:right"
+        oninput="updSIPrice('${item.id}',+this.value||0)"/>
+      <button onclick="removeSI('${item.id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">×</button>
+    </div>
+    <div>
+      <p style="font-size:11px;color:var(--muted);font-weight:600;margin:8px 0 4px">${t('itemConsumers')}</p>
+      <div class="si-consumer-row">${cBtns}</div>
+    </div>
+  </div>`;
+}
+
+function setMode(mode){
+  _expMode=mode;
+  document.getElementById('mode-simple')?.classList.toggle('on',mode==='simple');
+  document.getElementById('mode-detail')?.classList.toggle('on',mode==='detail');
+  document.getElementById('simple-mode-sec')?.classList.toggle('hidden',mode==='detail');
+  document.getElementById('detail-mode-sec')?.classList.toggle('hidden',mode==='simple');
+  if(mode==='simple')updSplit();else{updSITotal();}
+  chkExpForm();
+}
+
+function addSI(){
+  const g=getG(S.selectedGroupId);
+  const item={id:uid(),name:'',price:0,consumers:g.members.map(m=>m.id)};
+  _subItems.push(item);
+  const list=document.getElementById('si-list');
+  if(list){
+    const div=document.createElement('div');
+    div.innerHTML=renderSIRow(g,item,_subItems.length-1);
+    list.appendChild(div.firstElementChild);
+  }
+  updSITotal();
+}
+function removeSI(iid){
+  _subItems=_subItems.filter(s=>s.id!==iid);
+  document.getElementById('si-'+iid)?.remove();
+  updSITotal();chkExpForm();
+}
+function togSIC(iid,mid){
+  const item=_subItems.find(s=>s.id===iid);if(!item)return;
+  if(item.consumers.includes(mid))item.consumers=item.consumers.filter(c=>c!==mid);
+  else item.consumers.push(mid);
+  const btn=document.getElementById('sic-'+iid+'-'+mid);
+  if(btn)btn.classList.toggle('on',item.consumers.includes(mid));
+  updSITotal();chkExpForm();
+}
+function updSIName(iid,v){const s=_subItems.find(x=>x.id===iid);if(s)s.name=v;}
+function updSIPrice(iid,v){const s=_subItems.find(x=>x.id===iid);if(s){s.price=v;updSITotal();}}
+function updSITotal(){
+  const tot=_subItems.reduce((a,s)=>a+(+s.price||0),0);
+  const bar=document.getElementById('si-total-bar');
+  const val=document.getElementById('si-total-val');
+  const billAmt=+document.getElementById('ea')?.value||0;
+  if(bar)bar.style.display=_subItems.length>0?'flex':'none';
+  if(val){
+    const ok=billAmt===0||Math.abs(tot-billAmt)<0.5;
+    val.textContent=billAmt>0?`${fmt(tot)} / ${fmt(billAmt)}`:fmt(tot);
+    val.style.color=ok?'var(--sage)':'var(--danger)';
+    if(bar)bar.className='si-total-bar '+(ok?'si-total-ok':'si-total-err');
+  }
+  chkExpForm();
+}
+
 let _ST='equal';
-function initAE(){_ST='equal';updSplit();chkExpForm();}
+function initAE(){
+  _ST='equal';_expMode='simple';_subItems=[];
+  updSplit();chkExpForm();
+}
 function selPayer(mid){
   document.querySelectorAll('.payer-btn').forEach(b=>{
     const s=b.dataset.id===mid;
@@ -956,27 +1071,33 @@ function selPayer(mid){
   });
 }
 function togPart(mid){document.getElementById('chk-'+mid)?.classList.toggle('on');updSplit();}
-function getParts(){const g=getG(S.selectedGroupId);return g.members.filter(m=>document.getElementById('chk-'+m.id)?.classList.contains('on')).map(m=>m.id);}
+function getParts(){
+  const g=getG(S.selectedGroupId);
+  return g.members.filter(m=>document.getElementById('chk-'+m.id)?.classList.contains('on')).map(m=>m.id);
+}
 function setST(tp){
   _ST=tp;
-  document.querySelectorAll('.pill').forEach((p,i)=>p.classList.toggle('on',['equal','custom','percentage','multipayer'][i]===tp));
+  document.querySelectorAll('#split-pills .pill').forEach((p,i)=>p.classList.toggle('on',['equal','custom','percentage','multipayer'][i]===tp));
   const g=getG(S.selectedGroupId);
   g.members.forEach(m=>{
     document.getElementById('eq-'+m.id)?.classList.toggle('hidden',tp!=='equal');
     document.getElementById('ca-'+m.id)?.classList.toggle('hidden',tp!=='custom');
-    document.getElementById('pw-'+m.id)?.classList.toggle('hidden',tp!=='percentage');
-    if(document.getElementById('pw-'+m.id)){
+    if(document.getElementById('pw-'+m.id))
       document.getElementById('pw-'+m.id).className=tp==='percentage'?'flex items-center gap8':'hidden';
-    }
   });
-  document.getElementById('sp-sec')?.classList.toggle('hidden',tp==='multipayer');
   document.getElementById('mp-sec')?.classList.toggle('hidden',tp!=='multipayer');
   const fl=document.getElementById('sf-lbl');
-  if(fl){if(tp==='equal'||tp==='multipayer')fl.textContent=t('perPerson');else if(tp==='custom')fl.textContent=t('assignedTotal');else fl.textContent=t('totalPct');}
+  if(fl){
+    if(tp==='equal'||tp==='multipayer')fl.textContent=t('perPerson');
+    else if(tp==='custom')fl.textContent=t('assignedTotal');
+    else fl.textContent=t('totalPct');
+  }
   updSplit();
 }
 function updSplit(){
-  const amt=+document.getElementById('ea')?.value||0,pts=getParts(),fv=document.getElementById('sf-val');if(!fv)return;
+  if(_expMode==='detail'){updSITotal();return;}
+  const amt=+document.getElementById('ea')?.value||0,pts=getParts(),fv=document.getElementById('sf-val');
+  if(!fv)return;
   if(_ST==='equal'||_ST==='multipayer'){
     const sh=pts.length?amt/pts.length:0;
     pts.forEach(id=>{const el=document.getElementById('eq-'+id);if(el)el.textContent=fmt(sh);});
@@ -992,28 +1113,37 @@ function updCustom(){
   const amt=+document.getElementById('ea')?.value||0,pts=getParts();let tot=0;
   pts.forEach(id=>{tot+=+document.getElementById('ca-'+id)?.value||0;});
   const ok=Math.abs(tot-amt)<0.5,fv=document.getElementById('sf-val');
-  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}chkExpForm();
+  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
+  chkExpForm();
 }
 function updPct(){
   const pts=getParts();let tot=0;
   pts.forEach(id=>{tot+=+document.getElementById('pct-'+id)?.value||0;});
   const ok=Math.abs(tot-100)<0.5,fv=document.getElementById('sf-val');
-  if(fv){fv.textContent=`${tot.toFixed(0)}%`;fv.style.color=ok?'var(--sage)':'var(--danger)';}chkExpForm();
+  if(fv){fv.textContent=`${tot.toFixed(0)}%`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
+  chkExpForm();
 }
 function updMP(){
   const amt=+document.getElementById('ea')?.value||0;
   const g=getG(S.selectedGroupId);let tot=0;
   g.members.forEach(m=>{tot+=+document.getElementById('mp-'+m.id)?.value||0;});
   const ok=Math.abs(tot-amt)<0.5,fv=document.getElementById('mp-tv');
-  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}chkExpForm();
+  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
+  chkExpForm();
 }
 function chkExpForm(){
   const amt=+document.getElementById('ea')?.value||0;
   const title=(document.getElementById('et')?.value||'').trim();
-  const pts=getParts();let valid=amt>0&&title&&pts.length>0;
-  if(_ST==='custom'){let ct=0;pts.forEach(id=>{ct+=+document.getElementById('ca-'+id)?.value||0;});valid=valid&&Math.abs(ct-amt)<0.5;}
-  if(_ST==='percentage'){let pt=0;pts.forEach(id=>{pt+=+document.getElementById('pct-'+id)?.value||0;});valid=valid&&Math.abs(pt-100)<0.5;}
-  if(_ST==='multipayer'){const g=getG(S.selectedGroupId);let mt=0;g.members.forEach(m=>{mt+=+document.getElementById('mp-'+m.id)?.value||0;});valid=valid&&Math.abs(mt-amt)<0.5;}
+  let valid=amt>0&&title;
+  if(_expMode==='detail'){
+    const siTot=_subItems.reduce((a,s)=>a+(+s.price||0),0);
+    valid=valid&&_subItems.length>0&&Math.abs(siTot-amt)<0.5&&_subItems.every(s=>s.consumers&&s.consumers.length>0);
+  } else {
+    const pts=getParts();valid=valid&&pts.length>0;
+    if(_ST==='custom'){let ct=0;pts.forEach(id=>{ct+=+document.getElementById('ca-'+id)?.value||0;});valid=valid&&Math.abs(ct-amt)<0.5;}
+    if(_ST==='percentage'){let pt=0;pts.forEach(id=>{pt+=+document.getElementById('pct-'+id)?.value||0;});valid=valid&&Math.abs(pt-100)<0.5;}
+    if(_ST==='multipayer'){const g=getG(S.selectedGroupId);let mt=0;g.members.forEach(m=>{mt+=+document.getElementById('mp-'+m.id)?.value||0;});valid=valid&&Math.abs(mt-amt)<0.5;}
+  }
   const b=document.getElementById('se-btn');if(b)b.disabled=!valid;
 }
 function doSaveExp(editId,gid){
@@ -1021,13 +1151,35 @@ function doSaveExp(editId,gid){
   const amt=+document.getElementById('ea').value||0;
   const title=document.getElementById('et').value.trim();
   const emoji=document.getElementById('ee-btn').dataset.e||'🍽️';
-  const pts=getParts();
-  const customAmounts={},percentages={};
-  pts.forEach(id=>{customAmounts[id]=+document.getElementById('ca-'+id)?.value||0;percentages[id]=+document.getElementById('pct-'+id)?.value||0;});
-  let payers=[];
-  if(_ST==='multipayer'){g.members.forEach(m=>{const v=+document.getElementById('mp-'+m.id)?.value||0;if(v>0)payers.push({id:m.id,amt:v});});}
-  else{const pid=document.querySelector('.po')?.dataset.id||g.members[0].id;payers=[{id:pid,amt}];}
-  const expData={id:editId||uid(),title,amount:amt,emoji,paidById:payers[0]?.id||g.members[0].id,payers,splitType:_ST,participants:pts,customAmounts,percentages,date:editId?g.expenses.find(e=>e.id===editId)?.date:new Date().toISOString()};
+  const paidById=document.querySelector('.po')?.dataset.id||g.members[0].id;
+  const payers=[{id:paidById,amt}];
+  const prevNote=editId?g.expenses.find(e=>e.id===editId)?.note||'':'';
+  const prevDate=editId?g.expenses.find(e=>e.id===editId)?.date:new Date().toISOString();
+
+  let expData;
+  if(_expMode==='detail'){
+    const allConsumers=[...new Set(_subItems.flatMap(s=>s.consumers))];
+    expData={id:editId||uid(),title,amount:amt,emoji,paidById,payers,
+      splitType:'subitem',participants:allConsumers,
+      subItems:_subItems.map(s=>({...s})),
+      customAmounts:{},percentages:{},date:prevDate,note:prevNote};
+  } else {
+    const pts=getParts();
+    const customAmounts={},percentages={};
+    pts.forEach(id=>{
+      customAmounts[id]=+document.getElementById('ca-'+id)?.value||0;
+      percentages[id]=+document.getElementById('pct-'+id)?.value||0;
+    });
+    let finalPayers=payers;
+    if(_ST==='multipayer'){
+      finalPayers=[];
+      g.members.forEach(m=>{const v=+document.getElementById('mp-'+m.id)?.value||0;if(v>0)finalPayers.push({id:m.id,amt:v});});
+    }
+    expData={id:editId||uid(),title,amount:amt,emoji,
+      paidById:finalPayers[0]?.id||paidById,payers:finalPayers,
+      splitType:_ST,participants:pts,customAmounts,percentages,
+      subItems:[],date:prevDate,note:prevNote};
+  }
   if(editId){updG({...g,expenses:g.expenses.map(e=>e.id===editId?expData:e)});toast(t('expenseUpdated'));}
   else{updG({...g,expenses:[...g.expenses,expData]});toast(t('expenseAdded'));}
   go('group',gid);
@@ -1076,26 +1228,40 @@ function scrSummary(){
     const pm={};payers.forEach(p=>pm[p.id]=(pm[p.id]||0)+(+p.amt||0));
     const pStr=payers.map(p=>`${GN(g,p.id)} ${fmt(p.amt)}`).join(', ');
     let shares={};
-    if(exp.splitType==='equal'||exp.splitType==='multipayer'){const s=amt/ids.length;ids.forEach(id=>shares[id]=s);}
+    if(exp.subItems&&exp.subItems.length>0){
+      exp.subItems.forEach(item=>{
+        const c=item.consumers||[];if(!c.length)return;
+        const sh=(+item.price||0)/c.length;
+        c.forEach(id=>shares[id]=(shares[id]||0)+sh);
+      });
+    } else if(exp.splitType==='equal'||exp.splitType==='multipayer'){const s=amt/ids.length;ids.forEach(id=>shares[id]=s);}
     else if(exp.splitType==='percentage'){ids.forEach(id=>shares[id]=amt*((exp.percentages?.[id]||0)/100));}
     else if(exp.splitType==='custom'){ids.forEach(id=>shares[id]=+exp.customAmounts?.[id]||0);}
+    // For display: use all people who either paid or have a share
+    const allIds=[...new Set([...Object.keys(shares),...Object.keys(pm)])];
     return `<div class="card" style="margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <span style="font-size:22px">${exp.emoji}</span>
         <div class="flex1"><p class="fw7" style="font-size:14px">${esc(exp.title)}</p>
-          <span style="background:var(--accent-lt);color:var(--accent);padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600">${pStr}</span>
+          <span style="background:var(--accent-lt);color:var(--accent);padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600">${pStr}${exp.splitType==='subitem'?' · 🧾':''}</span>
         </div>
         <span class="ff-s fw7" style="font-size:16px">${fmt(amt)}</span>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:8px">
-        ${ids.map(id=>{
-          const idx=GI(g,id),owes=Math.max(0,(shares[id]||0)-(pm[id]||0));
+        ${allIds.map(id=>{
+          const idx=GI(g,id);
+          const share=shares[id]||0,paid=pm[id]||0,net=share-paid;
           return `<div class="owe-row">
             <div style="display:flex;align-items:center;gap:6px">
               <div class="av av-sm ${avC(idx)}" style="width:26px;height:26px;font-size:10px">${GN(g,id).slice(0,2).toUpperCase()}</div>
               <span style="font-size:13px;font-weight:600">${GN(g,id)}</span>
             </div>
-            <span style="font-size:13px;color:${owes>0.5?'var(--danger)':'var(--sage)'};font-weight:700">${owes>0.5?'−'+fmt(owes):'✓'}</span>
+            <div style="text-align:right">
+              <p style="font-size:10px;color:var(--muted)">${t('share')}: ${fmt(share)}${paid>0?' / paid '+fmt(paid):''}</p>
+              <span style="font-size:13px;color:${net>0.5?'var(--danger)':net<-0.5?'var(--blue)':'var(--sage)'};font-weight:700">
+                ${net>0.5?'owes '+fmt(net):net<-0.5?'gets '+fmt(-net):'✓'}
+              </span>
+            </div>
           </div>`;
         }).join('')}
       </div>
@@ -1861,13 +2027,25 @@ function saveNote(gid,eid){
 function openExpDetail(gid,eid){
   const g=getG(gid),exp=g.expenses.find(e=>e.id===eid);if(!exp)return;
   const amt=+exp.amount||0;
-  const ids=exp.participants||g.members.map(m=>m.id);
   const payers=exp.payers||[{id:exp.paidById,amt}];
-  const shares={};
-  if(exp.splitType==='equal'||exp.splitType==='multipayer'){const s=amt/ids.length;ids.forEach(id=>shares[id]=s);}
-  else if(exp.splitType==='percentage'){ids.forEach(id=>shares[id]=amt*((exp.percentages?.[id]||0)/100));}
-  else if(exp.splitType==='custom'){ids.forEach(id=>shares[id]=+exp.customAmounts?.[id]||0);}
   const pm={};payers.forEach(p=>pm[p.id]=(pm[p.id]||0)+(+p.amt||0));
+
+  // Compute per-person shares (handles subitem mode too)
+  const shares={};
+  if(exp.subItems&&exp.subItems.length>0){
+    exp.subItems.forEach(item=>{
+      const c=item.consumers||[];if(!c.length)return;
+      const sh=(+item.price||0)/c.length;
+      c.forEach(id=>shares[id]=(shares[id]||0)+sh);
+    });
+  } else {
+    const ids=exp.participants||g.members.map(m=>m.id);
+    if(exp.splitType==='equal'||exp.splitType==='multipayer'){const s=amt/ids.length;ids.forEach(id=>shares[id]=s);}
+    else if(exp.splitType==='percentage'){ids.forEach(id=>shares[id]=amt*((exp.percentages?.[id]||0)/100));}
+    else if(exp.splitType==='custom'){ids.forEach(id=>shares[id]=+exp.customAmounts?.[id]||0);}
+  }
+
+  const allIds=[...new Set([...Object.keys(shares),...Object.keys(pm)])];
 
   const pRows=payers.map(p=>{
     const idx=GI(g,p.id);
@@ -1878,26 +2056,54 @@ function openExpDetail(gid,eid){
     </div>`;
   }).join('');
 
-  const oRows=ids.map(id=>{
-    const idx=GI(g,id),owes=Math.max(0,(shares[id]||0)-(pm[id]||0));
+  // Sub-item breakdown section
+  const siSection=exp.subItems&&exp.subItems.length>0?`
+    <p class="lbl" style="margin-top:16px">🧾 ${t('subItems')}</p>
+    ${exp.subItems.map(item=>{
+      const c=item.consumers||[];const sh=c.length?(+item.price||0)/c.length:0;
+      return `<div style="background:var(--bg);border-radius:12px;padding:10px 12px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span class="fw7" style="font-size:13px">${esc(item.name||'?')}</span>
+          <span class="ff-s fw7 txt-accent" style="font-size:14px">${fmt(item.price||0)}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${c.map(id=>{
+            const idx=GI(g,id);
+            return `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:3px 9px;font-size:11px;font-weight:600">
+              <span class="av av-sm ${avC(idx)}" style="width:16px;height:16px;font-size:8px">${GN(g,id).slice(0,1)}</span>
+              ${GN(g,id)} <span class="txt-muted">${fmt(sh)}</span>
+            </span>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}`:'';
+
+  const oRows=allIds.map(id=>{
+    const idx=GI(g,id);
+    const share=shares[id]||0;
+    const paid=pm[id]||0;
+    const net=share-paid; // positive = owes, negative = overpaid
     return `<div class="owe-row">
       <div style="display:flex;align-items:center;gap:8px">
         <div class="av av-sm ${avC(idx)}">${GN(g,id).slice(0,2).toUpperCase()}</div>
         <span class="fw7" style="font-size:13px">${GN(g,id)}</span>
       </div>
       <div class="text-right">
-        <p style="font-size:11px;color:var(--muted)">${t('share')}: ${fmt(shares[id]||0)}</p>
-        <p class="ff-s fw7" style="font-size:14px;color:${owes>0.5?'var(--danger)':'var(--sage)'}">${owes>0.5?t('owedAmt')+': '+fmt(owes):'✓ '+t('paid')}</p>
+        <p style="font-size:11px;color:var(--muted)">${t('share')}: ${fmt(share)}${paid>0?' · paid: '+fmt(paid):''}</p>
+        <p class="ff-s fw7" style="font-size:14px;color:${net>0.5?'var(--danger)':net<-0.5?'var(--blue)':'var(--sage)'}">
+          ${net>0.5?t('owedAmt')+': '+fmt(net):net<-0.5?'↩ gets back '+fmt(-net):'✓ '+t('paid')}
+        </p>
       </div>
     </div>`;
   }).join('');
 
   openSheet(`
     <p class="ff-s fw7" style="font-size:20px;margin-bottom:4px">${esc(exp.title)}</p>
-    <p class="txt-muted" style="font-size:13px;margin-bottom:${exp.note?'10px':'16px'}">${exp.emoji} · ${fmt(amt)}</p>
+    <p class="txt-muted" style="font-size:13px;margin-bottom:${exp.note?'10px':'16px'}">${exp.emoji} · ${fmt(amt)} · ${exp.splitType==='subitem'?t('detailMode'):exp.splitType}</p>
     ${exp.note?`<div style="background:var(--gold-lt);border-radius:12px;padding:10px 14px;margin-bottom:14px"><p style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:2px">📝 ${t('noteLabel')}</p><p style="font-size:13px;color:var(--ink)">${esc(exp.note)}</p></div>`:''}
     <p class="lbl">${t('payer')}</p>${pRows}
-    <p class="lbl" style="margin-top:16px">${t('participants')}</p>
+    ${siSection}
+    <p class="lbl" style="margin-top:16px">${t('participants')} — ${t('share')} & ${t('owedAmt')}</p>
     <div style="background:var(--card);border-radius:14px;border:1px solid var(--border);padding:0 4px">${oRows}</div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn btn-secondary" style="flex:1" onclick="closeSheet();openNoteEditor('${gid}','${eid}')">📝 ${t('noteLabel')}</button>
@@ -1931,7 +2137,16 @@ function render(){
   renderNav();
   if(S.screen==='create-group')initCG();
   if(S.screen==='add-expense'){_ST='equal';updSplit();chkExpForm();}
-  if(S.screen==='edit-expense'){_ST=getG(S.selectedGroupId)?.expenses.find(e=>e.id===S.editExpenseId)?.splitType||'equal';setST(_ST);updSplit();chkExpForm();}
+  if(S.screen==='edit-expense'){
+    const _exp=getG(S.selectedGroupId)?.expenses.find(e=>e.id===S.editExpenseId);
+    if(_exp?.subItems&&_exp.subItems.length>0){
+      // subitem mode - _subItems and _expMode already pre-populated in scrAddExp
+      setMode('detail');updSITotal();
+    } else {
+      _ST=_exp?.splitType||'equal';setST(_ST);updSplit();
+    }
+    chkExpForm();
+  }
   if(S.screen==='installments'){_ICT='monthly';prvInst();}
   if(S.screen==='cycles')_CF='monthly';
   window.scrollTo(0,0);
@@ -1939,6 +2154,53 @@ function render(){
 
 /* ═══════════════ BOOT ═══════════════════════════════════ */
 load();render();
+</script>
+<!-- ── COPY CODE BUTTON ──────────────────────────────── -->
+<button id="copy-btn" onclick="copyCode()" title="Copy all code"
+  style="position:fixed;bottom:28px;right:16px;z-index:9999;
+    width:52px;height:52px;border-radius:50%;border:none;
+    background:linear-gradient(135deg,#1A1A2E,#2D2D4E);
+    color:#fff;font-size:22px;cursor:pointer;
+    box-shadow:0 4px 20px rgba(26,26,46,.35);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s,opacity .15s">
+  📋
+</button>
+<div id="copy-toast"
+  style="position:fixed;bottom:90px;right:16px;z-index:9999;
+    background:#1A1A2E;color:#fff;padding:8px 16px;
+    border-radius:100px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:opacity .3s;
+    white-space:nowrap;box-shadow:0 4px 16px rgba(26,26,46,.3)">
+  ✅ Copied!
+</div>
+<script>
+function copyCode(){
+  const btn=document.getElementById('copy-btn');
+  const ct=document.getElementById('copy-toast');
+  fetch(window.location.href)
+    .then(r=>r.text())
+    .then(html=>{
+      navigator.clipboard.writeText(html).then(()=>{
+        btn.textContent='✅';
+        ct.style.opacity='1';
+        setTimeout(()=>{btn.textContent='📋';ct.style.opacity='0';},2000);
+      }).catch(()=>{
+        // Fallback: textarea trick
+        const ta=document.createElement('textarea');
+        ta.value=html;ta.style.position='fixed';ta.style.opacity='0';
+        document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent='✅';ct.style.opacity='1';
+        setTimeout(()=>{btn.textContent='📋';ct.style.opacity='0';},2000);
+      });
+    });
+}
+document.getElementById('copy-btn').addEventListener('mousedown',function(){this.style.transform='scale(.9)';});
+document.getElementById('copy-btn').addEventListener('mouseup',function(){this.style.transform='scale(1)';});
+document.getElementById('copy-btn').addEventListener('touchstart',function(){this.style.transform='scale(.9)';},{passive:true});
+document.getElementById('copy-btn').addEventListener('touchend',function(){this.style.transform='scale(1)';},{passive:true});
 </script>
 </body>
 </html>
