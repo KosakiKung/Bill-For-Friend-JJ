@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <meta name="theme-color" content="#1A1A2E"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>SplitEasy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F7F5F0;--card:#FFFFFF;
+  --accent:#FF5C3A;--accent-lt:#FFF0ED;--accent-soft:#FFD6CE;
+  --sage:#4CAF7D;--sage-lt:#E8F5EE;
+  --ink:#1A1A2E;--muted:#8A8A9A;--border:#EDEAE4;
+  --danger:#FF3B5C;--gold:#F5A623;--gold-lt:#FEF6E8;
+  --blue:#3B82F6;--blue-lt:#EFF6FF;
+  --purple:#8B5CF6;--purple-lt:#F5F3FF;
+}
+html{height:100%}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100%;overflow-x:hidden}
+body.th{font-family:'Sarabun',sans-serif}
+::-webkit-scrollbar{width:0}
+input,button,select,textarea{font-family:inherit}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+
+#app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative}
+
+.screen{min-height:100vh;padding-bottom:92px;animation:slideUp .28s cubic-bezier(.22,1,.36,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.hidden{display:none!important}
+
+.card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(26,26,46,.07)}
+.gap-col{display:flex;flex-direction:column;gap:14px}
+
+.btn{width:100%;border:none;cursor:pointer;transition:transform .12s,opacity .12s;border-radius:16px;font-size:15px;font-weight:600;padding:15px 20px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:disabled{opacity:.4;pointer-events:none}
+.btn-secondary{background:var(--accent-lt);color:var(--accent)}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:14px}
+.btn-ghost:active{background:var(--border)}
+.btn-danger{background:#FEE2E2;color:var(--danger);border:none;border-radius:14px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-icon{background:var(--bg);border:none;border-radius:12px;width:40px;height:40px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-sm{width:auto;padding:8px 16px;font-size:13px;border-radius:12px}
+
+.lang-toggle{display:flex;background:rgba(255,255,255,.12);border-radius:100px;padding:3px;gap:2px}
+.lang-btn{padding:5px 12px;border:none;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:rgba(255,255,255,.5);transition:all .15s;letter-spacing:.03em}
+.lang-btn.on{background:#fff;color:var(--accent)}
+
+.input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:13px 15px;font-size:16px;color:var(--ink);outline:none;transition:border-color .2s;-webkit-appearance:none}
+.input:focus{border-color:var(--accent);background:#fff}
+.input::placeholder{color:var(--muted)}
+
+.lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+
+.av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.av-sm{width:32px;height:32px;font-size:11px}
+.av-0{background:#FFD6CE;color:#FF5C3A}.av-1{background:#D6E8FF;color:#2563EB}
+.av-2{background:#D6F5E3;color:#16A34A}.av-3{background:#FEF3C7;color:#D97706}
+.av-4{background:#EDE9FE;color:#7C3AED}.av-5{background:#FCE7F3;color:#DB2777}
+.av-6{background:#CCFBF1;color:#0D9488}.av-7{background:#FEE2E2;color:#DC2626}
+
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;padding:13px 14px;box-shadow:0 1px 6px rgba(26,26,46,.05);cursor:pointer;transition:transform .12s}
+.row:active{transform:scale(.98)}
+.row+.row{margin-top:8px}
+
+.pills{display:flex;background:var(--bg);border-radius:14px;padding:4px;gap:3px}
+.pill{flex:1;padding:9px 6px;border-radius:11px;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .18s;text-align:center}
+.pill.on{background:var(--card);color:var(--accent);font-weight:700;box-shadow:0 2px 8px rgba(26,26,46,.08)}
+
+.chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;font-size:12px;color:transparent}
+.chk.on{background:var(--sage);border-color:var(--sage);color:#fff}
+.chk-sq{width:24px;height:24px;border-radius:7px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;font-size:12px;color:transparent}
+.chk-sq.on{background:var(--sage);border-color:var(--sage);color:#fff}
+
+.prog-track{background:var(--border);border-radius:100px;height:8px;overflow:hidden}
+.prog-fill{height:100%;border-radius:100px;background:var(--sage);transition:width .5s cubic-bezier(.22,1,.36,1)}
+
+#bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,.93);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:10px 0 20px;z-index:100;display:flex;justify-content:space-around}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:4px 14px;transition:transform .12s;color:var(--muted)}
+.nav-btn:active{transform:scale(.88)}
+.nav-btn.on{color:var(--accent)}
+.nav-btn .ni{font-size:22px;line-height:1}
+.nav-btn .nl{font-size:10px;font-weight:500}
+.nav-btn.on .nl{font-weight:700}
+
+.overlay{position:fixed;inset:0;background:rgba(26,26,46,.45);z-index:200;display:flex;align-items:flex-end;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.sheet{width:100%;max-width:430px;margin:0 auto;background:var(--card);border-radius:28px 28px 0 0;padding:20px 20px 36px;animation:sheetUp .3s cubic-bezier(.22,1,.36,1);max-height:88vh;overflow-y:auto}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:100px;margin:0 auto 18px}
+
+#toast{position:fixed;top:56px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:100px;font-size:14px;font-weight:500;z-index:999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 20px rgba(26,26,46,.2);transition:opacity .3s}
+#toast.hide{opacity:0}
+
+.hero{background:linear-gradient(145deg,#1A1A2E 0%,#2D2D4E 100%);padding:58px 20px 24px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(255,92,58,.27),transparent 70%)}
+.hero::after{content:'';position:absolute;bottom:-20px;left:20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(76,175,125,.2),transparent 70%)}
+.glass{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:18px;padding:16px 18px;border:1px solid rgba(255,255,255,.12)}
+
+.emoji-grid{display:flex;flex-wrap:wrap;gap:8px}
+.emoji-btn{width:48px;height:48px;border-radius:14px;font-size:22px;border:2px solid transparent;background:var(--bg);cursor:pointer;transition:all .15s}
+.emoji-btn.on{border-color:var(--accent);background:var(--accent-lt)}
+
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sec-hdr h3{font-family:'Fraunces',serif;font-size:19px;font-weight:700}
+
+.member-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.member-row:last-child{border-bottom:none}
+
+.cycle-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700}
+.cycle-monthly{background:var(--blue-lt);color:var(--blue)}
+.cycle-weekly{background:var(--purple-lt);color:var(--purple)}
+
+.cl-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border-radius:14px;margin-bottom:8px;transition:opacity .2s;box-shadow:0 1px 6px rgba(26,26,46,.05)}
+.cl-item.done{opacity:.55}
+.cl-item.done .cl-title{text-decoration:line-through;color:var(--muted)}
+
+.owe-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.owe-row:last-child{border-bottom:none}
+
+.txt-muted{color:var(--muted)}.txt-accent{color:var(--accent)}.txt-sage{color:var(--sage)}.txt-danger{color:var(--danger)}.txt-blue{color:var(--blue)}
+.fw7{font-weight:700}.ff-s{font-family:'Fraunces',serif}
+.fs-big{font-family:'Fraunces',serif;font-size:38px;font-weight:700;letter-spacing:-1px;line-height:1}
+.px16{padding-left:16px;padding-right:16px}
+.flex{display:flex}.items-center{align-items:center}.gap8{gap:8px}.gap12{gap:12px}
+.flex1{flex:1;min-width:0}.text-right{text-align:right}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+.w-full{width:100%}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}
+.p20{padding:20px}.pt56{padding-top:56px}
+.text-center{text-align:center}
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty .ei{font-size:44px;margin-bottom:10px}
+.empty p{font-size:14px}
+.divider{height:1px;background:var(--border)}
+
+/* ── CATEGORY CHIPS ───────────────────────── */
+.cat-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-chip{flex-shrink:0;padding:7px 14px;border-radius:100px;border:1.5px solid var(--border);background:var(--card);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.cat-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ── DEBT BADGE ────────────────────────────── */
+.debt-badge{background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;margin-left:6px;vertical-align:middle}
+
+/* ── BALANCE CARD (I Owe / Owed to me) ─────── */
+.bal-card{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--card);border-radius:16px;box-shadow:0 1px 6px rgba(26,26,46,.05);margin-bottom:8px}
+.bal-card .amt-pill{padding:6px 14px;border-radius:100px;font-family:'Fraunces',serif;font-weight:700;font-size:15px;white-space:nowrap}
+.bal-card .amt-owe{background:#FEE2E2;color:var(--danger)}
+.bal-card .amt-owed{background:var(--sage-lt);color:var(--sage)}
+
+/* ── SETTLE SHEET ──────────────────────────── */
+.settle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.settle-row:last-child{border-bottom:none}
+
+/* ── MONTHLY SUMMARY ───────────────────────── */
+.mo-section{background:var(--card);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(26,26,46,.05)}
+.mo-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.mo-row:last-child{border-bottom:none}
+.mo-total{background:linear-gradient(135deg,var(--ink),#2D2D4E);border-radius:16px;padding:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+
+/* ── SPENDING CHART (SVG bar chart) ────────── */
+.chart-wrap{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(26,26,46,.07)}
+.chart-bar-bg{fill:var(--border)}
+.chart-bar-fill{fill:var(--accent);transition:height .5s cubic-bezier(.22,1,.36,1)}
+.chart-label{font-size:10px;fill:var(--muted);font-family:'DM Sans',sans-serif;text-anchor:middle}
+.chart-val{font-size:9px;fill:var(--ink);font-family:'Fraunces',serif;font-weight:700;text-anchor:middle}
+
+/* ── NOTE FIELD ────────────────────────────── */
+.note-ta{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--ink);outline:none;resize:none;min-height:72px;transition:border-color .2s;font-family:inherit}
+.note-ta:focus{border-color:var(--accent);background:#fff}
+.note-ta::placeholder{color:var(--muted)}
+
+/* ── SUB-ITEM CARD ─────────────────────────── */
+.sub-item-card{background:var(--bg);border-radius:14px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--border)}
+.sub-item-card:last-child{margin-bottom:0}
+.si-consumer-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.si-consumer-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:100px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:var(--muted)}
+.si-consumer-btn.on{border-color:var(--sage);background:var(--sage-lt);color:var(--sage)}
+.si-total-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:12px;margin-top:6px}
+.si-total-ok{background:var(--sage-lt);color:var(--sage)}
+.si-total-err{background:#FEE2E2;color:var(--danger)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bottom-nav" class="hidden"></div>
+  <div id="toast" class="hide"></div>
+</div>
+<script>
+'use strict';
+
+/* ═══════════════ i18n ═══════════════════════════════════ */
+const TR = {
+  en:{
+    appName:'SplitEasy',goodDay:'Good day 👋',netBalance:'Net Balance',
+    youreOwed:"you're owed",youOwe:'you owe',groups:'Groups',newGroup:'+ New',
+    noGroupsYet:'No groups yet',noGroupsDesc:'Create a group to start splitting.',
+    createFirstGroup:'Create First Group',people:'people',total:'Total',
+    owedToYou:'owed to you',home:'Home',activity:'Activity',profile:'Profile',
+    newGroupTitle:'New Group',groupIcon:'Group Icon',groupName:'Group Name',
+    groupNamePh:'e.g. Bali Trip 2026',friends:'Friends',
+    friendsNote:'(You are included automatically)',addFriend:'+ Add friend',
+    createGroup:'Create Group 🎉',editGroup:'Edit Group',icon:'Icon',
+    members:'Members',addMember:'+ Add member',saveChanges:'Save Changes ✓',
+    deleteGroup:'Delete Group',deleteGroupQ:'Delete Group?',
+    deleteGroupDesc:'All expenses will be lost. This cannot be undone.',
+    yesDelete:'Yes, Delete',cancel:'Cancel',yourBalance:'Your balance',
+    addExpense:'Add Expense',summary:'Summary',installments:'Installments',
+    expenseDetail:'Details',billCycles:'Bill Cycles',checklist:'Checklist',
+    expenses:'Expenses',items:'items',edit:'Edit',del:'Del',
+    addExpenseTitle:'Add Expense',editExpenseTitle:'Edit Expense',
+    amount:'Amount',description:'Description',whatsFor:"What's this for?",
+    paidBy:'Paid by',multiplePayers:'Multiple Payers',
+    splitMethod:'Split Method',participants:'Participants',
+    equal:'Equal',customAmt:'Custom $',byPct:'By %',multiPayer:'Multi-Pay',
+    perPerson:'Per person',assignedTotal:'Assigned / Total',totalPct:'Total %',
+    addExpenseBtn:'Add Expense ✓',saveChangesBtn:'Save Changes ✓',
+    expenseAdded:'Expense added ✓',expenseUpdated:'Expense updated ✓',
+    expenseRemoved:'Expense removed',chooseEmoji:'Choose Emoji',
+    payerAmount:'Amount paid',totalPaid:'Total paid',totalBill:'Total bill',
+    summaryTitle:'Summary',totalSpent:'Total Spent',
+    individualBalances:'Individual Balances',getsBack:'gets back',owes:'owes',
+    settlementPlan:'Settlement Plan',minTransfers:'Minimum transfers to clear all debts',
+    allSettled:'All settled up!',markAllSettled:'Mark All Settled 🎉',
+    expDetailTitle:'Expense Breakdown',payer:'Payer',share:'Share',owedAmt:'Owes',
+    installTitle:'Installments',newInstallPlan:'New Installment Plan',
+    itemNamePh:'Item name (e.g. Laptop, Sofa)',totalPrice:'Total Price',
+    monthsLabel:'Months / Cycles',cycleType:'Cycle',monthly:'Monthly',weekly:'Weekly',
+    addPlan:'Add Plan',noInstallYet:'No installment plans yet',
+    monthsLeft:'cycles left',monthlyTotal:'Per cycle (total)',perPersonMo:'Per person/cycle',
+    eachPaysTotal:'Each pays total',planAdded:'Plan added ✓',planRemoved:'Plan removed',
+    fillTitleAmt:'Please fill in title and amount',
+    complete:'✅ Complete!',markPaid:'+ Mark Paid',remaining:'remaining',
+    billCyclesTitle:'Bill Cycles',newCycle:'New Recurring Bill',
+    cycleNamePh:'Bill name (e.g. Rent, Netflix)',cycleAmt:'Amount / cycle',
+    cycleFreq:'Frequency',cycleStart:'Start Date',cycleEnd:'End Date (optional)',
+    addCycle:'Add Recurring Bill',noCycles:'No recurring bills yet',
+    nextDue:'Next due',overdue:'Overdue!',upcoming:'Upcoming',
+    paid:'Paid',unpaid:'Unpaid',markCyclePaid:'Mark Paid',
+    checklistTitle:'Payment Checklist',
+    paid3:'Paid',unpaid2:'Unpaid',all:'All',
+    noChecklist:'No items yet. Add expenses or bill cycles first.',
+    quickSplit:'Quick Split ⚡',quickSplitDesc:'Instant calculator',
+    billTotal:'Bill Total',splitAmong:'people',eachPays:'Each pays',
+    activityTitle:'Activity',recentExpenses:'All recent expenses',noExpenses:'No expenses yet',
+    profileTitle:'You',splitEasyUser:'SplitEasy user',
+    totalGroups:'Groups',totalExpenses:'Expenses',totalSpentP:'Total Spent',
+    features:'Features',
+    f1:'✅ Equal / Custom / % splits',f2:'✅ Multi-payer support',
+    f3:'✅ Smart debt settlement',f4:'✅ Installment tracker',
+    f5:'✅ Bill cycles / Recurring',f6:'✅ Payment checklist',
+    f7:'✅ Expense breakdown view',f8:'✅ Data saved locally',
+    clearAllData:'Clear All Data',clearAllQ:'Clear All Data?',
+    clearAllDesc:'All groups and expenses will be deleted permanently.',
+    yesClear:'Yes, Clear Everything',
+    groupUpdated:'Group updated ✓',groupCreated:'created! 🎉',
+    memberRemoved:'Member removed (save to confirm)',
+    groupDeleted:'Group deleted',allCleared:'All data cleared',
+    allSettledToast:'All settled! 🎉',ownerLabel:'You (owner)',youLabel:'You',
+    // Monthly Summary
+    monthlySummary:'Monthly Summary',monthlyOverview:'Monthly Overview',
+    thisMonth:'This Month',totalMonthly:'Monthly Total',
+    recurringBills:'Recurring Bills',installmentsDue:'Installments Due',
+    oneTimeExp:'One-time Expenses',grandTotal:'Grand Total',
+    perPersonTotal:'Per person this month',
+    noMonthlyData:'No monthly data yet',monthOf:'Month of',
+    // I Owe / I Am Owed Dashboard
+    ioweDashboard:'Balances',iOwe:'I Owe',iAmOwed:'Owed to Me',
+    acrossGroups:'across all groups',noDebts:'No outstanding debts 🎉',
+    // Settle with Person
+    settleWith:'Settle with',settleAmount:'Amount',recordPayment:'Record Payment',
+    paymentRecorded:'Payment recorded ✓',settleNote:'Optional note',
+    // Category Filter
+    allCats:'All',catFood:'Food',catTransport:'Transport',catRent:'Rent',
+    catFun:'Fun',catHealth:'Health',catOther:'Other',filterBy:'Filter',
+    // Monthly Chart
+    spendingChart:'Spending Chart',last6months:'Last 6 months',
+    noChartData:'Add expenses to see spending trends',
+    // Notes on expense
+    addNote:'Add note…',noteLabel:'Note',noteSaved:'Note saved ✓',
+    // Reminder badge
+    hasDebt:'Unpaid',
+    f9:'✅ Monthly summary (bills + installments)',
+    f10:'✅ I Owe / Owed-to-Me dashboard',
+    f11:'✅ Settle with specific person',
+    f12:'✅ Expense notes',
+    f13:'✅ Category filter',
+    f14:'✅ Monthly spending chart',
+    // Sub-items
+    subItems:'Bill Items',addSubItem:'+ Add Item',itemName:'Item name',
+    itemPrice:'Price',itemConsumers:'Who had this?',removeItem:'Remove',
+    subItemMode:'Item Breakdown',subItemDesc:'Add individual items & who consumed each',
+    subItemTotal:'Items total',subItemMismatch:'⚠ Items total must equal bill amount',
+    noSubItems:'No items yet — tap "+ Add Item"',
+    simpleMode:'Simple Mode',detailMode:'Item Detail',
+  },
+  th:{
+    appName:'สปลิตอีซี่',goodDay:'สวัสดี 👋',netBalance:'ยอดสุทธิ',
+    youreOwed:'คุณได้รับเงินคืน',youOwe:'คุณค้างชำระ',groups:'กลุ่ม',newGroup:'+ ใหม่',
+    noGroupsYet:'ยังไม่มีกลุ่ม',noGroupsDesc:'สร้างกลุ่มเพื่อเริ่มแชร์ค่าใช้จ่าย',
+    createFirstGroup:'สร้างกลุ่มแรก',people:'คน',total:'รวม',
+    owedToYou:'คนอื่นค้างจ่ายคุณ',home:'หน้าหลัก',activity:'ประวัติ',profile:'โปรไฟล์',
+    newGroupTitle:'กลุ่มใหม่',groupIcon:'ไอคอนกลุ่ม',groupName:'ชื่อกลุ่ม',
+    groupNamePh:'เช่น ทริปบาหลี 2025',friends:'เพื่อน',
+    friendsNote:'(คุณถูกเพิ่มอัตโนมัติ)',addFriend:'+ เพิ่มเพื่อน',
+    createGroup:'สร้างกลุ่ม 🎉',editGroup:'แก้ไขกลุ่ม',icon:'ไอคอน',
+    members:'สมาชิก',addMember:'+ เพิ่มสมาชิก',saveChanges:'บันทึก ✓',
+    deleteGroup:'ลบกลุ่ม',deleteGroupQ:'ลบกลุ่มนี้?',
+    deleteGroupDesc:'ค่าใช้จ่ายทั้งหมดจะหายไป ไม่สามารถกู้คืนได้',
+    yesDelete:'ยืนยัน ลบ',cancel:'ยกเลิก',yourBalance:'ยอดของคุณ',
+    addExpense:'เพิ่มรายจ่าย',summary:'สรุป',installments:'ผ่อนชำระ',
+    expenseDetail:'รายละเอียด',billCycles:'บิลประจำ',checklist:'รายการจ่าย',
+    expenses:'รายจ่าย',items:'รายการ',edit:'แก้ไข',del:'ลบ',
+    addExpenseTitle:'เพิ่มรายจ่าย',editExpenseTitle:'แก้ไขรายจ่าย',
+    amount:'จำนวนเงิน',description:'รายละเอียด',whatsFor:'จ่ายเพื่ออะไร?',
+    paidBy:'ใครจ่าย',multiplePayers:'หลายคนจ่าย',
+    splitMethod:'วิธีหาร',participants:'ผู้ร่วม',
+    equal:'เท่ากัน',customAmt:'กำหนดเอง',byPct:'เปอร์เซ็นต์',multiPayer:'หลายคนจ่าย',
+    perPerson:'ต่อคน',assignedTotal:'กำหนด / รวม',totalPct:'รวม %',
+    addExpenseBtn:'เพิ่มรายจ่าย ✓',saveChangesBtn:'บันทึก ✓',
+    expenseAdded:'เพิ่มรายจ่ายแล้ว ✓',expenseUpdated:'อัปเดตแล้ว ✓',
+    expenseRemoved:'ลบรายจ่ายแล้ว',chooseEmoji:'เลือกอีโมจิ',
+    payerAmount:'จำนวนที่จ่าย',totalPaid:'รวมที่จ่าย',totalBill:'บิลรวม',
+    summaryTitle:'สรุป',totalSpent:'ยอดรวมทั้งหมด',
+    individualBalances:'ยอดแต่ละคน',getsBack:'ได้รับคืน',owes:'ค้างจ่าย',
+    settlementPlan:'แผนชำระ',minTransfers:'โอนน้อยที่สุดเพื่อชำระหนี้ทั้งหมด',
+    allSettled:'ชำระครบแล้ว!',markAllSettled:'บันทึกว่าชำระแล้ว 🎉',
+    expDetailTitle:'รายละเอียดรายจ่าย',payer:'ผู้จ่าย',share:'ส่วนแบ่ง',owedAmt:'ค้างจ่าย',
+    installTitle:'ผ่อนชำระ',newInstallPlan:'แผนผ่อนชำระใหม่',
+    itemNamePh:'ชื่อสินค้า (เช่น โน้ตบุ๊ก, โซฟา)',totalPrice:'ราคาทั้งหมด',
+    monthsLabel:'งวด / รอบ',cycleType:'รอบชำระ',monthly:'รายเดือน',weekly:'รายสัปดาห์',
+    addPlan:'เพิ่มแผน',noInstallYet:'ยังไม่มีแผนผ่อนชำระ',
+    monthsLeft:'งวดคงเหลือ',monthlyTotal:'ต่อรอบ (รวม)',perPersonMo:'ต่อคน/รอบ',
+    eachPaysTotal:'แต่ละคนจ่ายรวม',planAdded:'เพิ่มแผนแล้ว ✓',planRemoved:'ลบแผนแล้ว',
+    fillTitleAmt:'กรุณากรอกชื่อและจำนวนเงิน',
+    complete:'✅ ครบแล้ว!',markPaid:'+ บันทึกจ่ายแล้ว',remaining:'คงเหลือ',
+    billCyclesTitle:'บิลประจำ',newCycle:'บิลประจำใหม่',
+    cycleNamePh:'ชื่อบิล (เช่น ค่าเช่า, Netflix)',cycleAmt:'จำนวนต่อรอบ',
+    cycleFreq:'ความถี่',cycleStart:'วันเริ่ม',cycleEnd:'วันสิ้นสุด (ไม่บังคับ)',
+    addCycle:'เพิ่มบิลประจำ',noCycles:'ยังไม่มีบิลประจำ',
+    nextDue:'ครบกำหนดถัดไป',overdue:'เกินกำหนด!',upcoming:'กำลังจะถึง',
+    paid:'จ่ายแล้ว',unpaid:'ยังไม่จ่าย',markCyclePaid:'บันทึกจ่ายแล้ว',
+    checklistTitle:'รายการชำระ',
+    paid3:'จ่ายแล้ว',unpaid2:'ยังไม่จ่าย',all:'ทั้งหมด',
+    noChecklist:'ยังไม่มีรายการ เพิ่มรายจ่ายหรือบิลประจำก่อน',
+    quickSplit:'แบ่งเร็ว ⚡',quickSplitDesc:'คำนวณทันที',
+    billTotal:'ยอดบิล',splitAmong:'คน',eachPays:'แต่ละคนจ่าย',
+    activityTitle:'ประวัติ',recentExpenses:'รายจ่ายทั้งหมด',noExpenses:'ยังไม่มีรายจ่าย',
+    profileTitle:'คุณ',splitEasyUser:'ผู้ใช้ SplitEasy',
+    totalGroups:'กลุ่ม',totalExpenses:'รายจ่าย',totalSpentP:'ยอดรวม',
+    features:'ฟีเจอร์',
+    f1:'✅ หารเท่า / กำหนดเอง / เปอร์เซ็นต์',f2:'✅ หลายคนจ่ายพร้อมกัน',
+    f3:'✅ คำนวณหนี้อัตโนมัติ',f4:'✅ ติดตามการผ่อนชำระ',
+    f5:'✅ บิลประจำ/รอบชำระ',f6:'✅ รายการตรวจสอบการจ่าย',
+    f7:'✅ รายละเอียดค่าใช้จ่าย',f8:'✅ บันทึกข้อมูลในเครื่อง',
+    clearAllData:'ลบข้อมูลทั้งหมด',clearAllQ:'ลบข้อมูลทั้งหมด?',
+    clearAllDesc:'กลุ่มและรายจ่ายทั้งหมดจะถูกลบถาวร',
+    yesClear:'ยืนยัน ลบทั้งหมด',
+    groupUpdated:'อัปเดตกลุ่มแล้ว ✓',groupCreated:'สร้างแล้ว! 🎉',
+    memberRemoved:'ลบสมาชิกแล้ว (กดบันทึกเพื่อยืนยัน)',
+    groupDeleted:'ลบกลุ่มแล้ว',allCleared:'ลบข้อมูลทั้งหมดแล้ว',
+    allSettledToast:'ชำระครบแล้ว! 🎉',ownerLabel:'คุณ (เจ้าของ)',youLabel:'คุณ',
+    // Monthly Summary
+    monthlySummary:'สรุปรายเดือน',monthlyOverview:'ภาพรวมรายเดือน',
+    thisMonth:'เดือนนี้',totalMonthly:'ยอดรายเดือน',
+    recurringBills:'บิลประจำ',installmentsDue:'ผ่อนชำระ',
+    oneTimeExp:'รายจ่ายครั้งเดียว',grandTotal:'ยอดรวมทั้งหมด',
+    perPersonTotal:'ต่อคนเดือนนี้',
+    noMonthlyData:'ยังไม่มีข้อมูลรายเดือน',monthOf:'เดือน',
+    // I Owe / I Am Owed Dashboard
+    ioweDashboard:'ยอดคงค้าง',iOwe:'ฉันค้างจ่าย',iAmOwed:'คนอื่นค้างจ่ายฉัน',
+    acrossGroups:'ทุกกลุ่ม',noDebts:'ไม่มียอดค้างชำระ 🎉',
+    // Settle with Person
+    settleWith:'ชำระให้',settleAmount:'จำนวนเงิน',recordPayment:'บันทึกการชำระ',
+    paymentRecorded:'บันทึกแล้ว ✓',settleNote:'หมายเหตุ (ไม่บังคับ)',
+    // Category Filter
+    allCats:'ทั้งหมด',catFood:'อาหาร',catTransport:'เดินทาง',catRent:'ค่าเช่า',
+    catFun:'บันเทิง',catHealth:'สุขภาพ',catOther:'อื่นๆ',filterBy:'กรอง',
+    // Monthly Chart
+    spendingChart:'กราฟค่าใช้จ่าย',last6months:'6 เดือนล่าสุด',
+    noChartData:'เพิ่มรายจ่ายเพื่อดูแนวโน้ม',
+    // Notes
+    addNote:'เพิ่มหมายเหตุ…',noteLabel:'หมายเหตุ',noteSaved:'บันทึกแล้ว ✓',
+    // Reminder badge
+    hasDebt:'ค้างชำระ',
+    f9:'✅ สรุปรายเดือน (บิล + ผ่อนชำระ)',
+    f10:'✅ Dashboard ฉันค้างจ่าย/คนอื่นค้างจ่ายฉัน',
+    f11:'✅ ชำระให้คนเดียวได้',
+    f12:'✅ หมายเหตุในรายจ่าย',
+    f13:'✅ กรองตาม Category',
+    f14:'✅ กราฟค่าใช้จ่ายรายเดือน',
+    // Sub-items
+    subItems:'รายการย่อย',addSubItem:'+ เพิ่มรายการ',itemName:'ชื่อรายการ',
+    itemPrice:'ราคา',itemConsumers:'ใครได้บ้าง?',removeItem:'ลบ',
+    subItemMode:'แยกรายการ',subItemDesc:'เพิ่มรายการย่อยและระบุว่าใครได้อะไร',
+    subItemTotal:'รวมรายการ',subItemMismatch:'⚠ ยอดรวมรายการต้องเท่ากับบิลรวม',
+    noSubItems:'ยังไม่มีรายการ — กด "+ เพิ่มรายการ"',
+    simpleMode:'แบบเร็ว',detailMode:'แยกรายการ',
+  }
+};
+function t(k){return(TR[S.lang]||TR.en)[k]||k;}
+
+/* ═══════════════ CONSTANTS ═══════════════════════════════ */
+const AVC=['av-0','av-1','av-2','av-3','av-4','av-5','av-6','av-7'];
+const GE=['👥','🍕','✈️','🏠','🎉','🎮','🏋️','🚗','🎸','🌴','⛺','🎓'];
+const EE=[
+  {e:'🍽️',l:'Food'},{e:'🍕',l:'Pizza'},{e:'🍺',l:'Drinks'},
+  {e:'🛒',l:'Grocery'},{e:'🚗',l:'Transport'},{e:'🏠',l:'Rent'},
+  {e:'✈️',l:'Travel'},{e:'🎬',l:'Fun'},{e:'💊',l:'Health'},
+  {e:'🎁',l:'Gift'},{e:'⚡',l:'Utilities'},{e:'📦',l:'Other'},
+];
+
+/* ═══════════════ STATE ═══════════════════════════════════ */
+let S={
+  screen:'home',activeNav:'home',
+  selectedGroupId:null,editExpenseId:null,
+  lang:localStorage.getItem('se_lang')||'en',
+  clFilter:'all',
+  catFilter:'all',
+  groups:[],
+};
+
+/* ── Category map (emoji → category key) ─── */
+const CAT_MAP={'🍽️':'food','🍕':'food','🍺':'food','🛒':'food','🚗':'transport','✈️':'transport','🏠':'rent','🎬':'fun','🎁':'fun','🎮':'fun','💊':'health','⚡':'other','📦':'other'};
+const CAT_KEYS=['all','food','transport','rent','fun','health','other'];
+function catLabel(k){return t({all:'allCats',food:'catFood',transport:'catTransport',rent:'catRent',fun:'catFun',health:'catHealth',other:'catOther'}[k]||'allCats');}
+function catEmoji(k){return{all:'🔍',food:'🍽️',transport:'🚗',rent:'🏠',fun:'🎬',health:'💊',other:'📦'}[k]||'📦';}
+
+/* ═══════════════ STORAGE ═════════════════════════════════ */
+function save(){try{localStorage.setItem('se_v3',JSON.stringify(S.groups));}catch(e){}}
+function load(){
+  try{
+    const r=localStorage.getItem('se_v3');
+    if(r){S.groups=JSON.parse(r);return;}
+  }catch(e){}
+  // seed
+  const u1={id:'u1',name:'You',isMe:true},u2={id:'u2',name:'Alex'},
+        u3={id:'u3',name:'Mia'},u4={id:'u4',name:'Sam'};
+  S.groups=[{
+    id:'g1',name:'Bali Trip',emoji:'✈️',
+    members:[u1,u2,u3,u4],installments:[],cycles:[],checkItems:[],
+    expenses:[
+      {id:'e1',title:'Hotel',amount:2400,emoji:'🏠',paidById:'u1',payers:[{id:'u1',amt:2400}],splitType:'equal',participants:['u1','u2','u3','u4'],date:new Date(Date.now()-86400000*3).toISOString()},
+      {id:'e2',title:'Dinner',amount:700,emoji:'🍽️',paidById:'u2',payers:[{id:'u2',amt:100},{id:'u1',amt:600}],splitType:'multipayer',participants:['u1','u2','u3','u4'],date:new Date(Date.now()-86400000*2).toISOString()},
+      {id:'e3',title:'Scooter',amount:600,emoji:'🚗',paidById:'u3',payers:[{id:'u3',amt:600}],splitType:'equal',participants:['u1','u2','u3'],date:new Date(Date.now()-86400000).toISOString()},
+    ],
+  }];
+}
+
+/* ═══════════════ HELPERS ═════════════════════════════════ */
+const uid=()=>Math.random().toString(36).slice(2,9);
+const fmt=n=>'฿'+(+n||0).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const avC=i=>AVC[i%AVC.length];
+const GN=(g,id)=>{const m=g.members.find(m=>m.id===id);return m?.isMe?t('youLabel'):m?.name||'?';};
+const GI=(g,id)=>g.members.findIndex(m=>m.id===id);
+function getG(id){return S.groups.find(g=>g.id===id);}
+function updG(g){S.groups=S.groups.map(x=>x.id===g.id?g:x);save();}
+const todayStr=()=>new Date().toISOString().slice(0,10);
+
+/* ── Balance computation (multi-payer aware) ─────────── */
+/* ── Shared share-computation (single source of truth) ── */
+/* ── Two-map accounting (single source of truth) ────────
+   paidMap[userId] = total actually paid
+   owedMap[userId] = total actually consumed
+   balance = paidMap - owedMap
+   Never divides by member count for subitem expenses.
+────────────────────────────────────────────────────── */
+function calcBal(members, expenses){
+  const paid={}, owed={};
+  members.forEach(m=>{ paid[m.id]=0; owed[m.id]=0; });
+
+  expenses.forEach(exp=>{
+    const amt=+(+exp.amount).toFixed(2)||0;
+    if(!amt) return;
+
+    /* ── STEP 1: Credit payers ── */
+    const payers = exp.payers||[{id:exp.paidById, amt}];
+    payers.forEach(p=>{
+      const v=+(+p.amt).toFixed(2);
+      paid[p.id]=(paid[p.id]||0)+v;
+    });
+
+    /* ── STEP 2: Debit consumers — never assume equal ── */
+    if(exp.subItems && exp.subItems.length>0){
+      /* subitem mode: each item has explicit consumers */
+      exp.subItems.forEach(item=>{
+        const c=item.consumers||[];
+        if(!c.length) return;
+        const sh=+((+item.price||0)/c.length).toFixed(2);
+        c.forEach(id=>{ owed[id]=(owed[id]||0)+sh; });
+      });
+
+    } else if(exp.splitType==='custom'){
+      const ids=exp.participants||members.map(m=>m.id);
+      ids.forEach(id=>{
+        const v=+(+(exp.customAmounts?.[id])||0).toFixed(2);
+        owed[id]=(owed[id]||0)+v;
+      });
+
+    } else if(exp.splitType==='percentage'){
+      const ids=exp.participants||members.map(m=>m.id);
+      ids.forEach(id=>{
+        const v=+(amt*((exp.percentages?.[id]||0)/100)).toFixed(2);
+        owed[id]=(owed[id]||0)+v;
+      });
+
+    } else {
+      /* equal / multipayer — only valid non-subitem modes */
+      const ids=exp.participants||members.map(m=>m.id);
+      const sh=+(amt/ids.length).toFixed(2);
+      ids.forEach(id=>{ owed[id]=(owed[id]||0)+sh; });
+    }
+  });
+
+  /* ── STEP 3: balance = paid - owed ── */
+  const b={};
+  members.forEach(m=>{
+    let v=+((paid[m.id]||0)-(owed[m.id]||0)).toFixed(2);
+    if(Object.is(v,-0)) v=0; // prevent -0
+    b[m.id]=v;
+  });
+  return b;
+}
+
+/* ── getShares: used ONLY for display breakdown, NOT for calcBal ── */
+function getShares(exp, members){
+  const shares={};
+  const amt=+exp.amount||0;
+  if(exp.subItems && exp.subItems.length>0){
+    exp.subItems.forEach(item=>{
+      const c=item.consumers||[]; if(!c.length) return;
+      const sh=+((+item.price||0)/c.length).toFixed(2);
+      c.forEach(id=>{ shares[id]=+((shares[id]||0)+sh).toFixed(2); });
+    });
+  } else {
+    const ids=exp.participants||(members||[]).map(m=>m.id);
+    if(exp.splitType==='custom'){
+      ids.forEach(id=>{ shares[id]=+(+(exp.customAmounts?.[id])||0).toFixed(2); });
+    } else if(exp.splitType==='percentage'){
+      ids.forEach(id=>{ shares[id]=+(amt*((exp.percentages?.[id]||0)/100)).toFixed(2); });
+    } else {
+      const sh=+(amt/ids.length).toFixed(2);
+      ids.forEach(id=>{ shares[id]=sh; });
+    }
+  }
+  return shares;
+}
+
+/* ── Greedy debt simplification ─────────────────────── */
+function simplify(bals){
+  const pos=[],neg=[];
+  Object.entries(bals).forEach(([id,b])=>{
+    if(b>0.5)pos.push({id,b});else if(b<-0.5)neg.push({id,b:-b});
+  });
+  const tx=[];let pi=0,ni=0;
+  while(pi<pos.length&&ni<neg.length){
+    const p=pos[pi],n=neg[ni],a=Math.min(p.b,n.b);
+    tx.push({from:n.id,to:p.id,amount:a});
+    p.b-=a;n.b-=a;if(p.b<0.5)pi++;if(n.b<0.5)ni++;
+  }
+  return tx;
+}
+
+/* ═══════════════ TOAST ═══════════════════════════════════ */
+let _tt;
+function toast(m){
+  const el=document.getElementById('toast');
+  el.textContent=m;el.classList.remove('hide');
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.add('hide'),2300);
+}
+
+/* ═══════════════ NAVIGATE ════════════════════════════════ */
+function go(sc,gid){
+  S.screen=sc;
+  if(gid!==undefined)S.selectedGroupId=gid;
+  render();
+}
+
+/* ═══════════════ LANG ════════════════════════════════════ */
+function setLang(l){S.lang=l;localStorage.setItem('se_lang',l);render();}
+function LT(){
+  return `<div class="lang-toggle">
+    <button class="lang-btn${S.lang==='en'?' on':''}" onclick="setLang('en')">EN</button>
+    <button class="lang-btn${S.lang==='th'?' on':''}" onclick="setLang('th')">TH</button>
+  </div>`;
+}
+
+/* ═══════════════ BOTTOM NAV ══════════════════════════════ */
+function renderNav(){
+  const noNav=['create-group','add-expense','edit-expense','edit-group'];
+  const nav=document.getElementById('bottom-nav');
+  if(noNav.includes(S.screen)){nav.classList.add('hidden');return;}
+  nav.classList.remove('hidden');
+  // Compute total I-owe for badge
+  let totalOwe=0;
+  S.groups.forEach(g=>{
+    const b=calcBal(g.members,g.expenses);
+    const mb=b[g.members[0]?.id]||0;
+    if(mb<-0.5)totalOwe+=Math.abs(mb);
+  });
+  const oweBadge=totalOwe>0.5?`<span style="position:absolute;top:2px;right:8px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:100px">${Math.round(totalOwe/1000)>0?Math.round(totalOwe/1000)+'k':'!'}</span>`:'';
+  const items=[
+    {k:'home',i:'🏠',l:t('home'),badge:''},
+    {k:'iowe',i:'💰',l:t('ioweDashboard'),badge:oweBadge},
+    {k:'activity',i:'📋',l:t('activity'),badge:''},
+    {k:'profile',i:'👤',l:t('profile'),badge:''},
+  ];
+  nav.innerHTML=items.map(({k,i,l,badge})=>`
+    <button class="nav-btn${S.activeNav===k?' on':''}" onclick="navTo('${k}')" style="position:relative">
+      <span class="ni">${i}</span>${badge}<span class="nl">${l}</span>
+    </button>`).join('');
+}
+function navTo(k){
+  S.activeNav=k;
+  if(k==='home'){S.screen='home';S.selectedGroupId=null;}
+  else if(k==='iowe'){S.screen='iowe';}
+  else S.screen=k;
+  render();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════════════════════ */
+function scrHome(){
+  const netOwed=S.groups.reduce((acc,g)=>{
+    const b=calcBal(g.members,g.expenses);return acc+(b[g.members[0]?.id]||0);
+  },0);
+
+  const cards=S.groups.length===0
+    ?`<div class="empty"><div class="ei">🤝</div>
+       <p class="ff-s fw7" style="font-size:20px;margin-bottom:8px">${t('noGroupsYet')}</p>
+       <p style="margin-bottom:20px">${t('noGroupsDesc')}</p>
+       <button class="btn btn-primary btn-sm" onclick="go('create-group')">${t('createFirstGroup')}</button>
+      </div>`
+    :S.groups.map(g=>{
+        const bals=calcBal(g.members,g.expenses);
+        const mb=bals[g.members[0]?.id]||0;
+        const tot=g.expenses.reduce((a,e)=>a+(+e.amount||0),0);
+        const col=mb>=0?'var(--sage)':'var(--danger)';
+        const hasDebt=mb<-0.5;
+        return `<div class="row" onclick="S.catFilter='all';go('group','${g.id}')">
+          <div style="width:48px;height:48px;border-radius:16px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${g.emoji}</div>
+          <div class="flex1">
+            <div style="display:flex;align-items:center">
+              <p class="fw7" style="font-size:15px">${esc(g.name)}</p>
+              ${hasDebt?`<span class="debt-badge">${t('hasDebt')}</span>`:''}
+            </div>
+            <p class="txt-muted" style="font-size:12px;margin-top:2px">${g.members.length} ${t('people')} · ${fmt(tot)}</p>
+          </div>
+          <div class="text-right">
+            <p class="ff-s fw7" style="font-size:17px;color:${col}">${mb>=0?'+':''}${fmt(mb)}</p>
+            <p class="txt-muted" style="font-size:11px">${mb>=0?t('owedToYou'):t('youOwe')}</p>
+          </div>
+        </div>`;
+      }).join('');
+
+  return `<div class="screen">
+    <div class="hero">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <p style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500">${t('goodDay')}</p>${LT()}
+      </div>
+      <h1 class="ff-s" style="color:#fff;font-size:32px;font-weight:700;margin-bottom:22px">Split<span style="color:var(--accent)">Easy</span></h1>
+      <div class="glass">
+        <p style="color:rgba(255,255,255,.55);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">${t('netBalance')}</p>
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <span class="fs-big" style="color:${netOwed>=0?'var(--sage)':'var(--danger)'}">${netOwed>=0?'+':'−'}${fmt(Math.abs(netOwed))}</span>
+          <span style="color:rgba(255,255,255,.45);font-size:13px">${netOwed>=0?t('youreOwed'):t('youOwe')}</span>
+        </div>
+      </div>
+    </div>
+    <div class="p20">
+      <!-- Quick Split -->
+      <div class="card mb12" style="background:linear-gradient(135deg,var(--blue-lt),#fff)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <p class="fw7" style="font-size:15px">${t('quickSplit')}</p>
+          <span style="font-size:11px;color:var(--blue);font-weight:600">${t('quickSplitDesc')}</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="input flex1" type="number" inputmode="decimal" id="qs-a" placeholder="${t('billTotal')}" style="padding:10px 12px" oninput="calcQS()"/>
+          <span class="txt-muted" style="font-size:18px">÷</span>
+          <input class="input" type="number" inputmode="numeric" id="qs-p" value="2" style="width:64px;padding:10px;text-align:center" oninput="calcQS()"/>
+          <span class="txt-muted" style="font-size:13px">${t('splitAmong')}</span>
+        </div>
+        <div id="qs-r" class="hidden" style="background:var(--blue-lt);border-radius:12px;padding:12px 14px;margin-top:10px">
+          <p style="font-size:12px;color:var(--blue);font-weight:700;margin-bottom:2px">${t('eachPays')}</p>
+          <p class="ff-s fw7 txt-blue" style="font-size:30px" id="qs-v"></p>
+        </div>
+      </div>
+      <div class="sec-hdr"><h3>${t('groups')}</h3>
+        <button class="btn btn-ghost btn-sm" onclick="go('create-group')">${t('newGroup')}</button>
+      </div>
+      ${cards}
+    </div>
+  </div>`;
+}
+function calcQS(){
+  const a=+document.getElementById('qs-a')?.value||0,p=+document.getElementById('qs-p')?.value||1;
+  const r=document.getElementById('qs-r'),v=document.getElementById('qs-v');
+  if(a>0&&p>0){r?.classList.remove('hidden');if(v)v.textContent=fmt(a/p);}
+  else r?.classList.add('hidden');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CREATE / EDIT GROUP
+═══════════════════════════════════════════════════════════ */
+function scrCreateGroup(){
+  return `<div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('home')">←</button>
+      <h1 class="ff-s" style="font-size:26px;font-weight:700">${t('newGroupTitle')}</h1>
+    </div>
+    <div class="px16 gap-col">
+      <div class="card"><p class="lbl">${t('groupIcon')}</p>
+        <div class="emoji-grid" id="ge-grid">${GE.map((e,i)=>`<button class="emoji-btn${i===0?' on':''}" data-e="${e}" onclick="pickGE(this)">${e}</button>`).join('')}</div>
+      </div>
+      <div class="card"><p class="lbl">${t('groupName')}</p>
+        <input class="input" id="gn" placeholder="${t('groupNamePh')}" oninput="checkCG()"/>
+      </div>
+      <div class="card gap-col">
+        <p class="lbl">${t('friends')} <span class="txt-muted" style="font-weight:400;text-transform:none;font-size:12px">${t('friendsNote')}</span></p>
+        <div id="ml"></div>
+        <button class="btn btn-ghost" onclick="addMF()">${t('addFriend')}</button>
+      </div>
+      <button class="btn btn-primary" id="cg-btn" disabled onclick="doCG()">${t('createGroup')}</button>
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+let _mc=1;
+function initCG(){_mc=1;document.getElementById('ml').innerHTML='';addMF();}
+function addMF(){
+  _mc++;const id='mf-'+uid();const d=document.createElement('div');d.className='member-row';d.id=id;
+  d.innerHTML=`<span class="av av-sm ${avC(_mc)}" style="font-size:10px">M${_mc-1}</span>
+    <input class="input flex1" placeholder="${S.lang==='th'?'ชื่อเพื่อน':'Friend name'}" style="padding:10px 12px" oninput="checkCG()"/>
+    <button onclick="document.getElementById('${id}').remove();checkCG()" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>`;
+  document.getElementById('ml').appendChild(d);
+}
+function checkCG(){document.getElementById('cg-btn').disabled=!(document.getElementById('gn')?.value||'').trim();}
+function pickGE(b){document.querySelectorAll('#ge-grid .emoji-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+function doCG(){
+  const name=document.getElementById('gn').value.trim();
+  const emoji=document.querySelector('#ge-grid .emoji-btn.on')?.dataset.e||'👥';
+  if(!name)return;
+  const friends=[...document.querySelectorAll('#ml input')].map(i=>i.value.trim()).filter(Boolean).map(n=>({id:uid(),name:n}));
+  const g={id:uid(),name,emoji,members:[{id:uid(),name:'You',isMe:true},...friends],expenses:[],installments:[],cycles:[],checkItems:[]};
+  S.groups.push(g);save();toast(`"${name}" ${t('groupCreated')}`);go('group',g.id);
+}
+
+function scrEditGroup(){
+  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  const mh=g.members.map((m,i)=>`
+    <div class="member-row" id="em-${m.id}">
+      <span class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</span>
+      ${m.isMe?`<span class="flex1" style="font-size:14px;font-weight:600">${t('ownerLabel')}</span>`
+              :`<input class="input flex1" value="${esc(m.name)}" style="padding:10px 12px" data-mid="${m.id}"/>`}
+      ${m.isMe?'':`<button onclick="document.getElementById('em-${m.id}').remove();toast(t('memberRemoved'))" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>`}
+    </div>`).join('');
+  return `<div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <h1 class="ff-s" style="font-size:22px;font-weight:700">${t('editGroup')}</h1>
+    </div>
+    <div class="px16 gap-col">
+      <div class="card"><p class="lbl">${t('icon')}</p>
+        <div class="emoji-grid" id="eg-grid">${GE.map(e=>`<button class="emoji-btn${e===g.emoji?' on':''}" data-e="${e}" onclick="document.querySelectorAll('#eg-grid .emoji-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${e}</button>`).join('')}</div>
+      </div>
+      <div class="card"><p class="lbl">${t('groupName')}</p><input class="input" id="eg-n" value="${esc(g.name)}"/></div>
+      <div class="card gap-col"><p class="lbl">${t('members')}</p>
+        <div id="eg-m">${mh}</div>
+        <button class="btn btn-ghost" onclick="addEGM()">${t('addMember')}</button>
+      </div>
+      <button class="btn btn-primary" onclick="doEG('${g.id}')">${t('saveChanges')}</button>
+      <button class="btn btn-danger w-full" onclick="confDelG('${g.id}')">${t('deleteGroup')}</button>
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+function addEGM(){
+  const d=document.createElement('div');d.className='member-row';d.id='egm-'+uid();
+  d.innerHTML=`<span class="av av-sm av-1" style="font-size:10px">N</span>
+    <input class="input flex1" placeholder="${S.lang==='th'?'ชื่อสมาชิก':'Member name'}" style="padding:10px 12px" data-mid="new-${uid()}"/>
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>`;
+  document.getElementById('eg-m').appendChild(d);
+}
+function doEG(gid){
+  const g=getG(gid);
+  const name=document.getElementById('eg-n').value.trim()||g.name;
+  const emoji=document.querySelector('#eg-grid .emoji-btn.on')?.dataset.e||g.emoji;
+  const members=[];
+  document.querySelectorAll('#eg-m .member-row').forEach(row=>{
+    const inp=row.querySelector('input[data-mid]');
+    if(!inp){members.push(g.members.find(m=>m.isMe));return;}
+    const mid=inp.dataset.mid,val=inp.value.trim();if(!val)return;
+    if(mid.startsWith('new-'))members.push({id:uid(),name:val});
+    else{const ex=g.members.find(m=>m.id===mid);if(ex)members.push({...ex,name:val});}
+  });
+  updG({...g,name,emoji,members});toast(t('groupUpdated'));go('group',gid);
+}
+function confDelG(gid){
+  openSheet(`<p class="ff-s fw7" style="font-size:20px;margin-bottom:8px">${t('deleteGroupQ')}</p>
+    <p class="txt-muted" style="font-size:14px;margin-bottom:20px">${t('deleteGroupDesc')}</p>
+    <button class="btn btn-danger w-full" onclick="S.groups=S.groups.filter(g=>g.id!=='${gid}');save();closeSheet();toast(t('groupDeleted'));go('home')">${t('yesDelete')}</button>
+    <button class="btn btn-ghost mt8" onclick="closeSheet()">${t('cancel')}</button>`);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GROUP DETAIL
+═══════════════════════════════════════════════════════════ */
+function scrGroup(){
+  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  const bals=calcBal(g.members,g.expenses);
+  const myId=g.members[0]?.id,myBal=bals[myId]||0;
+  const col=myBal>=0?'var(--sage)':'var(--danger)';
+
+  const membRow=g.members.slice(0,6).map((m,i)=>`
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      <span style="color:rgba(255,255,255,.55);font-size:10px;font-weight:500">${m.isMe?t('youLabel'):m.name.split(' ')[0]}</span>
+    </div>`).join('');
+
+  const expList=g.expenses.length===0
+    ?`<div class="empty"><div class="ei">🧾</div><p>${S.lang==='th'?'ยังไม่มีรายจ่าย':'No expenses yet'}</p></div>`
+    :[...g.expenses].reverse().map(exp=>{
+        const payers=exp.payers||[{id:exp.paidById,amt:exp.amount}];
+        const pNames=payers.slice(0,2).map(p=>GN(g,p.id)).join(', ')+(payers.length>2?'…':'');
+        return `<div class="row">
+          <div style="width:44px;height:44px;border-radius:14px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0" onclick="openExpDetail('${g.id}','${exp.id}')">${exp.emoji}</div>
+          <div class="flex1" onclick="openExpDetail('${g.id}','${exp.id}')">
+            <p class="fw7" style="font-size:14px">${esc(exp.title)}</p>
+            <p class="txt-muted" style="font-size:12px;margin-top:2px">${pNames} · ${exp.splitType}</p>
+          </div>
+          <div class="text-right">
+            <p class="ff-s fw7" style="font-size:16px">${fmt(exp.amount)}</p>
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <button onclick="event.stopPropagation();S.editExpenseId='${exp.id}';go('edit-expense','${g.id}')" style="background:none;border:none;color:var(--accent);font-size:11px;cursor:pointer;font-weight:600">${t('edit')}</button>
+              <button onclick="event.stopPropagation();delExp('${g.id}','${exp.id}')" style="background:none;border:none;color:var(--danger);font-size:11px;cursor:pointer;font-weight:600">${t('del')}</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  const acts=[
+    {i:'➕',l:t('addExpense'),f:`go('add-expense','${g.id}')`},
+    {i:'📊',l:t('summary'),f:`go('summary','${g.id}')`},
+    {i:'📋',l:t('checklist'),f:`go('checklist','${g.id}')`},
+    {i:'🔄',l:t('billCycles'),f:`go('cycles','${g.id}')`},
+  ];
+
+  return `<div class="screen">
+    <div style="background:linear-gradient(135deg,#1A1A2E 0%,#252545 100%);padding:56px 20px 24px">
+      <div class="flex items-center gap12" style="margin-bottom:18px">
+        <button onclick="go('home')" style="background:rgba(255,255,255,.12);border:none;width:38px;height:38px;border-radius:12px;cursor:pointer;font-size:16px;color:#fff;display:flex;align-items:center;justify-content:center">←</button>
+        <span style="font-size:26px">${g.emoji}</span>
+        <div>
+          <h1 class="ff-s" style="color:#fff;font-size:21px;font-weight:700;line-height:1">${esc(g.name)}</h1>
+          <p style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">${g.members.length} ${t('members')}</p>
+        </div>
+        <button onclick="go('edit-group','${g.id}')" style="margin-left:auto;background:rgba(255,255,255,.1);border:none;border-radius:10px;padding:7px 12px;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;cursor:pointer">${t('edit')}</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:18px">${membRow}</div>
+      <div class="glass" style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:rgba(255,255,255,.6);font-size:13px">${t('yourBalance')}</span>
+        <span class="ff-s fw7" style="font-size:22px;color:${col}">${myBal>=0?'+':'−'}${fmt(Math.abs(myBal))}</span>
+      </div>
+    </div>
+    <div class="p20">
+      <div class="grid4" style="margin-bottom:18px">
+        ${acts.map(({i,l,f})=>`<button onclick="${f}" style="background:var(--card);border:none;border-radius:16px;padding:12px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;box-shadow:0 2px 10px rgba(26,26,46,.06);transition:transform .12s" ontouchstart="this.style.transform='scale(.93)'" ontouchend="this.style.transform=''" onmousedown="this.style.transform='scale(.93)'" onmouseup="this.style.transform=''">
+          <span style="font-size:20px">${i}</span>
+          <span style="font-size:10px;font-weight:600;color:var(--muted);text-align:center;line-height:1.3">${l}</span>
+        </button>`).join('')}
+      </div>
+      <div class="sec-hdr"><h3>${t('expenses')}</h3><span class="txt-muted" style="font-size:13px">${g.expenses.length} ${t('items')}</span></div>
+      ${expList}
+    </div>
+  </div>`;
+}
+function delExp(gid,eid){const g=getG(gid);updG({...g,expenses:g.expenses.filter(e=>e.id!==eid)});toast(t('expenseRemoved'));render();}
+
+/* ── Add / Edit Expense ──────────────────────────── */
+function scrAddExp(editId){
+  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  const isEdit=!!editId,exp=isEdit?g.expenses.find(e=>e.id===editId):null;
+  const dEmoji=exp?.emoji||'🍽️',dSplit=exp?.splitType||'equal';
+  const hasSubItems=exp?.subItems&&exp.subItems.length>0;
+  const exPayers=exp?.payers||[{id:g.members[0].id,amt:''}];
+
+  const mRows=g.members.map((m,i)=>{
+    const inc=!exp||(exp.participants||g.members.map(x=>x.id)).includes(m.id);
+    return `<div class="member-row" id="pr-${m.id}">
+      <div class="chk${inc?' on':''}" id="chk-${m.id}" onclick="togPart('${m.id}')">✓</div>
+      <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      <span class="flex1" style="font-size:14px;font-weight:500">${m.isMe?t('youLabel'):esc(m.name)}</span>
+      <span id="eq-${m.id}" class="${dSplit==='equal'&&!hasSubItems?'':'hidden'}" style="font-family:'Fraunces',serif;font-weight:700;color:var(--accent);font-size:13px"></span>
+      <input type="number" class="input ${dSplit==='custom'&&!hasSubItems?'':'hidden'}" id="ca-${m.id}" placeholder="0" value="${exp?.customAmounts?.[m.id]||''}" style="width:82px;padding:7px 10px;font-size:14px;text-align:right" oninput="updCustom()"/>
+      <div class="${dSplit==='percentage'&&!hasSubItems?'flex items-center gap8':'hidden'}" id="pw-${m.id}">
+        <input type="number" class="input" id="pct-${m.id}" placeholder="0" value="${exp?.percentages?.[m.id]||''}" style="width:58px;padding:7px 8px;font-size:14px;text-align:right" oninput="updPct()"/>
+        <span class="txt-muted" style="font-size:13px">%</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  const mpRows=g.members.map((m,i)=>{
+    const pp=exPayers.find(p=>p.id===m.id);
+    return `<div class="member-row">
+      <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      <span class="flex1" style="font-size:14px;font-weight:500">${m.isMe?t('youLabel'):esc(m.name)}</span>
+      <input type="number" class="input" id="mp-${m.id}" placeholder="0" value="${pp&&exp?.splitType==='multipayer'?pp.amt:''}" style="width:100px;padding:7px 10px;font-size:14px;text-align:right" oninput="updMP()"/>
+    </div>`;
+  }).join('');
+
+  // Pre-populate _subItems when editing
+  _subItems = hasSubItems ? exp.subItems.map(s=>({...s,consumers:[...(s.consumers||[])]})) : [];
+  _expMode  = hasSubItems ? 'detail' : 'simple';
+
+  const siHTML=_subItems.map((item,idx)=>renderSIRow(g,item,idx)).join('');
+
+  return `<div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <h1 class="ff-s" style="font-size:22px;font-weight:700">${isEdit?t('editExpenseTitle'):t('addExpenseTitle')}</h1>
+    </div>
+    <div class="px16 gap-col">
+
+      <!-- Amount -->
+      <div class="card" style="text-align:center;padding:24px 20px">
+        <p class="lbl" style="margin-bottom:12px">${t('amount')}</p>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px">
+          <span class="ff-s" style="font-size:36px;color:var(--muted);font-weight:700">฿</span>
+          <input type="number" inputmode="decimal" placeholder="0" id="ea" value="${exp?exp.amount:''}"
+            style="font-family:'Fraunces',serif;font-size:46px;font-weight:700;border:none;background:transparent;outline:none;width:180px;text-align:center;color:var(--ink)" oninput="updSplit()"/>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="card">
+        <p class="lbl">${t('description')}</p>
+        <div style="display:flex;gap:10px">
+          <button id="ee-btn" onclick="openEP()" style="width:52px;height:52px;border-radius:14px;font-size:24px;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;flex-shrink:0" data-e="${dEmoji}">${dEmoji}</button>
+          <input class="input" id="et" placeholder="${t('whatsFor')}" value="${exp?esc(exp.title):''}" oninput="chkExpForm()"/>
+        </div>
+      </div>
+
+      <!-- Paid by (always shown) -->
+      <div class="card">
+        <p class="lbl">${t('paidBy')}</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="payer-btns">
+          ${g.members.map((m,i)=>{
+            const sel=exp?exp.paidById===m.id:i===0;
+            return `<button class="payer-btn${sel?' po':''}" data-id="${m.id}" onclick="selPayer('${m.id}')"
+              style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:100px;border:2px solid ${sel?'var(--accent)':'var(--border)'};background:${sel?'var(--accent-lt)':'white'};cursor:pointer;transition:all .15s">
+              <div class="av av-sm ${avC(i)}" style="width:28px;height:28px;font-size:10px">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+              <span style="font-size:13px;font-weight:600;color:${sel?'var(--accent)':'var(--ink)'}">${m.isMe?t('youLabel'):esc(m.name)}</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Split card -->
+      <div class="card gap-col">
+        <div>
+          <p class="lbl">${t('splitMethod')}</p>
+          <div class="pills" id="mode-pills">
+            <button class="pill${!hasSubItems?' on':''}" id="mode-simple" onclick="setMode('simple')">${t('simpleMode')}</button>
+            <button class="pill${hasSubItems?' on':''}" id="mode-detail" onclick="setMode('detail')">🧾 ${t('detailMode')}</button>
+          </div>
+        </div>
+
+        <!-- SIMPLE MODE -->
+        <div id="simple-mode-sec" class="${hasSubItems?'hidden':''}">
+          <div class="pills" id="split-pills" style="margin-bottom:12px">
+            <button class="pill${dSplit==='equal'?' on':''}" onclick="setST('equal')">${t('equal')}</button>
+            <button class="pill${dSplit==='custom'?' on':''}" onclick="setST('custom')">${t('customAmt')}</button>
+            <button class="pill${dSplit==='percentage'?' on':''}" onclick="setST('percentage')">${t('byPct')}</button>
+            <button class="pill${dSplit==='multipayer'?' on':''}" onclick="setST('multipayer')">${t('multiPayer')}</button>
+          </div>
+          <!-- Multi-payer amounts -->
+          <div id="mp-sec" class="${dSplit==='multipayer'?'':'hidden'}">
+            <p class="lbl">${t('multiplePayers')}</p>
+            <p class="txt-muted" style="font-size:12px;margin-bottom:10px">${dSplit==='multipayer'?'Enter how much each person paid':''}</p>
+            ${mpRows}
+            <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;margin-top:8px">
+              <span class="txt-muted" style="font-size:13px">${t('totalPaid')} / ${t('totalBill')}</span>
+              <span class="ff-s fw7" id="mp-tv" style="font-size:15px"></span>
+            </div>
+          </div>
+          <!-- Participants -->
+          <div>
+            <p class="lbl">${t('participants')}</p>
+            ${mRows}
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;margin-top:4px">
+            <span class="txt-muted" style="font-size:13px" id="sf-lbl">${t('perPerson')}</span>
+            <span class="ff-s fw7" id="sf-val" style="font-size:15px"></span>
+          </div>
+        </div>
+
+        <!-- ITEM DETAIL MODE -->
+        <div id="detail-mode-sec" class="${hasSubItems?'':'hidden'}">
+          <p class="txt-muted" style="font-size:12px;margin-bottom:12px">${t('subItemDesc')}</p>
+          <div id="si-list">${siHTML}</div>
+          <button class="btn btn-ghost" style="margin-top:8px" onclick="addSI()">${t('addSubItem')}</button>
+          <div id="si-total-bar" class="si-total-bar" style="margin-top:10px;${_subItems.length>0?'':'display:none'}">
+            <span style="font-size:13px;font-weight:600">${t('subItemTotal')}</span>
+            <span class="ff-s fw7" id="si-total-val" style="font-size:16px"></span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="se-btn" disabled onclick="doSaveExp(${isEdit?`'${editId}'`:'null'},'${g.id}')">
+        ${isEdit?t('saveChangesBtn'):t('addExpenseBtn')}
+      </button>
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+
+/* ── Sub-item state & helpers ───────────── */
+let _subItems=[];
+let _expMode='simple';
+
+function renderSIRow(g,item,idx){
+  const cBtns=g.members.map((m,mi)=>{
+    const on=(item.consumers||[]).includes(m.id);
+    return `<button class="si-consumer-btn${on?' on':''}" id="sic-${item.id}-${m.id}" onclick="togSIC('${item.id}','${m.id}')">
+      <span class="av av-sm ${avC(mi)}" style="width:20px;height:20px;font-size:9px">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</span>
+      ${m.isMe?t('youLabel'):m.name.split(' ')[0]}
+    </button>`;
+  }).join('');
+  return `<div class="sub-item-card" id="si-${item.id}">
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="input flex1" placeholder="${t('itemName')}" value="${esc(item.name||'')}"
+        style="padding:10px 12px;font-size:14px"
+        oninput="updSIName('${item.id}',this.value)"/>
+      <input type="number" inputmode="decimal" class="input" placeholder="0" value="${item.price||''}"
+        style="width:90px;padding:10px 12px;font-size:14px;font-family:'Fraunces',serif;font-weight:700;text-align:right"
+        oninput="updSIPrice('${item.id}',+this.value||0)"/>
+      <button onclick="removeSI('${item.id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">×</button>
+    </div>
+    <div>
+      <p style="font-size:11px;color:var(--muted);font-weight:600;margin:8px 0 4px">${t('itemConsumers')}</p>
+      <div class="si-consumer-row">${cBtns}</div>
+    </div>
+  </div>`;
+}
+
+function setMode(mode){
+  _expMode=mode;
+  document.getElementById('mode-simple')?.classList.toggle('on',mode==='simple');
+  document.getElementById('mode-detail')?.classList.toggle('on',mode==='detail');
+  document.getElementById('simple-mode-sec')?.classList.toggle('hidden',mode==='detail');
+  document.getElementById('detail-mode-sec')?.classList.toggle('hidden',mode==='simple');
+  if(mode==='simple')updSplit();else{updSITotal();}
+  chkExpForm();
+}
+
+function addSI(){
+  const g=getG(S.selectedGroupId);
+  const item={id:uid(),name:'',price:0,consumers:g.members.map(m=>m.id)};
+  _subItems.push(item);
+  const list=document.getElementById('si-list');
+  if(list){
+    const div=document.createElement('div');
+    div.innerHTML=renderSIRow(g,item,_subItems.length-1);
+    list.appendChild(div.firstElementChild);
+  }
+  updSITotal();
+}
+function removeSI(iid){
+  _subItems=_subItems.filter(s=>s.id!==iid);
+  document.getElementById('si-'+iid)?.remove();
+  updSITotal();chkExpForm();
+}
+function togSIC(iid,mid){
+  const item=_subItems.find(s=>s.id===iid);if(!item)return;
+  if(item.consumers.includes(mid))item.consumers=item.consumers.filter(c=>c!==mid);
+  else item.consumers.push(mid);
+  const btn=document.getElementById('sic-'+iid+'-'+mid);
+  if(btn)btn.classList.toggle('on',item.consumers.includes(mid));
+  updSITotal();chkExpForm();
+}
+function updSIName(iid,v){const s=_subItems.find(x=>x.id===iid);if(s)s.name=v;}
+function updSIPrice(iid,v){const s=_subItems.find(x=>x.id===iid);if(s){s.price=v;updSITotal();}}
+function updSITotal(){
+  const tot=_subItems.reduce((a,s)=>a+(+s.price||0),0);
+  const bar=document.getElementById('si-total-bar');
+  const val=document.getElementById('si-total-val');
+  const billAmt=+document.getElementById('ea')?.value||0;
+  if(bar)bar.style.display=_subItems.length>0?'flex':'none';
+  if(val){
+    const ok=billAmt===0||Math.abs(tot-billAmt)<0.5;
+    val.textContent=billAmt>0?`${fmt(tot)} / ${fmt(billAmt)}`:fmt(tot);
+    val.style.color=ok?'var(--sage)':'var(--danger)';
+    if(bar)bar.className='si-total-bar '+(ok?'si-total-ok':'si-total-err');
+  }
+  chkExpForm();
+}
+
+let _ST='equal';
+function initAE(){
+  _ST='equal';_expMode='simple';_subItems=[];
+  updSplit();chkExpForm();
+}
+function selPayer(mid){
+  document.querySelectorAll('.payer-btn').forEach(b=>{
+    const s=b.dataset.id===mid;
+    b.style.borderColor=s?'var(--accent)':'var(--border)';
+    b.style.background=s?'var(--accent-lt)':'white';
+    b.querySelector('span').style.color=s?'var(--accent)':'var(--ink)';
+    b.classList.toggle('po',s);
+  });
+}
+function togPart(mid){document.getElementById('chk-'+mid)?.classList.toggle('on');updSplit();}
+function getParts(){
+  const g=getG(S.selectedGroupId);
+  return g.members.filter(m=>document.getElementById('chk-'+m.id)?.classList.contains('on')).map(m=>m.id);
+}
+function setST(tp){
+  _ST=tp;
+  document.querySelectorAll('#split-pills .pill').forEach((p,i)=>p.classList.toggle('on',['equal','custom','percentage','multipayer'][i]===tp));
+  const g=getG(S.selectedGroupId);
+  g.members.forEach(m=>{
+    document.getElementById('eq-'+m.id)?.classList.toggle('hidden',tp!=='equal');
+    document.getElementById('ca-'+m.id)?.classList.toggle('hidden',tp!=='custom');
+    if(document.getElementById('pw-'+m.id))
+      document.getElementById('pw-'+m.id).className=tp==='percentage'?'flex items-center gap8':'hidden';
+  });
+  document.getElementById('mp-sec')?.classList.toggle('hidden',tp!=='multipayer');
+  const fl=document.getElementById('sf-lbl');
+  if(fl){
+    if(tp==='equal'||tp==='multipayer')fl.textContent=t('perPerson');
+    else if(tp==='custom')fl.textContent=t('assignedTotal');
+    else fl.textContent=t('totalPct');
+  }
+  updSplit();
+}
+function updSplit(){
+  if(_expMode==='detail'){updSITotal();return;}
+  const amt=+document.getElementById('ea')?.value||0,pts=getParts(),fv=document.getElementById('sf-val');
+  if(!fv)return;
+  if(_ST==='equal'||_ST==='multipayer'){
+    const sh=pts.length?amt/pts.length:0;
+    pts.forEach(id=>{const el=document.getElementById('eq-'+id);if(el)el.textContent=fmt(sh);});
+    const g=getG(S.selectedGroupId);
+    g.members.filter(m=>!pts.includes(m.id)).forEach(m=>{const el=document.getElementById('eq-'+m.id);if(el)el.textContent='';});
+    fv.textContent=fmt(sh);fv.style.color='var(--accent)';
+  } else if(_ST==='custom')updCustom();
+  else if(_ST==='percentage')updPct();
+  if(_ST==='multipayer')updMP();
+  chkExpForm();
+}
+function updCustom(){
+  const amt=+document.getElementById('ea')?.value||0,pts=getParts();let tot=0;
+  pts.forEach(id=>{tot+=+document.getElementById('ca-'+id)?.value||0;});
+  const ok=Math.abs(tot-amt)<0.5,fv=document.getElementById('sf-val');
+  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
+  chkExpForm();
+}
+function updPct(){
+  const pts=getParts();let tot=0;
+  pts.forEach(id=>{tot+=+document.getElementById('pct-'+id)?.value||0;});
+  const ok=Math.abs(tot-100)<0.5,fv=document.getElementById('sf-val');
+  if(fv){fv.textContent=`${tot.toFixed(0)}%`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
+  chkExpForm();
+}
+function updMP(){
+  const amt=+document.getElementById('ea')?.value||0;
+  const g=getG(S.selectedGroupId);let tot=0;
+  g.members.forEach(m=>{tot+=+document.getElementById('mp-'+m.id)?.value||0;});
+  const ok=Math.abs(tot-amt)<0.5,fv=document.getElementById('mp-tv');
+  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
+  chkExpForm();
+}
+function chkExpForm(){
+  const amt=+document.getElementById('ea')?.value||0;
+  const title=(document.getElementById('et')?.value||'').trim();
+  let valid=amt>0&&title;
+  if(_expMode==='detail'){
+    const siTot=_subItems.reduce((a,s)=>a+(+s.price||0),0);
+    valid=valid&&_subItems.length>0&&Math.abs(siTot-amt)<0.5&&_subItems.every(s=>s.consumers&&s.consumers.length>0);
+  } else {
+    const pts=getParts();valid=valid&&pts.length>0;
+    if(_ST==='custom'){let ct=0;pts.forEach(id=>{ct+=+document.getElementById('ca-'+id)?.value||0;});valid=valid&&Math.abs(ct-amt)<0.5;}
+    if(_ST==='percentage'){let pt=0;pts.forEach(id=>{pt+=+document.getElementById('pct-'+id)?.value||0;});valid=valid&&Math.abs(pt-100)<0.5;}
+    if(_ST==='multipayer'){const g=getG(S.selectedGroupId);let mt=0;g.members.forEach(m=>{mt+=+document.getElementById('mp-'+m.id)?.value||0;});valid=valid&&Math.abs(mt-amt)<0.5;}
+  }
+  const b=document.getElementById('se-btn');if(b)b.disabled=!valid;
+}
+function doSaveExp(editId,gid){
+  const g=getG(gid);
+  const amt=+document.getElementById('ea').value||0;
+  const title=document.getElementById('et').value.trim();
+  const emoji=document.getElementById('ee-btn').dataset.e||'🍽️';
+  const paidById=document.querySelector('.po')?.dataset.id||g.members[0].id;
+  const payers=[{id:paidById,amt}];
+  const prevNote=editId?g.expenses.find(e=>e.id===editId)?.note||'':'';
+  const prevDate=editId?g.expenses.find(e=>e.id===editId)?.date:new Date().toISOString();
+
+  let expData;
+  if(_expMode==='detail'){
+
+    // ── Read subItems 100% from DOM — never trust oninput state ──
+    const builtItems=_subItems.map(item=>{
+      const card=document.getElementById('si-'+item.id);
+      let name=item.name, price=item.price;
+      if(card){
+        const nameIn=card.querySelector('input:not([type="number"])');
+        const priceIn=card.querySelector('input[type="number"]');
+        if(nameIn)  name=nameIn.value.trim()||name;
+        if(priceIn) price=parseFloat(priceIn.value)||0;
+      }
+      return {id:item.id, name, price:+price.toFixed(2), consumers:[...item.consumers]};
+    });
+    // ─────────────────────────────────────────────────────────────
+
+    const allConsumers=[...new Set(builtItems.flatMap(s=>s.consumers))];
+    expData={id:editId||uid(),title,amount:amt,emoji,paidById,payers,
+      splitType:'subitem',participants:allConsumers,
+      subItems:builtItems,
+      customAmounts:{},percentages:{},date:prevDate,note:prevNote};
+
+  } else {
+    const pts=getParts();
+    const customAmounts={},percentages={};
+    pts.forEach(id=>{
+      customAmounts[id]=+document.getElementById('ca-'+id)?.value||0;
+      percentages[id]=+document.getElementById('pct-'+id)?.value||0;
+    });
+    let finalPayers=payers;
+    if(_ST==='multipayer'){
+      finalPayers=[];
+      g.members.forEach(m=>{const v=+document.getElementById('mp-'+m.id)?.value||0;if(v>0)finalPayers.push({id:m.id,amt:v});});
+    }
+    expData={id:editId||uid(),title,amount:amt,emoji,
+      paidById:finalPayers[0]?.id||paidById,payers:finalPayers,
+      splitType:_ST,participants:pts,customAmounts,percentages,
+      subItems:[],date:prevDate,note:prevNote};
+  }
+  if(editId){updG({...g,expenses:g.expenses.map(e=>e.id===editId?expData:e)});toast(t('expenseUpdated'));}
+  else{updG({...g,expenses:[...g.expenses,expData]});toast(t('expenseAdded'));}
+  go('group',gid);
+}
+function openEP(){
+  openSheet(`<p class="ff-s fw7" style="font-size:20px;margin-bottom:16px">${t('chooseEmoji')}</p>
+    <div class="emoji-grid">${EE.map(({e,l})=>`<button onclick="pickEE('${e}')" style="background:var(--bg);border:none;border-radius:14px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-size:26px">${e}</span><span style="font-size:10px;color:var(--muted)">${l}</span></button>`).join('')}</div>`);
+}
+function pickEE(e){const b=document.getElementById('ee-btn');if(b){b.textContent=e;b.dataset.e=e;}closeSheet();}
+
+/* ═══════════════════════════════════════════════════════════
+   SUMMARY
+═══════════════════════════════════════════════════════════ */
+function scrSummary(){
+  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  const bals=calcBal(g.members,g.expenses),txns=simplify(bals);
+  const total=g.expenses.reduce((a,e)=>a+(+e.amount||0),0);
+
+  const bRows=g.members.map((m,i)=>{
+    const b=bals[m.id]||0,col=b>=0?'var(--sage)':'var(--danger)';
+    return `<div class="flex items-center gap12" style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div class="av ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      <div class="flex1"><p class="fw7" style="font-size:14px">${m.isMe?t('youLabel'):esc(m.name)}</p>
+        <p class="txt-muted" style="font-size:12px">${b>=0?t('getsBack'):t('owes')}</p></div>
+      <span class="ff-s fw7" style="font-size:18px;color:${col}">${b>=0?'+':'−'}${fmt(Math.abs(b))}</span>
+    </div>`;
+  }).join('');
+
+  const sRows=txns.length===0
+    ?`<div style="text-align:center;padding:20px;color:var(--sage)"><div style="font-size:28px">✅</div><p class="fw7 mt8">${t('allSettled')}</p></div>`
+    :txns.map(tx=>{
+        const fi=GI(g,tx.from),ti=GI(g,tx.to);
+        return `<div class="flex items-center gap12" style="padding:12px 0;border-bottom:1px solid var(--border)">
+          <div class="av av-sm ${avC(fi)}">${GN(g,tx.from).slice(0,2).toUpperCase()}</div>
+          <div class="flex1" style="font-size:13px;font-weight:500"><strong>${esc(GN(g,tx.from))}</strong> → <strong>${esc(GN(g,tx.to))}</strong></div>
+          <div class="av av-sm ${avC(ti)}">${GN(g,tx.to).slice(0,2).toUpperCase()}</div>
+          <span class="ff-s fw7 txt-accent" style="font-size:17px;margin-left:4px">${fmt(tx.amount)}</span>
+        </div>`;
+      }).join('');
+
+  // Per-expense breakdown
+  const expBD=[...g.expenses].reverse().map(exp=>{
+    const amt=+exp.amount||0;
+    const payers=exp.payers||[{id:exp.paidById,amt}];
+    const pm={};payers.forEach(p=>pm[p.id]=(pm[p.id]||0)+(+p.amt||0));
+    const pStr=payers.map(p=>`${GN(g,p.id)} ${fmt(p.amt)}`).join(', ');
+    // Use single source of truth — same function as calcBal
+    const shares=getShares(exp, g.members);
+    // For display: all people who paid or have a share
+    const allIds=[...new Set([...Object.keys(shares),...Object.keys(pm)])];
+    return `<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:22px">${exp.emoji}</span>
+        <div class="flex1"><p class="fw7" style="font-size:14px">${esc(exp.title)}</p>
+          <span style="background:var(--accent-lt);color:var(--accent);padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600">${pStr}${exp.splitType==='subitem'?' · 🧾':''}</span>
+        </div>
+        <span class="ff-s fw7" style="font-size:16px">${fmt(amt)}</span>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:8px">
+        ${allIds.map(id=>{
+          const idx=GI(g,id);
+          const share=shares[id]||0,paid=pm[id]||0,net=share-paid;
+          return `<div class="owe-row">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="av av-sm ${avC(idx)}" style="width:26px;height:26px;font-size:10px">${GN(g,id).slice(0,2).toUpperCase()}</div>
+              <span style="font-size:13px;font-weight:600">${GN(g,id)}</span>
+            </div>
+            <div style="text-align:right">
+              <p style="font-size:10px;color:var(--muted)">${t('share')}: ${fmt(share)}${paid>0?' / paid '+fmt(paid):''}</p>
+              <span style="font-size:13px;color:${net>0.5?'var(--danger)':net<-0.5?'var(--blue)':'var(--sage)'};font-weight:700">
+                ${net>0.5?'owes '+fmt(net):net<-0.5?'gets '+fmt(-net):'✓'}
+              </span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <h1 class="ff-s" style="font-size:24px;font-weight:700">${t('summaryTitle')}</h1>
+    </div>
+    <div class="px16 gap-col">
+      <div class="card" style="background:linear-gradient(135deg,#1A1A2E,#2D2D4E);padding:24px">
+        <p style="color:rgba(255,255,255,.55);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">${t('totalSpent')}</p>
+        <p class="fs-big" style="color:#fff;margin-top:6px">${fmt(total)}</p>
+        <p style="color:rgba(255,255,255,.45);font-size:13px;margin-top:6px">${g.expenses.length} ${t('items')} · ${g.members.length} ${t('people')}</p>
+      </div>
+      <div class="card"><p class="lbl">${t('individualBalances')}</p>${bRows}</div>
+      <div class="card"><p class="lbl">${t('settlementPlan')}</p>
+        <p class="txt-muted" style="font-size:12px;margin-bottom:12px">${t('minTransfers')}</p>${sRows}</div>
+      ${txns.length>0?`<button class="btn btn-primary" onclick="settleAll('${g.id}')">${t('markAllSettled')}</button>`:''}
+      <div class="sec-hdr"><h3>${t('expDetailTitle')}</h3></div>
+      ${expBD||`<div class="empty"><p>${t('noExpenses')}</p></div>`}
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+function settleAll(gid){const g=getG(gid);updG({...g,expenses:[]});toast(t('allSettledToast'));go('group',gid);}
+
+/* ═══════════════════════════════════════════════════════════
+   INSTALLMENTS
+═══════════════════════════════════════════════════════════ */
+function scrInstall(){
+  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  if(!g.installments)g.installments=[];
+  const cards=g.installments.map(p=>{
+    const paidAmt=p.paidMonths*(p.totalAmt/p.numMonths);
+    const rem=p.totalAmt-paidAmt,prog=Math.round((paidAmt/p.totalAmt)*100);
+    const isWk=p.cycleType==='weekly',ppMo=p.totalAmt/p.numMonths/p.numMembers,done=p.paidMonths>=p.numMonths;
+    return `<div class="card gap-col">
+      <div class="flex" style="justify-content:space-between;align-items:flex-start">
+        <div><p class="fw7" style="font-size:16px">${esc(p.title)}</p>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+            <span class="cycle-badge ${isWk?'cycle-weekly':'cycle-monthly'}">${isWk?t('weekly'):t('monthly')}</span>
+            <span class="txt-muted" style="font-size:12px">${p.numMembers} ${t('people')} · ${p.numMonths} ${isWk?t('weekly'):t('monthly')}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="ff-s fw7" style="font-size:20px">${fmt(p.totalAmt)}</span>
+          <button onclick="delInst('${g.id}','${p.id}')" style="background:none;border:none;color:var(--danger);font-size:14px;cursor:pointer">🗑</button>
+        </div>
+      </div>
+      <div>
+        <div class="prog-track"><div class="prog-fill" style="width:${prog}%"></div></div>
+        <div class="flex" style="justify-content:space-between;margin-top:6px">
+          <span style="font-size:12px;color:var(--sage);font-weight:600">${p.paidMonths}/${p.numMonths} ${done?'✅':t('monthsLeft')}</span>
+          <span class="txt-muted" style="font-size:12px">${fmt(rem)} ${t('remaining')}</span>
+        </div>
+      </div>
+      <div style="background:var(--gold-lt);border-radius:12px;padding:10px 14px">
+        <p style="font-size:12px;color:var(--gold);font-weight:600">${t('perPersonMo')}: ${fmt(ppMo)}</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" style="flex:1;padding:10px" ${p.paidMonths===0?'disabled':''} onclick="updInst('${g.id}','${p.id}',-1)">−</button>
+        <button class="btn ${done?'btn-ghost':'btn-secondary'}" style="flex:1" ${done?'disabled':''} onclick="updInst('${g.id}','${p.id}',1)">${done?t('complete'):t('markPaid')}</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <div><h1 class="ff-s" style="font-size:22px;font-weight:700">${t('installTitle')}</h1>
+        <p class="txt-muted" style="font-size:13px">${esc(g.name)}</p></div>
+    </div>
+    <div class="px16 gap-col">
+      <div class="card gap-col">
+        <p class="lbl">${t('newInstallPlan')}</p>
+        <input class="input" id="it" placeholder="${t('itemNamePh')}"/>
+        <div class="grid2">
+          <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('totalPrice')}</p>
+            <input class="input" type="number" inputmode="decimal" id="iv" placeholder="0" oninput="prvInst()"/></div>
+          <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('monthsLabel')}</p>
+            <input class="input" type="number" inputmode="numeric" id="im" value="6" oninput="prvInst()"/></div>
+        </div>
+        <div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('cycleType')}</p>
+          <div class="pills" style="max-width:200px">
+            <button class="pill on" id="ic-mo" onclick="setICT('monthly')">${t('monthly')}</button>
+            <button class="pill" id="ic-wk" onclick="setICT('weekly')">${t('weekly')}</button>
+          </div>
+        </div>
+        <div id="ip" class="hidden" style="background:var(--accent-lt);border-radius:14px;padding:14px">
+          <div class="grid2">
+            <div><p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px">${t('monthlyTotal')}</p><p class="ff-s fw7" id="ip-mo" style="font-size:18px"></p></div>
+            <div><p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px">${t('perPersonMo')}</p><p class="ff-s fw7" id="ip-pp" style="font-size:18px"></p></div>
+            <div><p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px">${t('eachPaysTotal')}</p><p class="ff-s fw7" id="ip-tot" style="font-size:18px"></p></div>
+            <div><p style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:2px">${t('people')}</p><p class="ff-s fw7" id="ip-ppl" style="font-size:18px"></p></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addInst('${g.id}')">${t('addPlan')}</button>
+      </div>
+      ${g.installments.length===0?`<div class="empty"><div class="ei">📅</div><p>${t('noInstallYet')}</p></div>`:cards}
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+let _ICT='monthly';
+function setICT(c){_ICT=c;document.getElementById('ic-mo')?.classList.toggle('on',c==='monthly');document.getElementById('ic-wk')?.classList.toggle('on',c==='weekly');prvInst();}
+function prvInst(){
+  const tot=+document.getElementById('iv')?.value||0,mo=+document.getElementById('im')?.value||1;
+  const g=getG(S.selectedGroupId),nm=g.members.length,pr=document.getElementById('ip');
+  if(tot>0){
+    pr?.classList.remove('hidden');
+    const ppmo=tot/mo;
+    document.getElementById('ip-mo').textContent=fmt(ppmo);
+    document.getElementById('ip-pp').textContent=fmt(ppmo/nm);
+    document.getElementById('ip-tot').textContent=fmt(tot/nm);
+    document.getElementById('ip-ppl').textContent=nm+' '+t('people');
+  }else pr?.classList.add('hidden');
+}
+function addInst(gid){
+  const g=getG(gid);
+  const title=document.getElementById('it').value.trim(),total=+document.getElementById('iv').value||0,months=+document.getElementById('im').value||1;
+  if(!title||!total){toast(t('fillTitleAmt'));return;}
+  const plan={id:uid(),title,totalAmt:total,numMonths:months,numMembers:g.members.length,paidMonths:0,cycleType:_ICT};
+  updG({...g,installments:[...(g.installments||[]),plan]});toast(t('planAdded'));go('installments',gid);
+}
+function updInst(gid,pid,d){
+  const g=getG(gid);
+  updG({...g,installments:(g.installments||[]).map(p=>p.id===pid?{...p,paidMonths:Math.max(0,Math.min(p.numMonths,p.paidMonths+d))}:p)});render();
+}
+function delInst(gid,pid){const g=getG(gid);updG({...g,installments:(g.installments||[]).filter(p=>p.id!==pid)});toast(t('planRemoved'));render();}
+
+/* ═══════════════════════════════════════════════════════════
+   BILL CYCLES
+═══════════════════════════════════════════════════════════ */
+function scrCycles(){
+  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  if(!g.cycles)g.cycles=[];
+  const today=new Date();
+
+  const cCards=g.cycles.map(c=>{
+    const nd=nextDue(c),isOD=nd<today&&!c.paidDates?.includes(todayStr()),isPaid=c.paidDates?.includes(todayStr());
+    const scol=isPaid?'var(--sage)':isOD?'var(--danger)':'var(--gold)';
+    const slbl=isPaid?t('paid'):isOD?t('overdue'):t('upcoming');
+    const pp=c.amount/g.members.length;
+    return `<div class="card gap-col">
+      <div class="flex" style="justify-content:space-between;align-items:flex-start">
+        <div><p class="fw7" style="font-size:16px">${esc(c.name)}</p>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+            <span class="cycle-badge ${c.freq==='weekly'?'cycle-weekly':'cycle-monthly'}">${c.freq==='weekly'?t('weekly'):t('monthly')}</span>
+            <span style="font-size:12px;color:${scol};font-weight:700">${slbl}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="ff-s fw7" style="font-size:20px">${fmt(c.amount)}</span>
+          <button onclick="delCycle('${g.id}','${c.id}')" style="background:none;border:none;color:var(--danger);font-size:14px;cursor:pointer">🗑</button>
+        </div>
+      </div>
+      <div style="background:var(--blue-lt);border-radius:12px;padding:10px 14px">
+        <p style="font-size:12px;color:var(--blue);font-weight:600">${t('perPerson')}: ${fmt(pp)} · ${t('nextDue')}: ${nd.toLocaleDateString(S.lang==='th'?'th-TH':'en-GB')}</p>
+      </div>
+      <button class="btn ${isPaid?'btn-ghost':'btn-secondary'}" ${isPaid?'disabled':''} onclick="markCPaid('${g.id}','${c.id}')">
+        ${isPaid?'✅ '+t('paid'):t('markCyclePaid')}
+      </button>
+    </div>`;
+  }).join('');
+
+  return `<div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <div><h1 class="ff-s" style="font-size:22px;font-weight:700">${t('billCyclesTitle')}</h1>
+        <p class="txt-muted" style="font-size:13px">${esc(g.name)}</p></div>
+    </div>
+    <div class="px16 gap-col">
+      <div class="card gap-col">
+        <p class="lbl">${t('newCycle')}</p>
+        <input class="input" id="cn" placeholder="${t('cycleNamePh')}"/>
+        <div class="grid2">
+          <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('cycleAmt')}</p>
+            <input class="input" type="number" inputmode="decimal" id="ca2" placeholder="0"/></div>
+          <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('cycleFreq')}</p>
+            <div class="pills"><button class="pill on" id="cf-mo" onclick="setCF('monthly')">${t('monthly')}</button>
+            <button class="pill" id="cf-wk" onclick="setCF('weekly')">${t('weekly')}</button></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('cycleStart')}</p>
+            <input class="input" type="date" id="cs" value="${todayStr()}"/></div>
+          <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('cycleEnd')}</p>
+            <input class="input" type="date" id="ce"/></div>
+        </div>
+        <button class="btn btn-primary" onclick="addCycle('${g.id}')">${t('addCycle')}</button>
+      </div>
+      ${g.cycles.length===0?`<div class="empty"><div class="ei">🔄</div><p>${t('noCycles')}</p></div>`:cCards}
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+let _CF='monthly';
+function setCF(f){_CF=f;document.getElementById('cf-mo')?.classList.toggle('on',f==='monthly');document.getElementById('cf-wk')?.classList.toggle('on',f==='weekly');}
+function nextDue(c){
+  const start=new Date(c.startDate||todayStr()),today=new Date();let d=new Date(start);
+  while(d<=today){if(c.freq==='weekly')d.setDate(d.getDate()+7);else d.setMonth(d.getMonth()+1);}
+  return d;
+}
+function addCycle(gid){
+  const g=getG(gid);
+  const name=document.getElementById('cn').value.trim(),amount=+document.getElementById('ca2').value||0;
+  if(!name||!amount){toast(t('fillTitleAmt'));return;}
+  const cycle={id:uid(),name,amount,freq:_CF,startDate:document.getElementById('cs').value||todayStr(),endDate:document.getElementById('ce').value||null,paidDates:[]};
+  updG({...g,cycles:[...(g.cycles||[]),cycle]});toast(t('planAdded'));go('cycles',gid);
+}
+function markCPaid(gid,cid){
+  const g=getG(gid);
+  updG({...g,cycles:(g.cycles||[]).map(c=>c.id===cid?{...c,paidDates:[...(c.paidDates||[]),todayStr()]}:c)});render();
+}
+function delCycle(gid,cid){const g=getG(gid);updG({...g,cycles:(g.cycles||[]).filter(c=>c.id!==cid)});toast(t('planRemoved'));render();}
+
+/* ═══════════════════════════════════════════════════════════
+   CHECKLIST
+═══════════════════════════════════════════════════════════ */
+function scrChecklist(){
+  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  if(!g.checkItems)g.checkItems=[];
+  const filter=S.clFilter||'all';
+
+  // Build items from expenses + cycles
+  let items=[
+    ...(g.cycles||[]).map(c=>{
+      const nd=nextDue(c);
+      return {id:'cyc-'+c.id,label:`${c.name} (${nd.toLocaleDateString(S.lang==='th'?'th-TH':'en-GB')})`,amount:c.amount,emoji:'🔄',type:'cycle',done:c.paidDates?.includes(todayStr())||false};
+    }),
+    ...g.expenses.map(exp=>({id:'exp-'+exp.id,label:exp.title,amount:exp.amount,emoji:exp.emoji,type:'expense',done:false})),
+  ];
+  // Apply persisted done states
+  items=items.map(item=>{const sv=g.checkItems?.find(c=>c.id===item.id);return sv?{...item,done:sv.done}:item;});
+
+  const shown=items.filter(i=>filter==='all'||(filter==='paid'&&i.done)||(filter==='unpaid'&&!i.done));
+  const totalAmt=items.reduce((a,i)=>a+(+i.amount||0),0);
+  const paidAmt=items.filter(i=>i.done).reduce((a,i)=>a+(+i.amount||0),0);
+  const prog=totalAmt>0?Math.round(paidAmt/totalAmt*100):0;
+
+  const html=shown.length===0
+    ?`<div class="empty"><div class="ei">✅</div><p>${filter==='unpaid'?t('allSettled'):t('noChecklist')}</p></div>`
+    :shown.map(item=>`<div class="cl-item${item.done?' done':''}">
+        <div class="chk-sq${item.done?' on':''}" onclick="togCI('${g.id}','${item.id}',${!item.done})">✓</div>
+        <span style="font-size:18px">${item.emoji}</span>
+        <div class="flex1">
+          <p class="cl-title fw7" style="font-size:14px">${esc(item.label)}</p>
+          <span style="font-size:11px;color:var(--muted)">${item.type==='cycle'?'🔄 '+t('billCycles'):'💸 '+t('expenses')}</span>
+        </div>
+        <span class="ff-s fw7" style="font-size:14px;color:${item.done?'var(--sage)':'var(--ink)'}">${fmt(item.amount)}</span>
+      </div>`).join('');
+
+  return `<div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <h1 class="ff-s" style="font-size:22px;font-weight:700">${t('checklistTitle')}</h1>
+    </div>
+    <div class="px16 gap-col">
+      <div class="card" style="background:linear-gradient(135deg,var(--sage-lt),#fff)">
+        <div class="grid3" style="text-align:center">
+          <div><p class="ff-s fw7 txt-sage" style="font-size:18px">${fmt(paidAmt)}</p><p style="font-size:11px;color:var(--muted);font-weight:600">${t('paid3')}</p></div>
+          <div><p class="ff-s fw7 txt-danger" style="font-size:18px">${fmt(totalAmt-paidAmt)}</p><p style="font-size:11px;color:var(--muted);font-weight:600">${t('remaining')}</p></div>
+          <div><p class="ff-s fw7" style="font-size:18px">${fmt(totalAmt)}</p><p style="font-size:11px;color:var(--muted);font-weight:600">${t('total')}</p></div>
+        </div>
+        <div class="prog-track" style="margin-top:12px"><div class="prog-fill" style="width:${prog}%"></div></div>
+      </div>
+      <div class="pills">
+        <button class="pill${filter==='all'?' on':''}" onclick="S.clFilter='all';render()">${t('all')}</button>
+        <button class="pill${filter==='paid'?' on':''}" onclick="S.clFilter='paid';render()">${t('paid3')}</button>
+        <button class="pill${filter==='unpaid'?' on':''}" onclick="S.clFilter='unpaid';render()">${t('unpaid2')}</button>
+      </div>
+      ${html}
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+function togCI(gid,itemId,done){
+  const g=getG(gid);
+  const updated=(g.checkItems||[]).filter(c=>c.id!==itemId);
+  updated.push({id:itemId,done});
+  updG({...g,checkItems:updated});render();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACTIVITY (Timeline)
+═══════════════════════════════════════════════════════════ */
+function scrActivity(){
+  const all=S.groups.flatMap(g=>g.expenses.map(e=>({...e,gName:g.name,gEmoji:g.emoji,gid:g.id})))
+    .sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const byDate={};
+  all.forEach(exp=>{
+    const d=new Date(exp.date).toLocaleDateString(S.lang==='th'?'th-TH':'en-GB',{day:'numeric',month:'short',year:'numeric'});
+    if(!byDate[d])byDate[d]=[];byDate[d].push(exp);
+  });
+  const rows=Object.keys(byDate).length===0
+    ?`<div class="empty"><div class="ei">📭</div><p>${t('noExpenses')}</p></div>`
+    :Object.entries(byDate).map(([date,exps])=>`
+      <div style="margin-bottom:16px">
+        <p class="lbl" style="margin-bottom:8px">${date}</p>
+        ${exps.map(exp=>`<div class="row" onclick="go('group','${exp.gid}')">
+          <div style="width:44px;height:44px;background:var(--accent-lt);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${exp.emoji}</div>
+          <div class="flex1"><p class="fw7" style="font-size:14px">${esc(exp.title)}</p>
+            <p class="txt-muted" style="font-size:12px;margin-top:2px">${exp.gEmoji} ${esc(exp.gName)}</p></div>
+          <span class="ff-s fw7" style="font-size:16px">${fmt(exp.amount)}</span>
+        </div>`).join('')}
+      </div>`).join('');
+
+  return `<div class="screen">
+    <div class="p20 pt56" style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><h1 class="ff-s" style="font-size:28px;font-weight:700">${t('activityTitle')}</h1>
+        <p class="txt-muted" style="font-size:14px;margin-top:4px">${t('recentExpenses')}</p></div>
+      ${LT()}
+    </div>
+    <div class="px16">${rows}</div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROFILE
+═══════════════════════════════════════════════════════════ */
+function scrProfile(){
+  const totalExp=S.groups.reduce((a,g)=>a+g.expenses.length,0);
+  const totalSpent=S.groups.reduce((a,g)=>a+g.expenses.reduce((b,e)=>b+(+e.amount||0),0),0);
+  return `<div class="screen">
+    <div style="background:linear-gradient(145deg,var(--accent),#FF8A70);padding:56px 24px 36px;text-align:center">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">${LT()}</div>
+      <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:36px;border:3px solid rgba(255,255,255,.25)">🙋</div>
+      <h2 class="ff-s" style="color:#fff;font-size:24px;font-weight:700">${t('profileTitle')}</h2>
+      <p style="color:rgba(255,255,255,.65);font-size:14px">${t('splitEasyUser')}</p>
+    </div>
+    <div class="p20 gap-col">
+      <div class="grid3">
+        ${[{l:t('totalGroups'),v:S.groups.length,i:'👥'},{l:t('totalExpenses'),v:totalExp,i:'🧾'},{l:t('totalSpentP'),v:fmt(totalSpent),i:'💰'}]
+          .map(({l,v,i})=>`<div class="card" style="text-align:center"><div style="font-size:22px;margin-bottom:6px">${i}</div>
+            <p class="ff-s fw7" style="font-size:20px">${v}</p><p class="txt-muted" style="font-size:11px;font-weight:500">${l}</p></div>`).join('')}
+      </div>
+      <div class="card gap-col"><p class="lbl">${t('features')}</p>
+        ${['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14'].map(k=>`<p style="font-size:14px;padding:6px 0;border-bottom:1px solid var(--border)">${t(k)}</p>`).join('')}
+      </div>
+      <button class="btn btn-danger w-full" onclick="confClear()">${t('clearAllData')}</button>
+    </div>
+  </div>`;
+}
+function confClear(){
+  openSheet(`<p class="ff-s fw7" style="font-size:20px;margin-bottom:8px">${t('clearAllQ')}</p>
+    <p class="txt-muted" style="font-size:14px;margin-bottom:20px">${t('clearAllDesc')}</p>
+    <button class="btn btn-danger w-full" onclick="S.groups=[];save();closeSheet();toast(t('allCleared'));S.screen='home';S.activeNav='home';render()">${t('yesClear')}</button>
+    <button class="btn btn-ghost mt8" onclick="closeSheet()">${t('cancel')}</button>`);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SHEET UTILITY
+═══════════════════════════════════════════════════════════ */
+function openSheet(html){
+  closeSheet();
+  const ov=document.createElement('div');ov.className='overlay';ov.id='sov';
+  ov.innerHTML=`<div class="sheet"><div class="sheet-handle"></div>${html}</div>`;
+  ov.addEventListener('click',e=>{if(e.target===ov)closeSheet();});
+  document.getElementById('app').appendChild(ov);
+}
+function closeSheet(){document.getElementById('sov')?.remove();}
+
+/* ═══════════════════════════════════════════════════════════
+   MONTHLY SUMMARY — expenses + cycles + installments
+═══════════════════════════════════════════════════════════ */
+function scrMonthlySummary(){
+  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  const now=new Date();
+  const mo=now.getMonth(),yr=now.getFullYear();
+  const moLabel=now.toLocaleDateString(S.lang==='th'?'th-TH':'en-GB',{month:'long',year:'numeric'});
+  const nm=g.members.length;
+
+  // 1) One-time expenses this month
+  const oneTime=g.expenses.filter(e=>{
+    const d=new Date(e.date);return d.getMonth()===mo&&d.getFullYear()===yr;
+  });
+  const oneTimeTotal=oneTime.reduce((a,e)=>a+(+e.amount||0),0);
+
+  // 2) Bill cycles — amount due this month
+  const cyclesThisMonth=(g.cycles||[]).filter(c=>{
+    const start=new Date(c.startDate||todayStr());
+    const end=c.endDate?new Date(c.endDate):null;
+    if(start>new Date(yr,mo+1,0))return false;
+    if(end&&end<new Date(yr,mo,1))return false;
+    return true;
+  });
+  const cyclesTotal=cyclesThisMonth.reduce((a,c)=>a+(+c.amount||0),0);
+
+  // 3) Installments — monthly payment due
+  const instThisMonth=(g.installments||[]).filter(p=>p.paidMonths<p.numMonths);
+  const instTotal=instThisMonth.reduce((a,p)=>a+(p.totalAmt/p.numMonths),0);
+
+  const grandTotal=oneTimeTotal+cyclesTotal+instTotal;
+  const perPerson=nm>0?grandTotal/nm:0;
+
+  // Spending chart data — last 6 months
+  const chartData=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(yr,mo-i,1);
+    const mm=d.getMonth(),yy=d.getFullYear();
+    const tot=g.expenses.filter(e=>{const ed=new Date(e.date);return ed.getMonth()===mm&&ed.getFullYear()===yy;})
+      .reduce((a,e)=>a+(+e.amount||0),0);
+    chartData.push({label:d.toLocaleDateString(S.lang==='th'?'th-TH':'en-GB',{month:'short'}),val:tot});
+  }
+  const maxVal=Math.max(...chartData.map(d=>d.val),1);
+
+  // SVG bar chart
+  const W=340,H=110,BAR_W=32,GAP=(W-6*BAR_W)/7;
+  const bars=chartData.map((d,i)=>{
+    const bh=Math.max(4,Math.round((d.val/maxVal)*(H-30)));
+    const x=GAP+(BAR_W+GAP)*i;const y=H-20-bh;
+    const isNow=i===5;
+    return `<rect x="${x}" y="${H-20}" width="${BAR_W}" height="0" rx="6" class="chart-bar-bg"/>
+      <rect x="${x}" y="${y}" width="${BAR_W}" height="${bh}" rx="6" fill="${isNow?'var(--accent)':'var(--accent-soft)'}"/>
+      <text x="${x+BAR_W/2}" y="${H-4}" class="chart-label">${d.label}</text>
+      ${d.val>0?`<text x="${x+BAR_W/2}" y="${y-4}" class="chart-val">${d.val>=1000?Math.round(d.val/1000)+'k':Math.round(d.val)}</text>`:''}`;
+  }).join('');
+
+  const oneTimeRows=oneTime.length===0
+    ?`<p class="txt-muted" style="font-size:13px;padding:8px 0">${t('noExpenses')}</p>`
+    :oneTime.map(e=>`<div class="mo-row">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">${e.emoji}</span>
+          <span style="font-size:13px;font-weight:600">${esc(e.title)}</span>
+        </div>
+        <span class="ff-s fw7" style="font-size:14px">${fmt(e.amount)}</span>
+      </div>`).join('');
+
+  const cycleRows=cyclesThisMonth.length===0
+    ?`<p class="txt-muted" style="font-size:13px;padding:8px 0">${t('noCycles')}</p>`
+    :cyclesThisMonth.map(c=>`<div class="mo-row">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">🔄</span>
+          <div>
+            <span style="font-size:13px;font-weight:600">${esc(c.name)}</span>
+            <span class="cycle-badge ${c.freq==='weekly'?'cycle-weekly':'cycle-monthly'}" style="margin-left:6px">${c.freq==='weekly'?t('weekly'):t('monthly')}</span>
+          </div>
+        </div>
+        <span class="ff-s fw7" style="font-size:14px">${fmt(c.amount)}</span>
+      </div>`).join('');
+
+  const instRows=instThisMonth.length===0
+    ?`<p class="txt-muted" style="font-size:13px;padding:8px 0">${t('noInstallYet')}</p>`
+    :instThisMonth.map(p=>{
+        const ppmo=p.totalAmt/p.numMonths;
+        const rem=p.numMonths-p.paidMonths;
+        return `<div class="mo-row">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">📅</span>
+            <div>
+              <span style="font-size:13px;font-weight:600">${esc(p.title)}</span>
+              <p style="font-size:11px;color:var(--muted)">${rem} ${t('monthsLeft')}</p>
+            </div>
+          </div>
+          <span class="ff-s fw7" style="font-size:14px">${fmt(ppmo)}</span>
+        </div>`;
+      }).join('');
+
+  return `<div class="screen">
+    <div class="flex items-center gap12 p20 pt56">
+      <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
+      <div>
+        <h1 class="ff-s" style="font-size:22px;font-weight:700">${t('monthlySummary')}</h1>
+        <p class="txt-muted" style="font-size:13px">${moLabel} · ${esc(g.name)}</p>
+      </div>
+    </div>
+    <div class="px16 gap-col">
+
+      <!-- Grand total banner -->
+      <div class="mo-total">
+        <div>
+          <p style="color:rgba(255,255,255,.55);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">${t('grandTotal')}</p>
+          <p class="fs-big" style="color:#fff">${fmt(grandTotal)}</p>
+          <p style="color:rgba(255,255,255,.45);font-size:12px;margin-top:4px">${t('perPersonTotal')}: <strong style="color:#fff">${fmt(perPerson)}</strong></p>
+        </div>
+        <div style="text-align:right">
+          ${[
+            {l:t('oneTimeExp'),v:oneTimeTotal,c:'var(--accent-soft)'},
+            {l:t('recurringBills'),v:cyclesTotal,c:'var(--blue-lt)'},
+            {l:t('installmentsDue'),v:instTotal,c:'var(--gold-lt)'},
+          ].map(({l,v,c})=>`<div style="margin-bottom:6px">
+            <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600">${l}</span>
+            <p style="font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:#fff">${fmt(v)}</p>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Spending Chart -->
+      <div class="chart-wrap">
+        <p class="lbl">${t('spendingChart')} — ${t('last6months')}</p>
+        ${maxVal>1?`<svg width="100%" viewBox="0 0 ${W} ${H}" style="overflow:visible">${bars}</svg>`
+          :`<p class="txt-muted" style="font-size:13px;text-align:center;padding:20px 0">${t('noChartData')}</p>`}
+      </div>
+
+      <!-- One-time expenses -->
+      <div class="mo-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <p class="lbl" style="margin-bottom:0">${t('oneTimeExp')}</p>
+          <span class="ff-s fw7 txt-accent">${fmt(oneTimeTotal)}</span>
+        </div>
+        ${oneTimeRows}
+      </div>
+
+      <!-- Recurring bills -->
+      <div class="mo-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <p class="lbl" style="margin-bottom:0">${t('recurringBills')}</p>
+          <span class="ff-s fw7 txt-blue">${fmt(cyclesTotal)}</span>
+        </div>
+        ${cycleRows}
+      </div>
+
+      <!-- Installments -->
+      <div class="mo-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <p class="lbl" style="margin-bottom:0">${t('installmentsDue')}</p>
+          <span class="ff-s fw7" style="color:var(--gold)">${fmt(instTotal)}</span>
+        </div>
+        ${instRows}
+      </div>
+
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   I OWE / I AM OWED — Cross-group dashboard
+═══════════════════════════════════════════════════════════ */
+function scrIOwe(){
+  // Compute all debts & credits across every group
+  const iOweList=[],iAmOwedList=[];
+  S.groups.forEach(g=>{
+    const bals=calcBal(g.members,g.expenses);
+    const myId=g.members[0]?.id;if(!myId)return;
+    const myBal=bals[myId]||0;
+    const txns=simplify(bals);
+    // I owe: transactions where from===myId
+    txns.filter(tx=>tx.from===myId).forEach(tx=>{
+      iOweList.push({gid:g.id,gname:g.name,gemoji:g.emoji,toId:tx.to,toName:GN(g,tx.to),toIdx:GI(g,tx.to),amount:tx.amount});
+    });
+    // I am owed: transactions where to===myId
+    txns.filter(tx=>tx.to===myId).forEach(tx=>{
+      iAmOwedList.push({gid:g.id,gname:g.name,gemoji:g.emoji,fromId:tx.from,fromName:GN(g,tx.from),fromIdx:GI(g,tx.from),amount:tx.amount});
+    });
+  });
+
+  const totalIOwe=iOweList.reduce((a,x)=>a+x.amount,0);
+  const totalOwed=iAmOwedList.reduce((a,x)=>a+x.amount,0);
+
+  const oweRows=iOweList.length===0
+    ?`<p class="txt-muted" style="font-size:13px;padding:10px 0;text-align:center">${t('noDebts')}</p>`
+    :iOweList.map(x=>`<div class="bal-card">
+        <div class="av av-sm ${avC(x.toIdx)}">${x.toName.slice(0,2).toUpperCase()}</div>
+        <div class="flex1">
+          <p class="fw7" style="font-size:14px">${esc(x.toName)}</p>
+          <p class="txt-muted" style="font-size:12px">${x.gemoji} ${esc(x.gname)}</p>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="amt-pill amt-owe">${fmt(x.amount)}</span>
+          <button onclick="openSettleSheet('${x.gid}','${x.toId}',${x.amount.toFixed(2)})" style="font-size:11px;font-weight:700;color:var(--accent);background:none;border:none;cursor:pointer">${t('settleWith')} →</button>
+        </div>
+      </div>`).join('');
+
+  const owedRows=iAmOwedList.length===0
+    ?`<p class="txt-muted" style="font-size:13px;padding:10px 0;text-align:center">${t('noDebts')}</p>`
+    :iAmOwedList.map(x=>`<div class="bal-card">
+        <div class="av av-sm ${avC(x.fromIdx)}">${x.fromName.slice(0,2).toUpperCase()}</div>
+        <div class="flex1">
+          <p class="fw7" style="font-size:14px">${esc(x.fromName)}</p>
+          <p class="txt-muted" style="font-size:12px">${x.gemoji} ${esc(x.gname)}</p>
+        </div>
+        <span class="amt-pill amt-owed">${fmt(x.amount)}</span>
+      </div>`).join('');
+
+  return `<div class="screen">
+    <div class="hero">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <p style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500">${t('acrossGroups')}</p>${LT()}
+      </div>
+      <h1 class="ff-s" style="color:#fff;font-size:28px;font-weight:700;margin-bottom:18px">${t('ioweDashboard')}</h1>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="glass">
+          <p style="color:rgba(255,255,255,.55);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${t('iOwe')}</p>
+          <p class="ff-s fw7" style="color:var(--danger);font-size:26px">−${fmt(totalIOwe)}</p>
+        </div>
+        <div class="glass">
+          <p style="color:rgba(255,255,255,.55);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${t('iAmOwed')}</p>
+          <p class="ff-s fw7" style="color:var(--sage);font-size:26px">+${fmt(totalOwed)}</p>
+        </div>
+      </div>
+    </div>
+    <div class="p20 gap-col">
+      <div>
+        <p class="lbl" style="color:var(--danger)">${t('iOwe')}</p>
+        ${oweRows}
+      </div>
+      <div>
+        <p class="lbl" style="color:var(--sage)">${t('iAmOwed')}</p>
+        ${owedRows}
+      </div>
+      <div style="height:10px"></div>
+    </div>
+  </div>`;
+}
+
+/* ── Settle with specific person sheet ───── */
+function openSettleSheet(gid,toId,suggestedAmt){
+  const g=getG(gid);const toName=GN(g,toId);
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:4px">${t('settleWith')} ${esc(toName)}</p>
+    <p class="txt-muted" style="font-size:13px;margin-bottom:18px">${g.emoji} ${esc(g.name)}</p>
+    <p class="lbl">${t('settleAmount')}</p>
+    <input class="input mb12" type="number" inputmode="decimal" id="stl-amt" value="${suggestedAmt}" style="font-family:'Fraunces',serif;font-size:22px;font-weight:700"/>
+    <p class="lbl">${t('settleNote')}</p>
+    <textarea class="note-ta mb12" id="stl-note" placeholder="${t('settleNote')}"></textarea>
+    <button class="btn btn-primary" onclick="doSettle('${gid}','${toId}')">${t('recordPayment')}</button>
+    <button class="btn btn-ghost mt8" onclick="closeSheet()">${t('cancel')}</button>
+  `);
+}
+function doSettle(gid,toId){
+  const g=getG(gid);
+  const myId=g.members[0]?.id;
+  const amt=+document.getElementById('stl-amt')?.value||0;
+  const note=document.getElementById('stl-note')?.value||'';
+  if(!amt){toast(t('fillTitleAmt'));return;}
+  // Record as a settlement expense: payer=me, owed=toId, amt=0 share (just credit)
+  const exp={
+    id:uid(),title:`${t('settleWith')} ${GN(g,toId)}${note?' – '+note:''}`,
+    amount:amt,emoji:'💸',paidById:myId,
+    payers:[{id:myId,amt}],
+    splitType:'custom',
+    participants:[toId],
+    customAmounts:{[toId]:amt},
+    percentages:{},
+    date:new Date().toISOString(),
+    isSettlement:true,
+  };
+  updG({...g,expenses:[...g.expenses,exp]});
+  closeSheet();toast(t('paymentRecorded'));
+  go('iowe');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GROUP DETAIL with Category Filter + Note on expense
+═══════════════════════════════════════════════════════════ */
+function scrGroupFiltered(){
+  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  const bals=calcBal(g.members,g.expenses);
+  const myId=g.members[0]?.id,myBal=bals[myId]||0;
+  const col=myBal>=0?'var(--sage)':'var(--danger)';
+  const hasDebt=myBal<-0.5;
+  const filter=S.catFilter||'all';
+
+  const membRow=g.members.slice(0,6).map((m,i)=>`
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      <span style="color:rgba(255,255,255,.55);font-size:10px;font-weight:500">${m.isMe?t('youLabel'):m.name.split(' ')[0]}</span>
+    </div>`).join('');
+
+  // Category chips
+  const chips=CAT_KEYS.map(k=>`<button class="cat-chip${filter===k?' on':''}" onclick="S.catFilter='${k}';render()">${catEmoji(k)} ${catLabel(k)}</button>`).join('');
+
+  // Filter expenses
+  const filtered=g.expenses.filter(e=>filter==='all'||(CAT_MAP[e.emoji]||'other')===filter);
+
+  const expList=filtered.length===0
+    ?`<div class="empty"><div class="ei">🔍</div><p>${filter==='all'?'No expenses yet':'No expenses in this category'}</p></div>`
+    :[...filtered].reverse().map(exp=>{
+        const payers=exp.payers||[{id:exp.paidById,amt:exp.amount}];
+        const pNames=payers.slice(0,2).map(p=>GN(g,p.id)).join(', ')+(payers.length>2?'…':'');
+        const noteBadge=exp.note?`<span style="font-size:10px;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:100px;margin-left:4px">📝</span>`:'';
+        return `<div class="row">
+          <div style="width:44px;height:44px;border-radius:14px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0" onclick="openExpDetail('${g.id}','${exp.id}')">${exp.emoji}</div>
+          <div class="flex1" onclick="openExpDetail('${g.id}','${exp.id}')">
+            <div style="display:flex;align-items:center">${exp.isSettlement?'<span style="font-size:10px;background:var(--sage-lt);color:var(--sage);padding:2px 7px;border-radius:100px;font-weight:700;margin-right:6px">✓ Settled</span>':''}<p class="fw7" style="font-size:14px">${esc(exp.title)}</p>${noteBadge}</div>
+            <p class="txt-muted" style="font-size:12px;margin-top:2px">${pNames} · ${exp.splitType}</p>
+          </div>
+          <div class="text-right">
+            <p class="ff-s fw7" style="font-size:16px">${fmt(exp.amount)}</p>
+            <div style="display:flex;gap:6px;margin-top:4px;justify-content:flex-end">
+              <button onclick="event.stopPropagation();S.editExpenseId='${exp.id}';go('edit-expense','${g.id}')" style="background:none;border:none;color:var(--accent);font-size:11px;cursor:pointer;font-weight:600">${t('edit')}</button>
+              <button onclick="event.stopPropagation();delExp('${g.id}','${exp.id}')" style="background:none;border:none;color:var(--danger);font-size:11px;cursor:pointer;font-weight:600">${t('del')}</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  const acts=[
+    {i:'➕',l:t('addExpense'),f:`go('add-expense','${g.id}')`},
+    {i:'📊',l:t('summary'),f:`go('summary','${g.id}')`},
+    {i:'📆',l:t('monthlySummary').split(' ')[0],f:`go('monthly','${g.id}')`},
+    {i:'📋',l:t('checklist'),f:`go('checklist','${g.id}')`},
+    {i:'🔄',l:t('billCycles'),f:`go('cycles','${g.id}')`},
+    {i:'📅',l:t('installments'),f:`go('installments','${g.id}')`},
+  ];
+
+  return `<div class="screen">
+    <div style="background:linear-gradient(135deg,#1A1A2E 0%,#252545 100%);padding:56px 20px 24px">
+      <div class="flex items-center gap12" style="margin-bottom:18px">
+        <button onclick="go('home')" style="background:rgba(255,255,255,.12);border:none;width:38px;height:38px;border-radius:12px;cursor:pointer;font-size:16px;color:#fff;display:flex;align-items:center;justify-content:center">←</button>
+        <span style="font-size:26px">${g.emoji}</span>
+        <div>
+          <div style="display:flex;align-items:center">
+            <h1 class="ff-s" style="color:#fff;font-size:21px;font-weight:700;line-height:1">${esc(g.name)}</h1>
+            ${hasDebt?`<span class="debt-badge">${t('hasDebt')}</span>`:''}
+          </div>
+          <p style="color:rgba(255,255,255,.45);font-size:12px;margin-top:2px">${g.members.length} ${t('members')}</p>
+        </div>
+        <button onclick="go('edit-group','${g.id}')" style="margin-left:auto;background:rgba(255,255,255,.1);border:none;border-radius:10px;padding:7px 12px;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;cursor:pointer">${t('edit')}</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:18px">${membRow}</div>
+      <div class="glass" style="display:flex;justify-content:space-between;align-items:center">
+        <span style="color:rgba(255,255,255,.6);font-size:13px">${t('yourBalance')}</span>
+        <span class="ff-s fw7" style="font-size:22px;color:${col}">${myBal>=0?'+':'−'}${fmt(Math.abs(myBal))}</span>
+      </div>
+    </div>
+    <div class="p20">
+      <!-- 6-button action grid -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">
+        ${acts.map(({i,l,f})=>`<button onclick="${f}" style="background:var(--card);border:none;border-radius:14px;padding:12px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(26,26,46,.06);transition:transform .12s" ontouchstart="this.style.transform='scale(.93)'" ontouchend="this.style.transform=''" onmousedown="this.style.transform='scale(.93)'" onmouseup="this.style.transform=''">
+          <span style="font-size:20px">${i}</span>
+          <span style="font-size:10px;font-weight:600;color:var(--muted);text-align:center;line-height:1.3">${l}</span>
+        </button>`).join('')}
+      </div>
+      <!-- Category filter chips -->
+      <div class="cat-scroll mb12">${chips}</div>
+      <div class="sec-hdr">
+        <h3>${t('expenses')}</h3>
+        <span class="txt-muted" style="font-size:13px">${filtered.length} ${t('items')}</span>
+      </div>
+      ${expList}
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPENSE NOTE — added to Add/Edit expense form
+   (injected via openNoteSheet called from expense detail)
+═══════════════════════════════════════════════════════════ */
+function openNoteEditor(gid,eid){
+  const g=getG(gid);const exp=g.expenses.find(e=>e.id===eid);if(!exp)return;
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:18px;margin-bottom:4px">${esc(exp.title)}</p>
+    <p class="txt-muted" style="font-size:13px;margin-bottom:14px">${exp.emoji} · ${fmt(exp.amount)}</p>
+    <p class="lbl">${t('noteLabel')}</p>
+    <textarea class="note-ta mb12" id="note-ta" placeholder="${t('addNote')}">${esc(exp.note||'')}</textarea>
+    <button class="btn btn-primary" onclick="saveNote('${gid}','${eid}')">${t('saveChanges')}</button>
+    <button class="btn btn-ghost mt8" onclick="closeSheet()">${t('cancel')}</button>
+  `);
+}
+function saveNote(gid,eid){
+  const g=getG(gid);const note=document.getElementById('note-ta')?.value||'';
+  updG({...g,expenses:g.expenses.map(e=>e.id===eid?{...e,note}:e)});
+  closeSheet();toast(t('noteSaved'));render();
+}
+
+/* ── Override openExpDetail to include note button ── */
+function openExpDetail(gid,eid){
+  const g=getG(gid),exp=g.expenses.find(e=>e.id===eid);if(!exp)return;
+  const amt=+exp.amount||0;
+  const payers=exp.payers||[{id:exp.paidById,amt}];
+  const pm={};payers.forEach(p=>pm[p.id]=(pm[p.id]||0)+(+p.amt||0));
+
+  // Compute per-person shares — single source of truth
+  const shares=getShares(exp, g.members);
+  const allIds=[...new Set([...Object.keys(shares),...Object.keys(pm)])];
+
+  const pRows=payers.map(p=>{
+    const idx=GI(g,p.id);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div class="av av-sm ${avC(idx)}">${GN(g,p.id).slice(0,2).toUpperCase()}</div>
+      <span class="flex1 fw7" style="font-size:13px">${GN(g,p.id)}</span>
+      <span style="background:var(--accent-lt);color:var(--accent);padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700">${fmt(p.amt)}</span>
+    </div>`;
+  }).join('');
+
+  // Sub-item breakdown section
+  const siSection=exp.subItems&&exp.subItems.length>0?`
+    <p class="lbl" style="margin-top:16px">🧾 ${t('subItems')}</p>
+    ${exp.subItems.map(item=>{
+      const c=item.consumers||[];const sh=c.length?(+item.price||0)/c.length:0;
+      return `<div style="background:var(--bg);border-radius:12px;padding:10px 12px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span class="fw7" style="font-size:13px">${esc(item.name||'?')}</span>
+          <span class="ff-s fw7 txt-accent" style="font-size:14px">${fmt(item.price||0)}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">
+          ${c.map(id=>{
+            const idx=GI(g,id);
+            return `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:3px 9px;font-size:11px;font-weight:600">
+              <span class="av av-sm ${avC(idx)}" style="width:16px;height:16px;font-size:8px">${GN(g,id).slice(0,1)}</span>
+              ${GN(g,id)} <span class="txt-muted">${fmt(sh)}</span>
+            </span>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}`:'';
+
+  const oRows=allIds.map(id=>{
+    const idx=GI(g,id);
+    const share=shares[id]||0;
+    const paid=pm[id]||0;
+    const net=share-paid; // positive = owes, negative = overpaid
+    return `<div class="owe-row">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="av av-sm ${avC(idx)}">${GN(g,id).slice(0,2).toUpperCase()}</div>
+        <span class="fw7" style="font-size:13px">${GN(g,id)}</span>
+      </div>
+      <div class="text-right">
+        <p style="font-size:11px;color:var(--muted)">${t('share')}: ${fmt(share)}${paid>0?' · paid: '+fmt(paid):''}</p>
+        <p class="ff-s fw7" style="font-size:14px;color:${net>0.5?'var(--danger)':net<-0.5?'var(--blue)':'var(--sage)'}">
+          ${net>0.5?t('owedAmt')+': '+fmt(net):net<-0.5?'↩ gets back '+fmt(-net):'✓ '+t('paid')}
+        </p>
+      </div>
+    </div>`;
+  }).join('');
+
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:4px">${esc(exp.title)}</p>
+    <p class="txt-muted" style="font-size:13px;margin-bottom:${exp.note?'10px':'16px'}">${exp.emoji} · ${fmt(amt)} · ${exp.splitType==='subitem'?t('detailMode'):exp.splitType}</p>
+    ${exp.note?`<div style="background:var(--gold-lt);border-radius:12px;padding:10px 14px;margin-bottom:14px"><p style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:2px">📝 ${t('noteLabel')}</p><p style="font-size:13px;color:var(--ink)">${esc(exp.note)}</p></div>`:''}
+    <p class="lbl">${t('payer')}</p>${pRows}
+    ${siSection}
+    <p class="lbl" style="margin-top:16px">${t('participants')} — ${t('share')} & ${t('owedAmt')}</p>
+    <div style="background:var(--card);border-radius:14px;border:1px solid var(--border);padding:0 4px">${oRows}</div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeSheet();openNoteEditor('${gid}','${eid}')">📝 ${t('noteLabel')}</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeSheet()">${t('cancel')}</button>
+    </div>
+  `);
+}
+function render(){
+  document.body.className=S.lang==='th'?'th':'';
+  const screens={
+    'home':()=>{S.activeNav='home';return scrHome();},
+    'create-group':scrCreateGroup,
+    'edit-group':scrEditGroup,
+    'group':scrGroupFiltered,
+    'add-expense':()=>scrAddExp(null),
+    'edit-expense':()=>scrAddExp(S.editExpenseId),
+    'summary':scrSummary,
+    'monthly':scrMonthlySummary,
+    'installments':scrInstall,
+    'cycles':scrCycles,
+    'checklist':scrChecklist,
+    'iowe':()=>{S.activeNav='iowe';return scrIOwe();},
+    'activity':()=>{S.activeNav='activity';return scrActivity();},
+    'profile':()=>{S.activeNav='profile';return scrProfile();},
+  };
+  const fn=screens[S.screen]||screens['home'];
+  const html=fn();
+  const ex=document.getElementById('mc');if(ex)ex.remove();
+  const div=document.createElement('div');div.id='mc';div.innerHTML=html;
+  document.getElementById('app').insertBefore(div,document.getElementById('bottom-nav'));
+  renderNav();
+  if(S.screen==='create-group')initCG();
+  if(S.screen==='add-expense'){_ST='equal';updSplit();chkExpForm();}
+  if(S.screen==='edit-expense'){
+    const _exp=getG(S.selectedGroupId)?.expenses.find(e=>e.id===S.editExpenseId);
+    if(_exp?.subItems&&_exp.subItems.length>0){
+      // subitem mode - _subItems and _expMode already pre-populated in scrAddExp
+      setMode('detail');updSITotal();
+    } else {
+      _ST=_exp?.splitType||'equal';setST(_ST);updSplit();
+    }
+    chkExpForm();
+  }
+  if(S.screen==='installments'){_ICT='monthly';prvInst();}
+  if(S.screen==='cycles')_CF='monthly';
+  window.scrollTo(0,0);
+}
+
+/* ═══════════════ BOOT ═══════════════════════════════════ */
+load();render();
+</script>
+<!-- ── COPY CODE BUTTON ──────────────────────────────── -->
+<button id="copy-btn" onclick="copyCode()" title="Copy all code"
+  style="position:fixed;bottom:28px;right:16px;z-index:9999;
+    width:52px;height:52px;border-radius:50%;border:none;
+    background:linear-gradient(135deg,#1A1A2E,#2D2D4E);
+    color:#fff;font-size:22px;cursor:pointer;
+    box-shadow:0 4px 20px rgba(26,26,46,.35);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s,opacity .15s">
+  📋
+</button>
+<div id="copy-toast"
+  style="position:fixed;bottom:90px;right:16px;z-index:9999;
+    background:#1A1A2E;color:#fff;padding:8px 16px;
+    border-radius:100px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:opacity .3s;
+    white-space:nowrap;box-shadow:0 4px 16px rgba(26,26,46,.3)">
+  ✅ Copied!
+</div>
+<script>
+function copyCode(){
+  const btn=document.getElementById('copy-btn');
+  const ct=document.getElementById('copy-toast');
+  fetch(window.location.href)
+    .then(r=>r.text())
+    .then(html=>{
+      navigator.clipboard.writeText(html).then(()=>{
+        btn.textContent='✅';
+        ct.style.opacity='1';
+        setTimeout(()=>{btn.textContent='📋';ct.style.opacity='0';},2000);
+      }).catch(()=>{
+        // Fallback: textarea trick
+        const ta=document.createElement('textarea');
+        ta.value=html;ta.style.position='fixed';ta.style.opacity='0';
+        document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent='✅';ct.style.opacity='1';
+        setTimeout(()=>{btn.textContent='📋';ct.style.opacity='0';},2000);
+      });
+    });
+}
+document.getElementById('copy-btn').addEventListener('mousedown',function(){this.style.transform='scale(.9)';});
+document.getElementById('copy-btn').addEventListener('mouseup',function(){this.style.transform='scale(1)';});
+document.getElementById('copy-btn').addEventListener('touchstart',function(){this.style.transform='scale(.9)';},{passive:true});
+document.getElementById('copy-btn').addEventListener('touchend',function(){this.style.transform='scale(1)';},{passive:true});
+</script>
+</body>
+</html>
