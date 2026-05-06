@@ -53,8 +53,9 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .lang-btn.on{background:#fff;color:var(--accent)}
 
 .input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:13px 15px;font-size:16px;color:var(--ink);outline:none;transition:border-color .2s;-webkit-appearance:none}
-.input:focus{border-color:var(--accent);background:#fff}
-.input::placeholder{color:var(--muted)}
+.input.invalid{border-color:var(--danger)!important;background:var(--red-bg)!important}
+.input-err{color:var(--danger);font-size:11px;font-weight:600;margin-top:4px;display:none}
+.input.invalid + .input-err{display:block}
 
 .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
 
@@ -468,108 +469,116 @@ function getG(id){return S.groups.find(g=>g.id===id);}
 function updG(g){S.groups=S.groups.map(x=>x.id===g.id?g:x);save();}
 const todayStr=()=>new Date().toISOString().slice(0,10);
 
-/* ── Balance computation (multi-payer aware) ─────────── */
-/* ── Shared share-computation (single source of truth) ── */
-/* ── Two-map accounting (single source of truth) ────────
-   paidMap[userId] = total actually paid
-   owedMap[userId] = total actually consumed
-   balance = paidMap - owedMap
-   Never divides by member count for subitem expenses.
-────────────────────────────────────────────────────── */
-function calcBal(members, expenses){
-  const paid={}, owed={};
-  members.forEach(m=>{ paid[m.id]=0; owed[m.id]=0; });
-
-  expenses.forEach(exp=>{
-    const amt=+(+exp.amount).toFixed(2)||0;
-    if(!amt) return;
-
-    /* ── STEP 1: Credit payers ── */
-    const payers = exp.payers||[{id:exp.paidById, amt}];
-    payers.forEach(p=>{
-      const v=+(+p.amt).toFixed(2);
-      paid[p.id]=(paid[p.id]||0)+v;
-    });
-
-    /* ── STEP 2: Debit consumers — never assume equal ── */
-    if(exp.subItems && exp.subItems.length>0){
-      /* subitem mode: each item has explicit consumers */
-      exp.subItems.forEach(item=>{
-        const c=item.consumers||[];
-        if(!c.length) return;
-        const sh=+((+item.price||0)/c.length).toFixed(2);
-        c.forEach(id=>{ owed[id]=(owed[id]||0)+sh; });
-      });
-
-    } else if(exp.splitType==='custom'){
-      const ids=exp.participants||members.map(m=>m.id);
-      ids.forEach(id=>{
-        const v=+(+(exp.customAmounts?.[id])||0).toFixed(2);
-        owed[id]=(owed[id]||0)+v;
-      });
-
-    } else if(exp.splitType==='percentage'){
-      const ids=exp.participants||members.map(m=>m.id);
-      ids.forEach(id=>{
-        const v=+(amt*((exp.percentages?.[id]||0)/100)).toFixed(2);
-        owed[id]=(owed[id]||0)+v;
-      });
-
-    } else {
-      /* equal / multipayer — only valid non-subitem modes */
-      const ids=exp.participants||members.map(m=>m.id);
-      const sh=+(amt/ids.length).toFixed(2);
-      ids.forEach(id=>{ owed[id]=(owed[id]||0)+sh; });
-    }
-  });
-
-  /* ── STEP 3: balance = paid - owed ── */
-  const b={};
-  members.forEach(m=>{
-    let v=+((paid[m.id]||0)-(owed[m.id]||0)).toFixed(2);
-    if(Object.is(v,-0)) v=0; // prevent -0
-    b[m.id]=v;
-  });
-  return b;
+/* ── Safe Math Expression Evaluator (PEMDAS) ────────── */
+function evalMath(str) {
+  if (typeof str !== 'string') return 0;
+  let clean = str.replace(/\s+/g, '').replace(/,/g, '');
+  if (!clean) return 0;
+  // Allow numbers, operators + - * / and parentheses ( ) .
+  if (!/^[0-9+\-*/().]+$/.test(clean)) return NaN;
+  try {
+    // Basic validation for double operators or empty parentheses
+    if (/[\+\-\*\/]{2,}/.test(clean) || /\(\)/.test(clean)) return NaN;
+    const res = new Function(`return ${clean}`)();
+    return typeof res === 'number' && isFinite(res) ? +res.toFixed(2) : NaN;
+  } catch (e) {
+    return NaN;
+  }
 }
 
-/* ── getShares: used ONLY for display breakdown, NOT for calcBal ── */
-function getShares(exp, members){
-  const shares={};
-  const amt=+exp.amount||0;
-  if(exp.subItems && exp.subItems.length>0){
-    exp.subItems.forEach(item=>{
-      const c=item.consumers||[]; if(!c.length) return;
-      const sh=+((+item.price||0)/c.length).toFixed(2);
-      c.forEach(id=>{ shares[id]=+((shares[id]||0)+sh).toFixed(2); });
+/* ── Pairwise Debt Calculation ─────────────────────── */
+function getPairwise(members, expenses) {
+  const debts = {}; // key: "debtorId->creditorId"
+
+  expenses.forEach(exp => {
+    const total = +exp.amount || 0;
+    if (total <= 0) return;
+
+    // Step 1: Raw debts from each bill
+    const payers = exp.payers && exp.payers.length > 0 ? exp.payers : [{ id: exp.paidById, amt: total }];
+    const shares = getShares(exp, members);
+
+    Object.entries(shares).forEach(([debtorId, shareAmt]) => {
+      payers.forEach(payer => {
+        if (debtorId === payer.id) return;
+        const owedToPayer = shareAmt * (payer.amt / total);
+        if (owedToPayer > 0) {
+          const key = `${debtorId}->${payer.id}`;
+          debts[key] = (debts[key] || 0) + owedToPayer;
+        }
+      });
+    });
+  });
+
+  // Step 2: Combine debts (already done by map key)
+
+  // Step 3: Cancel debts only when they are exact reverse pairs
+  const final = [];
+  const processed = new Set();
+  const keys = Object.keys(debts);
+
+  keys.forEach(k => {
+    if (processed.has(k)) return;
+    const [d, c] = k.split('->');
+    const r = `${c}->${d}`;
+    
+    const amt = debts[k] || 0;
+    const ramt = debts[r] || 0;
+
+    if (amt > ramt) {
+      final.push({ from: d, to: c, amount: +(amt - ramt).toFixed(2) });
+    } else if (ramt > amt) {
+      final.push({ from: c, to: d, amount: +(ramt - amt).toFixed(2) });
+    }
+    processed.add(k);
+    processed.add(r);
+  });
+
+  return final.filter(tx => tx.amount > 0.01);
+}
+
+/* ── getShares: used for pairwise calculation ── */
+function getShares(exp, members) {
+  const shares = {};
+  const amt = +exp.amount || 0;
+  if (exp.subItems && exp.subItems.length > 0) {
+    exp.subItems.forEach(item => {
+      const c = item.consumers || [];
+      if (!c.length) return;
+      const sh = (+item.price || 0) / c.length;
+      c.forEach(id => { shares[id] = (shares[id] || 0) + sh; });
     });
   } else {
-    const ids=exp.participants||(members||[]).map(m=>m.id);
-    if(exp.splitType==='custom'){
-      ids.forEach(id=>{ shares[id]=+(+(exp.customAmounts?.[id])||0).toFixed(2); });
-    } else if(exp.splitType==='percentage'){
-      ids.forEach(id=>{ shares[id]=+(amt*((exp.percentages?.[id]||0)/100)).toFixed(2); });
+    const ids = exp.participants || (members || []).map(m => m.id);
+    if (exp.splitType === 'custom') {
+      ids.forEach(id => { shares[id] = +(+(exp.customAmounts?.[id]) || 0).toFixed(2); });
+    } else if (exp.splitType === 'percentage') {
+      ids.forEach(id => { shares[id] = amt * ((exp.percentages?.[id] || 0) / 100); });
     } else {
-      const sh=+(amt/ids.length).toFixed(2);
-      ids.forEach(id=>{ shares[id]=sh; });
+      const sh = amt / ids.length;
+      ids.forEach(id => { shares[id] = sh; });
     }
   }
   return shares;
 }
 
-/* ── Greedy debt simplification ─────────────────────── */
-function simplify(bals){
-  const pos=[],neg=[];
-  Object.entries(bals).forEach(([id,b])=>{
-    if(b>0.5)pos.push({id,b});else if(b<-0.5)neg.push({id,b:-b});
+/* ── Legacy balance for simple display (Net = OwedToMe - IOwe) ── */
+function calcBal(members, expenses) {
+  const txns = getPairwise(members, expenses);
+  const b = {};
+  members.forEach(m => b[m.id] = 0);
+  txns.forEach(tx => {
+    b[tx.to] = +(b[tx.to] + tx.amount).toFixed(2);
+    b[tx.from] = +(b[tx.from] - tx.amount).toFixed(2);
   });
-  const tx=[];let pi=0,ni=0;
-  while(pi<pos.length&&ni<neg.length){
-    const p=pos[pi],n=neg[ni],a=Math.min(p.b,n.b);
-    tx.push({from:n.id,to:p.id,amount:a});
-    p.b-=a;n.b-=a;if(p.b<0.5)pi++;if(n.b<0.5)ni++;
-  }
-  return tx;
+  return b;
+}
+
+function simplify(bals) {
+  // This is now just a wrapper for getPairwise to maintain compatibility
+  // but we should pass members and expenses if possible.
+  // Since scrSummary has access to them, we'll update scrSummary call.
+  return []; 
 }
 
 /* ═══════════════ TOAST ═══════════════════════════════════ */
@@ -687,7 +696,7 @@ function scrHome(){
           <span style="font-size:11px;color:var(--blue);font-weight:600">${t('quickSplitDesc')}</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <input class="input flex1" type="number" inputmode="decimal" id="qs-a" placeholder="${t('billTotal')}" style="padding:10px 12px" oninput="calcQS()"/>
+          <input class="input flex1" type="text" inputmode="decimal" id="qs-a" placeholder="${t('billTotal')}" style="padding:10px 12px" oninput="calcQS()"/>
           <span class="txt-muted" style="font-size:18px">÷</span>
           <input class="input" type="number" inputmode="numeric" id="qs-p" value="2" style="width:64px;padding:10px;text-align:center" oninput="calcQS()"/>
           <span class="txt-muted" style="font-size:13px">${t('splitAmong')}</span>
@@ -903,9 +912,9 @@ function scrAddExp(editId){
       <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
       <span class="flex1" style="font-size:14px;font-weight:500">${m.isMe?t('youLabel'):esc(m.name)}</span>
       <span id="eq-${m.id}" class="${dSplit==='equal'&&!hasSubItems?'':'hidden'}" style="font-family:'Fraunces',serif;font-weight:700;color:var(--accent);font-size:13px"></span>
-      <input type="number" class="input ${dSplit==='custom'&&!hasSubItems?'':'hidden'}" id="ca-${m.id}" placeholder="0" value="${exp?.customAmounts?.[m.id]||''}" style="width:82px;padding:7px 10px;font-size:14px;text-align:right" oninput="updCustom()"/>
+      <input type="text" inputmode="decimal" class="input ${dSplit==='custom'&&!hasSubItems?'':'hidden'}" id="ca-${m.id}" placeholder="0" value="${exp?.customAmounts?.[m.id]||''}" style="width:82px;padding:7px 10px;font-size:14px;text-align:right" oninput="updCustom()"/>
       <div class="${dSplit==='percentage'&&!hasSubItems?'flex items-center gap8':'hidden'}" id="pw-${m.id}">
-        <input type="number" class="input" id="pct-${m.id}" placeholder="0" value="${exp?.percentages?.[m.id]||''}" style="width:58px;padding:7px 8px;font-size:14px;text-align:right" oninput="updPct()"/>
+        <input type="text" inputmode="decimal" id="pct-${m.id}" placeholder="0" value="${exp?.percentages?.[m.id]||''}" style="width:58px;padding:7px 8px;font-size:14px;text-align:right" oninput="updPct()"/>
         <span class="txt-muted" style="font-size:13px">%</span>
       </div>
     </div>`;
@@ -916,7 +925,7 @@ function scrAddExp(editId){
     return `<div class="member-row">
       <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
       <span class="flex1" style="font-size:14px;font-weight:500">${m.isMe?t('youLabel'):esc(m.name)}</span>
-      <input type="number" class="input" id="mp-${m.id}" placeholder="0" value="${pp&&exp?.splitType==='multipayer'?pp.amt:''}" style="width:100px;padding:7px 10px;font-size:14px;text-align:right" oninput="updMP()"/>
+      <input type="text" inputmode="decimal" id="mp-${m.id}" placeholder="0" value="${pp&&exp?.splitType==='multipayer'?pp.amt:''}" style="width:100px;padding:7px 10px;font-size:14px;text-align:right" oninput="updMP()"/>
     </div>`;
   }).join('');
 
@@ -938,7 +947,7 @@ function scrAddExp(editId){
         <p class="lbl" style="margin-bottom:12px">${t('amount')}</p>
         <div style="display:flex;align-items:center;justify-content:center;gap:4px">
           <span class="ff-s" style="font-size:36px;color:var(--muted);font-weight:700">฿</span>
-          <input type="number" inputmode="decimal" placeholder="0" id="ea" value="${exp?exp.amount:''}"
+          <input type="text" inputmode="decimal" placeholder="0" id="ea" value="${exp?exp.amount:''}"
             style="font-family:'Fraunces',serif;font-size:46px;font-weight:700;border:none;background:transparent;outline:none;width:180px;text-align:center;color:var(--ink)" oninput="updSplit()"/>
         </div>
       </div>
@@ -1043,9 +1052,9 @@ function renderSIRow(g,item,idx){
       <input class="input flex1" placeholder="${t('itemName')}" value="${esc(item.name||'')}"
         style="padding:10px 12px;font-size:14px"
         oninput="updSIName('${item.id}',this.value)"/>
-      <input type="number" inputmode="decimal" class="input" placeholder="0" value="${item.price||''}"
+      <input type="text" inputmode="decimal" class="input" id="sip-${item.id}" placeholder="0" value="${item.price||''}"
         style="width:90px;padding:10px 12px;font-size:14px;font-family:'Fraunces',serif;font-weight:700;text-align:right"
-        oninput="updSIPrice('${item.id}',+this.value||0)"/>
+        oninput="updSplit()"/>
       <button onclick="removeSI('${item.id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">×</button>
     </div>
     <div>
@@ -1093,10 +1102,10 @@ function togSIC(iid,mid){
 function updSIName(iid,v){const s=_subItems.find(x=>x.id===iid);if(s)s.name=v;}
 function updSIPrice(iid,v){const s=_subItems.find(x=>x.id===iid);if(s){s.price=v;updSITotal();}}
 function updSITotal(){
-  const tot=_subItems.reduce((a,s)=>a+(+s.price||0),0);
+  const tot=_subItems.reduce((a,s)=>a+getV('sip-'+s.id),0);
   const bar=document.getElementById('si-total-bar');
   const val=document.getElementById('si-total-val');
-  const billAmt=+document.getElementById('ea')?.value||0;
+  const billAmt=getV('ea');
   if(bar)bar.style.display=_subItems.length>0?'flex':'none';
   if(val){
     const ok=billAmt===0||Math.abs(tot-billAmt)<0.5;
@@ -1147,7 +1156,7 @@ function setST(tp){
 }
 function updSplit(){
   if(_expMode==='detail'){updSITotal();return;}
-  const amt=+document.getElementById('ea')?.value||0,pts=getParts(),fv=document.getElementById('sf-val');
+  const amt=getV('ea'),pts=getParts(),fv=document.getElementById('sf-val');
   if(!fv)return;
   if(_ST==='equal'||_ST==='multipayer'){
     const sh=pts.length?amt/pts.length:0;
@@ -1161,45 +1170,51 @@ function updSplit(){
   chkExpForm();
 }
 function updCustom(){
-  const amt=+document.getElementById('ea')?.value||0,pts=getParts();let tot=0;
-  pts.forEach(id=>{tot+=+document.getElementById('ca-'+id)?.value||0;});
+  const amt=getV('ea'),pts=getParts();let tot=0;
+  pts.forEach(id=>{tot+=getV('ca-'+id);});
   const ok=Math.abs(tot-amt)<0.5,fv=document.getElementById('sf-val');
   if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
   chkExpForm();
 }
 function updPct(){
   const pts=getParts();let tot=0;
-  pts.forEach(id=>{tot+=+document.getElementById('pct-'+id)?.value||0;});
+  pts.forEach(id=>{tot+=getV('pct-'+id);});
   const ok=Math.abs(tot-100)<0.5,fv=document.getElementById('sf-val');
   if(fv){fv.textContent=`${tot.toFixed(0)}%`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
   chkExpForm();
 }
 function updMP(){
-  const amt=+document.getElementById('ea')?.value||0;
+  const amt=getV('ea');
   const g=getG(S.selectedGroupId);let tot=0;
-  g.members.forEach(m=>{tot+=+document.getElementById('mp-'+m.id)?.value||0;});
+  g.members.forEach(m=>{tot+=getV('mp-'+m.id);});
   const ok=Math.abs(tot-amt)<0.5,fv=document.getElementById('mp-tv');
   if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
   chkExpForm();
 }
 function chkExpForm(){
-  const amt=+document.getElementById('ea')?.value||0;
+  const amt=getV('ea');
   const title=(document.getElementById('et')?.value||'').trim();
   let valid=amt>0&&title;
   if(_expMode==='detail'){
-    const siTot=_subItems.reduce((a,s)=>a+(+s.price||0),0);
+    const siTot=_subItems.reduce((a,s)=>a+getV('sip-'+s.id),0);
     valid=valid&&_subItems.length>0&&Math.abs(siTot-amt)<0.5&&_subItems.every(s=>s.consumers&&s.consumers.length>0);
   } else {
     const pts=getParts();valid=valid&&pts.length>0;
-    if(_ST==='custom'){let ct=0;pts.forEach(id=>{ct+=+document.getElementById('ca-'+id)?.value||0;});valid=valid&&Math.abs(ct-amt)<0.5;}
-    if(_ST==='percentage'){let pt=0;pts.forEach(id=>{pt+=+document.getElementById('pct-'+id)?.value||0;});valid=valid&&Math.abs(pt-100)<0.5;}
-    if(_ST==='multipayer'){const g=getG(S.selectedGroupId);let mt=0;g.members.forEach(m=>{mt+=+document.getElementById('mp-'+m.id)?.value||0;});valid=valid&&Math.abs(mt-amt)<0.5;}
+    if(_ST==='custom'){let ct=0;pts.forEach(id=>{ct+=getV('ca-'+id);});valid=valid&&Math.abs(ct-amt)<0.5;}
+    if(_ST==='percentage'){let pt=0;pts.forEach(id=>{pt+=getV('pct-'+id);});valid=valid&&Math.abs(pt-100)<0.5;}
+    if(_ST==='multipayer'){const g=getG(S.selectedGroupId);let mt=0;g.members.forEach(m=>{mt+=getV('mp-'+m.id);});valid=valid&&Math.abs(mt-amt)<0.5;}
   }
   const b=document.getElementById('se-btn');if(b)b.disabled=!valid;
 }
+function getV(id){
+  const el=document.getElementById(id);if(!el)return 0;
+  const v=evalMath(el.value);
+  if(isNaN(v)){ el.classList.add('invalid'); return 0; }
+  el.classList.remove('invalid'); return v;
+}
 function doSaveExp(editId,gid){
   const g=getG(gid);
-  const amt=+document.getElementById('ea').value||0;
+  const amt=getV('ea');
   const title=document.getElementById('et').value.trim();
   const emoji=document.getElementById('ee-btn').dataset.e||'🍽️';
   const paidById=document.querySelector('.po')?.dataset.id||g.members[0].id;
@@ -1209,38 +1224,32 @@ function doSaveExp(editId,gid){
 
   let expData;
   if(_expMode==='detail'){
-
-    // ── Read subItems 100% from DOM — never trust oninput state ──
     const builtItems=_subItems.map(item=>{
       const card=document.getElementById('si-'+item.id);
       let name=item.name, price=item.price;
       if(card){
         const nameIn=card.querySelector('input:not([type="number"])');
-        const priceIn=card.querySelector('input[type="number"]');
-        if(nameIn)  name=nameIn.value.trim()||name;
-        if(priceIn) price=parseFloat(priceIn.value)||0;
+        price = getV('sip-'+item.id);
+        if(nameIn) name=nameIn.value.trim()||name;
       }
       return {id:item.id, name, price:+price.toFixed(2), consumers:[...item.consumers]};
     });
-    // ─────────────────────────────────────────────────────────────
-
     const allConsumers=[...new Set(builtItems.flatMap(s=>s.consumers))];
     expData={id:editId||uid(),title,amount:amt,emoji,paidById,payers,
       splitType:'subitem',participants:allConsumers,
       subItems:builtItems,
       customAmounts:{},percentages:{},date:prevDate,note:prevNote};
-
   } else {
     const pts=getParts();
     const customAmounts={},percentages={};
     pts.forEach(id=>{
-      customAmounts[id]=+document.getElementById('ca-'+id)?.value||0;
-      percentages[id]=+document.getElementById('pct-'+id)?.value||0;
+      customAmounts[id]=getV('ca-'+id);
+      percentages[id]=getV('pct-'+id);
     });
     let finalPayers=payers;
     if(_ST==='multipayer'){
       finalPayers=[];
-      g.members.forEach(m=>{const v=+document.getElementById('mp-'+m.id)?.value||0;if(v>0)finalPayers.push({id:m.id,amt:v});});
+      g.members.forEach(m=>{const v=getV('mp-'+m.id);if(v>0)finalPayers.push({id:m.id,amt:v});});
     }
     expData={id:editId||uid(),title,amount:amt,emoji,
       paidById:finalPayers[0]?.id||paidById,payers:finalPayers,
@@ -1262,26 +1271,47 @@ function pickEE(e){const b=document.getElementById('ee-btn');if(b){b.textContent
 ═══════════════════════════════════════════════════════════ */
 function scrSummary(){
   const g=getG(S.selectedGroupId);if(!g)return go('home');
-  const bals=calcBal(g.members,g.expenses),txns=simplify(bals);
+  const bals=calcBal(g.members,g.expenses);
+  const txns=getPairwise(g.members,g.expenses);
   const total=g.expenses.reduce((a,e)=>a+(+e.amount||0),0);
 
   const bRows=g.members.map((m,i)=>{
     const b=bals[m.id]||0,col=b>=0?'var(--sage)':'var(--danger)';
-    return `<div class="flex items-center gap12" style="padding:10px 0;border-bottom:1px solid var(--border)">
-      <div class="av ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
-      <div class="flex1"><p class="fw7" style="font-size:14px">${m.isMe?t('youLabel'):esc(m.name)}</p>
-        <p class="txt-muted" style="font-size:12px">${b>=0?t('getsBack'):t('owes')}</p></div>
-      <span class="ff-s fw7" style="font-size:18px;color:${col}">${b>=0?'+':'−'}${fmt(Math.abs(b))}</span>
+    
+    // Get pairwise breakdown for this person
+    const iOwe = txns.filter(t => t.from === m.id);
+    const owedToMe = txns.filter(t => t.to === m.id);
+    
+    let detail = '';
+    if (iOwe.length > 0 || owedToMe.length > 0) {
+      detail = '<div style="margin-top:8px;padding-left:12px;border-left:2px solid var(--border);font-size:11px;display:flex;flex-direction:column;gap:4px">';
+      iOwe.forEach(t => {
+        detail += `<div style="color:var(--danger)">โ†’ ${esc(GN(g, t.to))} <span class="ff-s fw7">${fmt(t.amount)}</span></div>`;
+      });
+      owedToMe.forEach(t => {
+        detail += `<div style="color:var(--sage)">โ† ${esc(GN(g, t.from))} <span class="ff-s fw7">${fmt(t.amount)}</span></div>`;
+      });
+      detail += '</div>';
+    }
+
+    return `<div class="flex-col" style="padding:14px 0;border-bottom:1px solid var(--border)">
+      <div class="flex items-center gap12">
+        <div class="av ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+        <div class="flex1"><p class="fw7" style="font-size:14px">${m.isMe?t('youLabel'):esc(m.name)}</p>
+          <p class="txt-muted" style="font-size:12px">${b>=0?t('getsBack'):t('owes')}</p></div>
+        <span class="ff-s fw7" style="font-size:18px;color:${col}">${b>=0?'+':'โˆ’'}${fmt(Math.abs(b))}</span>
+      </div>
+      ${detail}
     </div>`;
   }).join('');
 
   const sRows=txns.length===0
-    ?`<div style="text-align:center;padding:20px;color:var(--sage)"><div style="font-size:28px">✅</div><p class="fw7 mt8">${t('allSettled')}</p></div>`
+    ?`<div style="text-align:center;padding:20px;color:var(--sage)"><div style="font-size:28px">โœ…</div><p class="fw7 mt8">${t('allSettled')}</p></div>`
     :txns.map(tx=>{
         const fi=GI(g,tx.from),ti=GI(g,tx.to);
         return `<div class="flex items-center gap12" style="padding:12px 0;border-bottom:1px solid var(--border)">
           <div class="av av-sm ${avC(fi)}">${GN(g,tx.from).slice(0,2).toUpperCase()}</div>
-          <div class="flex1" style="font-size:13px;font-weight:500"><strong>${esc(GN(g,tx.from))}</strong> → <strong>${esc(GN(g,tx.to))}</strong></div>
+          <div class="flex1" style="font-size:13px;font-weight:500"><strong>${esc(GN(g,tx.from))}</strong> โ†’ <strong>${esc(GN(g,tx.to))}</strong></div>
           <div class="av av-sm ${avC(ti)}">${GN(g,tx.to).slice(0,2).toUpperCase()}</div>
           <span class="ff-s fw7 txt-accent" style="font-size:17px;margin-left:4px">${fmt(tx.amount)}</span>
         </div>`;
@@ -1401,7 +1431,7 @@ function scrInstall(){
         <input class="input" id="it" placeholder="${t('itemNamePh')}"/>
         <div class="grid2">
           <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('totalPrice')}</p>
-            <input class="input" type="number" inputmode="decimal" id="iv" placeholder="0" oninput="prvInst()"/></div>
+            <input class="input" type="text" inputmode="decimal" id="iv" placeholder="0" oninput="prvInst()"/></div>
           <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('monthsLabel')}</p>
             <input class="input" type="number" inputmode="numeric" id="im" value="6" oninput="prvInst()"/></div>
         </div>
@@ -1430,7 +1460,7 @@ function scrInstall(){
 let _ICT='monthly';
 function setICT(c){_ICT=c;document.getElementById('ic-mo')?.classList.toggle('on',c==='monthly');document.getElementById('ic-wk')?.classList.toggle('on',c==='weekly');prvInst();}
 function prvInst(){
-  const tot=+document.getElementById('iv')?.value||0,mo=+document.getElementById('im')?.value||1;
+  const tot=getV('iv'),mo=+document.getElementById('im')?.value||1;
   const g=getG(S.selectedGroupId),nm=g.members.length,pr=document.getElementById('ip');
   if(tot>0){
     pr?.classList.remove('hidden');
@@ -1501,7 +1531,7 @@ function scrCycles(){
         <input class="input" id="cn" placeholder="${t('cycleNamePh')}"/>
         <div class="grid2">
           <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('cycleAmt')}</p>
-            <input class="input" type="number" inputmode="decimal" id="ca2" placeholder="0"/></div>
+            <input class="input" type="text" inputmode="decimal" id="ca2" placeholder="0"/></div>
           <div><p style="font-size:12px;color:var(--muted);margin-bottom:4px">${t('cycleFreq')}</p>
             <div class="pills"><button class="pill on" id="cf-mo" onclick="setCF('monthly')">${t('monthly')}</button>
             <button class="pill" id="cf-wk" onclick="setCF('weekly')">${t('weekly')}</button></div>
@@ -1526,11 +1556,12 @@ function nextDue(c){
   const start=new Date(c.startDate||todayStr()),today=new Date();let d=new Date(start);
   while(d<=today){if(c.freq==='weekly')d.setDate(d.getDate()+7);else d.setMonth(d.getMonth()+1);}
   return d;
-}
-function addCycle(gid){
+
+function saveCycle(gid){
   const g=getG(gid);
-  const name=document.getElementById('cn').value.trim(),amount=+document.getElementById('ca2').value||0;
+  const name=document.getElementById('cn').value.trim(),amount=getV('ca2');
   if(!name||!amount){toast(t('fillTitleAmt'));return;}
+
   const cycle={id:uid(),name,amount,freq:_CF,startDate:document.getElementById('cs').value||todayStr(),endDate:document.getElementById('ce').value||null,paidDates:[]};
   updG({...g,cycles:[...(g.cycles||[]),cycle]});toast(t('planAdded'));go('cycles',gid);
 }
@@ -1857,10 +1888,8 @@ function scrIOwe(){
   // Compute all debts & credits across every group
   const iOweList=[],iAmOwedList=[];
   S.groups.forEach(g=>{
-    const bals=calcBal(g.members,g.expenses);
     const myId=g.members[0]?.id;if(!myId)return;
-    const myBal=bals[myId]||0;
-    const txns=simplify(bals);
+    const txns=getPairwise(g.members,g.expenses);
     // I owe: transactions where from===myId
     txns.filter(tx=>tx.from===myId).forEach(tx=>{
       iOweList.push({gid:g.id,gname:g.name,gemoji:g.emoji,toId:tx.to,toName:GN(g,tx.to),toIdx:GI(g,tx.to),amount:tx.amount});
@@ -1937,7 +1966,7 @@ function openSettleSheet(gid,toId,suggestedAmt){
     <p class="ff-s fw7" style="font-size:20px;margin-bottom:4px">${t('settleWith')} ${esc(toName)}</p>
     <p class="txt-muted" style="font-size:13px;margin-bottom:18px">${g.emoji} ${esc(g.name)}</p>
     <p class="lbl">${t('settleAmount')}</p>
-    <input class="input mb12" type="number" inputmode="decimal" id="stl-amt" value="${suggestedAmt}" style="font-family:'Fraunces',serif;font-size:22px;font-weight:700"/>
+    <input class="input mb12" type="text" inputmode="decimal" id="stl-amt" value="${suggestedAmt}" style="font-family:'Fraunces',serif;font-size:22px;font-weight:700"/>
     <p class="lbl">${t('settleNote')}</p>
     <textarea class="note-ta mb12" id="stl-note" placeholder="${t('settleNote')}"></textarea>
     <button class="btn btn-primary" onclick="doSettle('${gid}','${toId}')">${t('recordPayment')}</button>
@@ -1947,7 +1976,7 @@ function openSettleSheet(gid,toId,suggestedAmt){
 function doSettle(gid,toId){
   const g=getG(gid);
   const myId=g.members[0]?.id;
-  const amt=+document.getElementById('stl-amt')?.value||0;
+  const amt=getV('stl-amt');
   const note=document.getElementById('stl-note')?.value||'';
   if(!amt){toast(t('fillTitleAmt'));return;}
   // Record as a settlement expense: payer=me, owed=toId, amt=0 share (just credit)
