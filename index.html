@@ -26,7 +26,7 @@ body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--ink);min-
 body.th{font-family:'Sarabun',sans-serif}
 ::-webkit-scrollbar{width:0}
 input,button,select,textarea{font-family:inherit}
-input[type=number]::-webkit-inner-spin-button,input[ty1pe=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
 
 #app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative}
 
@@ -191,19 +191,52 @@ input[type=number]::-webkit-inner-spin-button,input[ty1pe=number]::-webkit-outer
 .si-total-ok{background:var(--sage-lt);color:var(--sage)}
 .si-total-err{background:#FEE2E2;color:var(--danger)}
 
+/* ── CALCULATOR KEYPAD ──────────────────────── */
+.calc-overlay {
+  position: fixed; inset: 0; background: rgba(26,26,46,0.45);
+  z-index: 1000; display: flex; align-items: flex-end;
+  animation: fadeIn 0.2s ease;
+}
+.calc-sheet {
+  width: 100%; max-width: 430px; margin: 0 auto;
+  background: var(--card); border-radius: 28px 28px 0 0;
+  padding: 20px 20px 32px; box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+  animation: sheetUp 0.3s cubic-bezier(.22,1,.36,1);
+}
+.calc-header {
+  background: var(--bg); padding: 16px; border-radius: 18px;
+  margin-bottom: 20px; min-height: 84px;
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
+  border: 1.5px solid var(--border);
+}
+.calc-display {
+  font-size: 26px; font-weight: 700; color: var(--ink);
+  word-break: break-all; text-align: right; line-height: 1.2;
+}
+.calc-preview {
+  font-size: 14px; color: var(--muted); font-weight: 600; margin-top: 6px;
+}
+.calc-preview.err { color: var(--danger); }
+.calc-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+.calc-btn {
+  border: none; border-radius: 16px; height: 68px;
+  font-size: 24px; font-weight: 600; cursor: pointer;
+  transition: transform 0.1s, background 0.1s;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg); color: var(--ink);
+}
+.calc-btn:active { transform: scale(0.92); background: var(--border); }
+.calc-btn.op { background: var(--accent-lt); color: var(--accent); }
+.calc-btn.del { background: #FEE2E2; color: var(--danger); font-size: 20px; }
+.calc-btn.eq { background: var(--accent); color: #fff; grid-column: span 2; font-size: 28px; }
+.calc-btn.paren { background: var(--border); color: var(--muted); }
+
 /* ── MATH EXPRESSION PREVIEW ─────────────────────────── */
 .math-preview{
-  display:none;position:absolute;bottom:calc(100% + 4px);left:0;
-  background:var(--ink);color:#fff;
-  font-size:12px;font-weight:600;padding:5px 10px;
-  border-radius:8px;white-space:nowrap;z-index:50;pointer-events:none;
-  box-shadow:0 4px 12px rgba(26,26,46,.25);
+  display:none !important;
 }
-.math-preview::after{
-  content:'';position:absolute;top:100%;left:14px;
-  border:5px solid transparent;border-top-color:var(--ink);
-}
-.math-preview.err{background:var(--danger)}
 .math-wrap{position:relative;display:flex;flex:1}
 .math-wrap .input{width:100%}
 .math-wrap-block{position:relative}
@@ -215,6 +248,42 @@ input[type=number]::-webkit-inner-spin-button,input[ty1pe=number]::-webkit-outer
 <div id="app">
   <div id="bottom-nav" class="hidden"></div>
   <div id="toast" class="hide"></div>
+  
+  <!-- Calculator Keypad Overlay -->
+  <div id="calc-overlay" class="calc-overlay hidden" onclick="if(event.target===this)closeCalc()">
+    <div class="calc-sheet">
+      <div class="sheet-handle"></div>
+      <div class="calc-header">
+        <div id="calc-display" class="calc-display">0</div>
+        <div id="calc-preview" class="calc-preview"></div>
+      </div>
+      <div class="calc-grid">
+        <button class="calc-btn paren" onclick="calcPush('(')">(</button>
+        <button class="calc-btn paren" onclick="calcPush(')')">)</button>
+        <button class="calc-btn op" onclick="calcPush('/')">/</button>
+        <button class="calc-btn del" onclick="calcPush('⌫')">⌫</button>
+        
+        <button class="calc-btn num" onclick="calcPush('7')">7</button>
+        <button class="calc-btn num" onclick="calcPush('8')">8</button>
+        <button class="calc-btn num" onclick="calcPush('9')">9</button>
+        <button class="calc-btn op" onclick="calcPush('*')">×</button>
+        
+        <button class="calc-btn num" onclick="calcPush('4')">4</button>
+        <button class="calc-btn num" onclick="calcPush('5')">5</button>
+        <button class="calc-btn num" onclick="calcPush('6')">6</button>
+        <button class="calc-btn op" onclick="calcPush('-')">−</button>
+        
+        <button class="calc-btn num" onclick="calcPush('1')">1</button>
+        <button class="calc-btn num" onclick="calcPush('2')">2</button>
+        <button class="calc-btn num" onclick="calcPush('3')">3</button>
+        <button class="calc-btn op" onclick="calcPush('+')">+</button>
+        
+        <button class="calc-btn num" onclick="calcPush('0')">0</button>
+        <button class="calc-btn num" onclick="calcPush('.')">.</button>
+        <button class="calc-btn eq" onclick="calcPush('=')">=</button>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
 'use strict';
@@ -490,54 +559,58 @@ const todayStr=()=>new Date().toISOString().slice(0,10);
 
 /* ── Safe Math Expression Evaluator (PEMDAS) ────────── */
 function evalMath(str) {
-  if (typeof str !== 'string') return 0;
-  let clean = str.replace(/\s+/g, '').replace(/,/g, '');
-  if (!clean) return 0;
-  // Allow numbers, operators + - * / and parentheses ( ) .
-  if (!/^[0-9+\-*/().]+$/.test(clean)) return NaN;
+  if (typeof str !== 'string') return NaN;
+  const s = str.replace(/\s+/g, '').replace(/,/g, '');
+  if (!s) return 0;
+  // Strictly allow only numbers, operators, and parentheses
+  if (!/^[0-9+\-*/().]+$/.test(s)) return NaN;
+  
+  const tokens = s.match(/[0-9.]+|[+\-*/()]/g);
+  if (!tokens) return NaN;
+  
+  let i = 0;
+  const expr = () => {
+    let res = term();
+    while (i < tokens.length && (tokens[i] === '+' || tokens[i] === '-')) {
+      const op = tokens[i++];
+      const next = term();
+      res = op === '+' ? res + next : res - next;
+    }
+    return res;
+  };
+  const term = () => {
+    let res = factor();
+    while (i < tokens.length && (tokens[i] === '*' || tokens[i] === '/')) {
+      const op = tokens[i++];
+      const next = factor();
+      if (next === 0) throw new Error('DivByZero');
+      res = op === '*' ? res * next : res / next;
+    }
+    return res;
+  };
+  const factor = () => {
+    let t = tokens[i++];
+    if (t === '(') {
+      const res = expr();
+      if (tokens[i] === ')') i++; // skip ')'
+      return res;
+    }
+    if (t === '-') return -factor();
+    if (t === '+') return factor();
+    return parseFloat(t || 0);
+  };
+  
   try {
-    // Basic validation for double operators or empty parentheses
-    if (/[\+\-\*\/]{2,}/.test(clean) || /\(\)/.test(clean)) return NaN;
-    const res = new Function(`return ${clean}`)();
-    return typeof res === 'number' && isFinite(res) ? +res.toFixed(2) : NaN;
+    const res = expr();
+    return isFinite(res) ? +res.toFixed(2) : NaN;
   } catch (e) {
     return NaN;
   }
 }
 
-/*
-/* ── Math input: show live preview tooltip while typing ── */
-function mathInput(el) {
-  const raw = (el.value || '').trim();
-  let tip = el._mathTip;
-  if (!tip) {
-    const parent = el.parentNode;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'math-wrap-block';
-    parent.insertBefore(wrapper, el);
-    wrapper.appendChild(el);
-    tip = document.createElement('div');
-    tip.className = 'math-preview';
-    wrapper.appendChild(tip);
-    el._mathTip = tip;
-  }
-  const hasOp = /[+\-*/()]/.test(raw);
-  if (!raw || !hasOp) { tip.style.display = 'none'; return; }
-  const val = evalMath(raw);
-  if (isNaN(val)) {
-    tip.textContent = '\u2715 invalid expression';
-    tip.className = 'math-preview err';
-  } else {
-    tip.textContent = '= ' + (+val.toFixed(2)).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
-    tip.className = 'math-preview';
-  }
-  tip.style.display = 'block';
-}
-
 /* ── Math blur: evaluate on blur, replace with result ── */
 function mathBlur(el, onChangeCb) {
   const raw = (el.value || '').trim();
-  if (el._mathTip) el._mathTip.style.display = 'none';
   if (!raw) { el.classList.remove('invalid'); return; }
   if (/^[0-9]+(\.[0-9]+)?$/.test(raw)) {
     el.classList.remove('invalid');
@@ -567,16 +640,17 @@ function mathBlur(el, onChangeCb) {
 /* ── Attach math handlers to numeric inputs in a container ── */
 function initMathFields(container) {
   if (!container) container = document;
-  container.querySelectorAll('#ea,#qs-a,#iv,#ca2,#stl-amt,[id^="ca-"],[id^="mp-"],[id^="pct-"],[id^="sip-"]').forEach(el => {
+  container.querySelectorAll('input[inputmode="decimal"], input[inputmode="numeric"], #ea,#qs-a,#iv,#ca2,#stl-amt,[id^="ca-"],[id^="mp-"],[id^="pct-"],[id^="sip-"]').forEach(el => {
     if (el._mathInited) return;
     el._mathInited = true;
-    el.addEventListener('input', () => mathInput(el));
     el.addEventListener('blur', () => {
       const id = el.id || '';
       if      (id === 'ea')           mathBlur(el, updSplit);
       else if (id === 'iv')           mathBlur(el, prvInst);
       else if (id === 'ca2')          mathBlur(el, null);
       else if (id === 'qs-a')         mathBlur(el, calcQS);
+      else if (id === 'qs-p')         mathBlur(el, calcQS);
+      else if (id === 'im')           mathBlur(el, prvInst);
       else if (id === 'stl-amt')      mathBlur(el, null);
       else if (id.startsWith('ca-'))  mathBlur(el, updCustom);
       else if (id.startsWith('mp-'))  mathBlur(el, updMP);
@@ -584,8 +658,83 @@ function initMathFields(container) {
       else if (id.startsWith('sip-')) mathBlur(el, () => { updSITotal(); updSplit(); });
       else                            mathBlur(el, null);
     });
+    // Open keypad on focus/click
+    el.addEventListener('focus', (e) => {
+      e.preventDefault();
+      el.blur(); // Prevent native keyboard
+      openCalc(el);
+    });
+    el.addEventListener('click', () => openCalc(el));
   });
 }
+
+      /* ── Calculator Keypad Logic ── */
+let _calcEl = null;
+function openCalc(el) {
+  _calcEl = el;
+  const overlay = document.getElementById('calc-overlay');
+  const display = document.getElementById('calc-display');
+  overlay.classList.remove('hidden');
+  display.textContent = (el.value || '0').trim() || '0';
+  updCalcPre();
+}
+function closeCalc() {
+  document.getElementById('calc-overlay').classList.add('hidden');
+  _calcEl = null;
+}
+function calcPush(v) {
+  const d = document.getElementById('calc-display');
+  let cur = d.textContent;
+  if (v === '⌫') {
+    d.textContent = cur.length > 1 ? cur.slice(0, -1) : '0';
+  } else if (v === '=') {
+    const res = evalMath(cur);
+    if (isNaN(res)) {
+      toast('Invalid expression');
+    } else {
+      _calcEl.value = String(res);
+      // Trigger all possible update events
+      _calcEl.dispatchEvent(new Event('input', { bubbles: true }));
+      _calcEl.dispatchEvent(new Event('change', { bubbles: true }));
+      _calcEl.dispatchEvent(new Event('blur', { bubbles: true }));
+      if (_calcEl.oninput) _calcEl.oninput();
+      closeCalc();
+    }
+  } else {
+    if (cur === '0') {
+      if (/[0-9(]/.test(v)) d.textContent = v;
+      else if (v === '.') d.textContent = '0.';
+      else d.textContent = '0' + v;
+    } else {
+      d.textContent = cur + v;
+    }
+  }
+  updCalcPre();
+}
+function updCalcPre() {
+  const cur = document.getElementById('calc-display').textContent;
+  const pre = document.getElementById('calc-preview');
+  if (cur === '0' || !/[+\-*/()]/.test(cur)) {
+    pre.textContent = ''; return;
+  }
+  const res = evalMath(cur);
+  if (isNaN(res)) {
+    pre.textContent = 'Invalid expression';
+    pre.classList.add('err');
+  } else {
+    pre.textContent = '= ' + res.toLocaleString('th-TH', {minimumFractionDigits:0, maximumFractionDigits:2});
+    pre.classList.remove('err');
+  }
+}
+// Keyboard support for calculator
+window.addEventListener('keydown', (e) => {
+  const overlay = document.getElementById('calc-overlay');
+  if (!overlay || overlay.classList.contains('hidden')) return;
+  if (/[0-9+\-*/().]/.test(e.key)) { e.preventDefault(); calcPush(e.key === '*' ? '*' : e.key); }
+  else if (e.key === 'Enter') { e.preventDefault(); calcPush('='); }
+  else if (e.key === 'Backspace') { e.preventDefault(); calcPush('⌫'); }
+  else if (e.key === 'Escape') { e.preventDefault(); closeCalc(); }
+});
 
 /* ── Pairwise Debt Calculation ─────────────────────── */
 function getPairwise(members, expenses) {
