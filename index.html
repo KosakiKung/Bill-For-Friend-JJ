@@ -1286,10 +1286,10 @@ function scrSummary(){
     if (iOwe.length > 0 || owedToMe.length > 0) {
       detail = '<div style="margin-top:8px;padding-left:12px;border-left:2px solid var(--border);font-size:11px;display:flex;flex-direction:column;gap:4px">';
       iOwe.forEach(t => {
-        detail += `<div style="color:var(--danger)">โ†’ ${esc(GN(g, t.to))} <span class="ff-s fw7">${fmt(t.amount)}</span></div>`;
+        detail += `<div style="color:var(--danger)">→ ${esc(GN(g, t.to))} <span class="ff-s fw7">${fmt(t.amount)}</span></div>`;
       });
       owedToMe.forEach(t => {
-        detail += `<div style="color:var(--sage)">โ† ${esc(GN(g, t.from))} <span class="ff-s fw7">${fmt(t.amount)}</span></div>`;
+        detail += `<div style="color:var(--sage)">← ${esc(GN(g, t.from))} <span class="ff-s fw7">${fmt(t.amount)}</span></div>`;
       });
       detail += '</div>';
     }
@@ -1299,19 +1299,19 @@ function scrSummary(){
         <div class="av ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
         <div class="flex1"><p class="fw7" style="font-size:14px">${m.isMe?t('youLabel'):esc(m.name)}</p>
           <p class="txt-muted" style="font-size:12px">${b>=0?t('getsBack'):t('owes')}</p></div>
-        <span class="ff-s fw7" style="font-size:18px;color:${col}">${b>=0?'+':'โˆ’'}${fmt(Math.abs(b))}</span>
+        <span class="ff-s fw7" style="font-size:18px;color:${col}">${b>=0?'+':'−'}${fmt(Math.abs(b))}</span>
       </div>
       ${detail}
     </div>`;
   }).join('');
 
   const sRows=txns.length===0
-    ?`<div style="text-align:center;padding:20px;color:var(--sage)"><div style="font-size:28px">โœ…</div><p class="fw7 mt8">${t('allSettled')}</p></div>`
+    ?`<div style="text-align:center;padding:20px;color:var(--sage)"><div style="font-size:28px">✅</div><p class="fw7 mt8">${t('allSettled')}</p></div>`
     :txns.map(tx=>{
         const fi=GI(g,tx.from),ti=GI(g,tx.to);
         return `<div class="flex items-center gap12" style="padding:12px 0;border-bottom:1px solid var(--border)">
           <div class="av av-sm ${avC(fi)}">${GN(g,tx.from).slice(0,2).toUpperCase()}</div>
-          <div class="flex1" style="font-size:13px;font-weight:500"><strong>${esc(GN(g,tx.from))}</strong> โ†’ <strong>${esc(GN(g,tx.to))}</strong></div>
+          <div class="flex1" style="font-size:13px;font-weight:500"><strong>${esc(GN(g,tx.from))}</strong> → <strong>${esc(GN(g,tx.to))}</strong></div>
           <div class="av av-sm ${avC(ti)}">${GN(g,tx.to).slice(0,2).toUpperCase()}</div>
           <span class="ff-s fw7 txt-accent" style="font-size:17px;margin-left:4px">${fmt(tx.amount)}</span>
         </div>`;
