@@ -27,16 +27,16 @@ body.th{font-family:'Sarabun',sans-serif}
 ::-webkit-scrollbar{width:0}
 input,button,select,textarea{font-family:inherit}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
-
+ 
 #app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative}
-
+ 
 .screen{min-height:100vh;padding-bottom:92px;animation:slideUp .28s cubic-bezier(.22,1,.36,1)}
 @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 .hidden{display:none!important}
-
+ 
 .card{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(26,26,46,.07)}
 .gap-col{display:flex;flex-direction:column;gap:14px}
-
+ 
 .btn{width:100%;border:none;cursor:pointer;transition:transform .12s,opacity .12s;border-radius:16px;font-size:15px;font-weight:600;padding:15px 20px}
 .btn:active{transform:scale(.97)}
 .btn-primary{background:var(--accent);color:#fff}
@@ -47,41 +47,41 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .btn-danger{background:#FEE2E2;color:var(--danger);border:none;border-radius:14px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer}
 .btn-icon{background:var(--bg);border:none;border-radius:12px;width:40px;height:40px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .btn-sm{width:auto;padding:8px 16px;font-size:13px;border-radius:12px}
-
+ 
 .lang-toggle{display:flex;background:rgba(255,255,255,.12);border-radius:100px;padding:3px;gap:2px}
 .lang-btn{padding:5px 12px;border:none;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:rgba(255,255,255,.5);transition:all .15s;letter-spacing:.03em}
 .lang-btn.on{background:#fff;color:var(--accent)}
-
+ 
 .input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:13px 15px;font-size:16px;color:var(--ink);outline:none;transition:border-color .2s;-webkit-appearance:none}
 .input.invalid{border-color:var(--danger)!important;background:var(--red-bg)!important}
 .input-err{color:var(--danger);font-size:11px;font-weight:600;margin-top:4px;display:none}
 .input.invalid + .input-err{display:block}
-
+ 
 .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
-
+ 
 .av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
 .av-sm{width:32px;height:32px;font-size:11px}
 .av-0{background:#FFD6CE;color:#FF5C3A}.av-1{background:#D6E8FF;color:#2563EB}
 .av-2{background:#D6F5E3;color:#16A34A}.av-3{background:#FEF3C7;color:#D97706}
 .av-4{background:#EDE9FE;color:#7C3AED}.av-5{background:#FCE7F3;color:#DB2777}
 .av-6{background:#CCFBF1;color:#0D9488}.av-7{background:#FEE2E2;color:#DC2626}
-
+ 
 .row{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;padding:13px 14px;box-shadow:0 1px 6px rgba(26,26,46,.05);cursor:pointer;transition:transform .12s}
 .row:active{transform:scale(.98)}
 .row+.row{margin-top:8px}
-
+ 
 .pills{display:flex;background:var(--bg);border-radius:14px;padding:4px;gap:3px}
 .pill{flex:1;padding:9px 6px;border-radius:11px;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .18s;text-align:center}
 .pill.on{background:var(--card);color:var(--accent);font-weight:700;box-shadow:0 2px 8px rgba(26,26,46,.08)}
-
+ 
 .chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;font-size:12px;color:transparent}
 .chk.on{background:var(--sage);border-color:var(--sage);color:#fff}
 .chk-sq{width:24px;height:24px;border-radius:7px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;font-size:12px;color:transparent}
 .chk-sq.on{background:var(--sage);border-color:var(--sage);color:#fff}
-
+ 
 .prog-track{background:var(--border);border-radius:100px;height:8px;overflow:hidden}
 .prog-fill{height:100%;border-radius:100px;background:var(--sage);transition:width .5s cubic-bezier(.22,1,.36,1)}
-
+ 
 #bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,.93);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:10px 0 20px;z-index:100;display:flex;justify-content:space-around}
 .nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:4px 14px;transition:transform .12s;color:var(--muted)}
 .nav-btn:active{transform:scale(.88)}
@@ -89,42 +89,42 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .nav-btn .ni{font-size:22px;line-height:1}
 .nav-btn .nl{font-size:10px;font-weight:500}
 .nav-btn.on .nl{font-weight:700}
-
+ 
 .overlay{position:fixed;inset:0;background:rgba(26,26,46,.45);z-index:200;display:flex;align-items:flex-end;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .sheet{width:100%;max-width:430px;margin:0 auto;background:var(--card);border-radius:28px 28px 0 0;padding:20px 20px 36px;animation:sheetUp .3s cubic-bezier(.22,1,.36,1);max-height:88vh;overflow-y:auto}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:100px;margin:0 auto 18px}
-
+ 
 #toast{position:fixed;top:56px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:100px;font-size:14px;font-weight:500;z-index:999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 20px rgba(26,26,46,.2);transition:opacity .3s}
 #toast.hide{opacity:0}
-
+ 
 .hero{background:linear-gradient(145deg,#1A1A2E 0%,#2D2D4E 100%);padding:58px 20px 24px;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(255,92,58,.27),transparent 70%)}
 .hero::after{content:'';position:absolute;bottom:-20px;left:20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(76,175,125,.2),transparent 70%)}
 .glass{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:18px;padding:16px 18px;border:1px solid rgba(255,255,255,.12)}
-
+ 
 .emoji-grid{display:flex;flex-wrap:wrap;gap:8px}
 .emoji-btn{width:48px;height:48px;border-radius:14px;font-size:22px;border:2px solid transparent;background:var(--bg);cursor:pointer;transition:all .15s}
 .emoji-btn.on{border-color:var(--accent);background:var(--accent-lt)}
-
+ 
 .sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .sec-hdr h3{font-family:'Fraunces',serif;font-size:19px;font-weight:700}
-
+ 
 .member-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
 .member-row:last-child{border-bottom:none}
-
+ 
 .cycle-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700}
 .cycle-monthly{background:var(--blue-lt);color:var(--blue)}
 .cycle-weekly{background:var(--purple-lt);color:var(--purple)}
-
+ 
 .cl-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border-radius:14px;margin-bottom:8px;transition:opacity .2s;box-shadow:0 1px 6px rgba(26,26,46,.05)}
 .cl-item.done{opacity:.55}
 .cl-item.done .cl-title{text-decoration:line-through;color:var(--muted)}
-
+ 
 .owe-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
 .owe-row:last-child{border-bottom:none}
-
+ 
 .txt-muted{color:var(--muted)}.txt-accent{color:var(--accent)}.txt-sage{color:var(--sage)}.txt-danger{color:var(--danger)}.txt-blue{color:var(--blue)}
 .fw7{font-weight:700}.ff-s{font-family:'Fraunces',serif}
 .fs-big{font-family:'Fraunces',serif;font-size:38px;font-weight:700;letter-spacing:-1px;line-height:1}
@@ -143,44 +143,44 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .empty .ei{font-size:44px;margin-bottom:10px}
 .empty p{font-size:14px}
 .divider{height:1px;background:var(--border)}
-
+ 
 /* ── CATEGORY CHIPS ───────────────────────── */
 .cat-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
 .cat-scroll::-webkit-scrollbar{display:none}
 .cat-chip{flex-shrink:0;padding:7px 14px;border-radius:100px;border:1.5px solid var(--border);background:var(--card);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
 .cat-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-
+ 
 /* ── DEBT BADGE ────────────────────────────── */
 .debt-badge{background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;margin-left:6px;vertical-align:middle}
-
+ 
 /* ── BALANCE CARD (I Owe / Owed to me) ─────── */
 .bal-card{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--card);border-radius:16px;box-shadow:0 1px 6px rgba(26,26,46,.05);margin-bottom:8px}
 .bal-card .amt-pill{padding:6px 14px;border-radius:100px;font-family:'Fraunces',serif;font-weight:700;font-size:15px;white-space:nowrap}
 .bal-card .amt-owe{background:#FEE2E2;color:var(--danger)}
 .bal-card .amt-owed{background:var(--sage-lt);color:var(--sage)}
-
+ 
 /* ── SETTLE SHEET ──────────────────────────── */
 .settle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
 .settle-row:last-child{border-bottom:none}
-
+ 
 /* ── MONTHLY SUMMARY ───────────────────────── */
 .mo-section{background:var(--card);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(26,26,46,.05)}
 .mo-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
 .mo-row:last-child{border-bottom:none}
 .mo-total{background:linear-gradient(135deg,var(--ink),#2D2D4E);border-radius:16px;padding:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-
+ 
 /* ── SPENDING CHART (SVG bar chart) ────────── */
 .chart-wrap{background:var(--card);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(26,26,46,.07)}
 .chart-bar-bg{fill:var(--border)}
 .chart-bar-fill{fill:var(--accent);transition:height .5s cubic-bezier(.22,1,.36,1)}
 .chart-label{font-size:10px;fill:var(--muted);font-family:'DM Sans',sans-serif;text-anchor:middle}
 .chart-val{font-size:9px;fill:var(--ink);font-family:'Fraunces',serif;font-weight:700;text-anchor:middle}
-
+ 
 /* ── NOTE FIELD ────────────────────────────── */
 .note-ta{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--ink);outline:none;resize:none;min-height:72px;transition:border-color .2s;font-family:inherit}
 .note-ta:focus{border-color:var(--accent);background:#fff}
 .note-ta::placeholder{color:var(--muted)}
-
+ 
 /* ── SUB-ITEM CARD ─────────────────────────── */
 .sub-item-card{background:var(--bg);border-radius:14px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--border)}
 .sub-item-card:last-child{margin-bottom:0}
@@ -190,6 +190,25 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .si-total-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:12px;margin-top:6px}
 .si-total-ok{background:var(--sage-lt);color:var(--sage)}
 .si-total-err{background:#FEE2E2;color:var(--danger)}
+ 
+/* ── MATH EXPRESSION PREVIEW ─────────────────────────── */
+.math-preview{
+  display:none;position:absolute;bottom:calc(100% + 4px);left:0;
+  background:var(--ink);color:#fff;
+  font-size:12px;font-weight:600;padding:5px 10px;
+  border-radius:8px;white-space:nowrap;z-index:50;pointer-events:none;
+  box-shadow:0 4px 12px rgba(26,26,46,.25);
+}
+.math-preview::after{
+  content:'';position:absolute;top:100%;left:14px;
+  border:5px solid transparent;border-top-color:var(--ink);
+}
+.math-preview.err{background:var(--danger)}
+.math-wrap{position:relative;display:flex;flex:1}
+.math-wrap .input{width:100%}
+.math-wrap-block{position:relative}
+.math-wrap-block .input{width:100%}
+.math-wrap-block .math-preview{bottom:calc(100% + 4px)}
 </style>
 </head>
 <body>
@@ -199,7 +218,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 </div>
 <script>
 'use strict';
-
+ 
 /* ═══════════════ i18n ═══════════════════════════════════ */
 const TR = {
   en:{
@@ -410,7 +429,7 @@ const TR = {
   }
 };
 function t(k){return(TR[S.lang]||TR.en)[k]||k;}
-
+ 
 /* ═══════════════ CONSTANTS ═══════════════════════════════ */
 const AVC=['av-0','av-1','av-2','av-3','av-4','av-5','av-6','av-7'];
 const GE=['👥','🍕','✈️','🏠','🎉','🎮','🏋️','🚗','🎸','🌴','⛺','🎓'];
@@ -420,7 +439,7 @@ const EE=[
   {e:'✈️',l:'Travel'},{e:'🎬',l:'Fun'},{e:'💊',l:'Health'},
   {e:'🎁',l:'Gift'},{e:'⚡',l:'Utilities'},{e:'📦',l:'Other'},
 ];
-
+ 
 /* ═══════════════ STATE ═══════════════════════════════════ */
 let S={
   screen:'home',activeNav:'home',
@@ -430,13 +449,13 @@ let S={
   catFilter:'all',
   groups:[],
 };
-
+ 
 /* ── Category map (emoji → category key) ─── */
 const CAT_MAP={'🍽️':'food','🍕':'food','🍺':'food','🛒':'food','🚗':'transport','✈️':'transport','🏠':'rent','🎬':'fun','🎁':'fun','🎮':'fun','💊':'health','⚡':'other','📦':'other'};
 const CAT_KEYS=['all','food','transport','rent','fun','health','other'];
 function catLabel(k){return t({all:'allCats',food:'catFood',transport:'catTransport',rent:'catRent',fun:'catFun',health:'catHealth',other:'catOther'}[k]||'allCats');}
 function catEmoji(k){return{all:'🔍',food:'🍽️',transport:'🚗',rent:'🏠',fun:'🎬',health:'💊',other:'📦'}[k]||'📦';}
-
+ 
 /* ═══════════════ STORAGE ═════════════════════════════════ */
 function save(){try{localStorage.setItem('se_v3',JSON.stringify(S.groups));}catch(e){}}
 function load(){
@@ -457,7 +476,7 @@ function load(){
     ],
   }];
 }
-
+ 
 /* ═══════════════ HELPERS ═════════════════════════════════ */
 const uid=()=>Math.random().toString(36).slice(2,9);
 const fmt=n=>'฿'+(+n||0).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
@@ -468,7 +487,7 @@ const GI=(g,id)=>g.members.findIndex(m=>m.id===id);
 function getG(id){return S.groups.find(g=>g.id===id);}
 function updG(g){S.groups=S.groups.map(x=>x.id===g.id?g:x);save();}
 const todayStr=()=>new Date().toISOString().slice(0,10);
-
+ 
 /* ── Safe Math Expression Evaluator (PEMDAS) ────────── */
 function evalMath(str) {
   if (typeof str !== 'string') return 0;
@@ -485,19 +504,101 @@ function evalMath(str) {
     return NaN;
   }
 }
-
+ 
+/*
+/* ── Math input: show live preview tooltip while typing ── */
+function mathInput(el) {
+  const raw = (el.value || '').trim();
+  let tip = el._mathTip;
+  if (!tip) {
+    const parent = el.parentNode;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'math-wrap-block';
+    parent.insertBefore(wrapper, el);
+    wrapper.appendChild(el);
+    tip = document.createElement('div');
+    tip.className = 'math-preview';
+    wrapper.appendChild(tip);
+    el._mathTip = tip;
+  }
+  const hasOp = /[+\-*/()]/.test(raw);
+  if (!raw || !hasOp) { tip.style.display = 'none'; return; }
+  const val = evalMath(raw);
+  if (isNaN(val)) {
+    tip.textContent = '\u2715 invalid expression';
+    tip.className = 'math-preview err';
+  } else {
+    tip.textContent = '= ' + (+val.toFixed(2)).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
+    tip.className = 'math-preview';
+  }
+  tip.style.display = 'block';
+}
+ 
+/* ── Math blur: evaluate on blur, replace with result ── */
+function mathBlur(el, onChangeCb) {
+  const raw = (el.value || '').trim();
+  if (el._mathTip) el._mathTip.style.display = 'none';
+  if (!raw) { el.classList.remove('invalid'); return; }
+  if (/^[0-9]+(\.[0-9]+)?$/.test(raw)) {
+    el.classList.remove('invalid');
+    if (el._mathErrEl) el._mathErrEl.style.display = 'none';
+    return;
+  }
+  const val = evalMath(raw);
+  if (isNaN(val) || val < 0) {
+    el.classList.add('invalid');
+    let errEl = el._mathErrEl;
+    if (!errEl) {
+      errEl = document.createElement('p');
+      errEl.style.cssText = 'display:block;color:var(--danger);font-size:11px;font-weight:600;margin-top:4px';
+      (el.parentNode).appendChild(errEl);
+      el._mathErrEl = errEl;
+    }
+    errEl.textContent = val < 0 ? '\u2715 result cannot be negative' : '\u2715 invalid expression - e.g. 100+50 or (200/4)*3';
+    errEl.style.display = 'block';
+  } else {
+    el.classList.remove('invalid');
+    if (el._mathErrEl) el._mathErrEl.style.display = 'none';
+    el.value = String(+val.toFixed(2));
+    if (onChangeCb) onChangeCb();
+  }
+}
+ 
+/* ── Attach math handlers to numeric inputs in a container ── */
+function initMathFields(container) {
+  if (!container) container = document;
+  container.querySelectorAll('#ea,#qs-a,#iv,#ca2,#stl-amt,[id^="ca-"],[id^="mp-"],[id^="pct-"],[id^="sip-"]').forEach(el => {
+    if (el._mathInited) return;
+    el._mathInited = true;
+    el.addEventListener('input', () => mathInput(el));
+    el.addEventListener('blur', () => {
+      const id = el.id || '';
+      if      (id === 'ea')           mathBlur(el, updSplit);
+      else if (id === 'iv')           mathBlur(el, prvInst);
+      else if (id === 'ca2')          mathBlur(el, null);
+      else if (id === 'qs-a')         mathBlur(el, calcQS);
+      else if (id === 'stl-amt')      mathBlur(el, null);
+      else if (id.startsWith('ca-'))  mathBlur(el, updCustom);
+      else if (id.startsWith('mp-'))  mathBlur(el, updMP);
+      else if (id.startsWith('pct-')) mathBlur(el, updPct);
+      else if (id.startsWith('sip-')) mathBlur(el, () => { updSITotal(); updSplit(); });
+      else                            mathBlur(el, null);
+    });
+  });
+}
+ 
 /* ── Pairwise Debt Calculation ─────────────────────── */
 function getPairwise(members, expenses) {
   const debts = {}; // key: "debtorId->creditorId"
-
+ 
   expenses.forEach(exp => {
     const total = +exp.amount || 0;
     if (total <= 0) return;
-
+ 
     // Step 1: Raw debts from each bill
     const payers = exp.payers && exp.payers.length > 0 ? exp.payers : [{ id: exp.paidById, amt: total }];
     const shares = getShares(exp, members);
-
+ 
     Object.entries(shares).forEach(([debtorId, shareAmt]) => {
       payers.forEach(payer => {
         if (debtorId === payer.id) return;
@@ -509,14 +610,14 @@ function getPairwise(members, expenses) {
       });
     });
   });
-
+ 
   // Step 2: Combine debts (already done by map key)
-
+ 
   // Step 3: Cancel debts only when they are exact reverse pairs
   const final = [];
   const processed = new Set();
   const keys = Object.keys(debts);
-
+ 
   keys.forEach(k => {
     if (processed.has(k)) return;
     const [d, c] = k.split('->');
@@ -524,7 +625,7 @@ function getPairwise(members, expenses) {
     
     const amt = debts[k] || 0;
     const ramt = debts[r] || 0;
-
+ 
     if (amt > ramt) {
       final.push({ from: d, to: c, amount: +(amt - ramt).toFixed(2) });
     } else if (ramt > amt) {
@@ -533,10 +634,10 @@ function getPairwise(members, expenses) {
     processed.add(k);
     processed.add(r);
   });
-
+ 
   return final.filter(tx => tx.amount > 0.01);
 }
-
+ 
 /* ── getShares: used for pairwise calculation ── */
 function getShares(exp, members) {
   const shares = {};
@@ -561,7 +662,7 @@ function getShares(exp, members) {
   }
   return shares;
 }
-
+ 
 /* ── Legacy balance for simple display (Net = OwedToMe - IOwe) ── */
 function calcBal(members, expenses) {
   const txns = getPairwise(members, expenses);
@@ -573,14 +674,14 @@ function calcBal(members, expenses) {
   });
   return b;
 }
-
+ 
 function simplify(bals) {
   // This is now just a wrapper for getPairwise to maintain compatibility
   // but we should pass members and expenses if possible.
   // Since scrSummary has access to them, we'll update scrSummary call.
   return []; 
 }
-
+ 
 /* ═══════════════ TOAST ═══════════════════════════════════ */
 let _tt;
 function toast(m){
@@ -588,14 +689,14 @@ function toast(m){
   el.textContent=m;el.classList.remove('hide');
   clearTimeout(_tt);_tt=setTimeout(()=>el.classList.add('hide'),2300);
 }
-
+ 
 /* ═══════════════ NAVIGATE ════════════════════════════════ */
 function go(sc,gid){
   S.screen=sc;
   if(gid!==undefined)S.selectedGroupId=gid;
   render();
 }
-
+ 
 /* ═══════════════ LANG ════════════════════════════════════ */
 function setLang(l){S.lang=l;localStorage.setItem('se_lang',l);render();}
 function LT(){
@@ -604,7 +705,7 @@ function LT(){
     <button class="lang-btn${S.lang==='th'?' on':''}" onclick="setLang('th')">TH</button>
   </div>`;
 }
-
+ 
 /* ═══════════════ BOTTOM NAV ══════════════════════════════ */
 function renderNav(){
   const noNav=['create-group','add-expense','edit-expense','edit-group'];
@@ -637,7 +738,7 @@ function navTo(k){
   else S.screen=k;
   render();
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    HOME
 ═══════════════════════════════════════════════════════════ */
@@ -645,7 +746,7 @@ function scrHome(){
   const netOwed=S.groups.reduce((acc,g)=>{
     const b=calcBal(g.members,g.expenses);return acc+(b[g.members[0]?.id]||0);
   },0);
-
+ 
   const cards=S.groups.length===0
     ?`<div class="empty"><div class="ei">🤝</div>
        <p class="ff-s fw7" style="font-size:20px;margin-bottom:8px">${t('noGroupsYet')}</p>
@@ -673,7 +774,7 @@ function scrHome(){
           </div>
         </div>`;
       }).join('');
-
+ 
   return `<div class="screen">
     <div class="hero">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
@@ -714,12 +815,14 @@ function scrHome(){
   </div>`;
 }
 function calcQS(){
-  const a=+document.getElementById('qs-a')?.value||0,p=+document.getElementById('qs-p')?.value||1;
+  const rawA=document.getElementById('qs-a')?.value||'';
+  const a=evalMath(rawA)||0;
+  const p=+document.getElementById('qs-p')?.value||1;
   const r=document.getElementById('qs-r'),v=document.getElementById('qs-v');
   if(a>0&&p>0){r?.classList.remove('hidden');if(v)v.textContent=fmt(a/p);}
   else r?.classList.add('hidden');
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    CREATE / EDIT GROUP
 ═══════════════════════════════════════════════════════════ */
@@ -765,7 +868,7 @@ function doCG(){
   const g={id:uid(),name,emoji,members:[{id:uid(),name:'You',isMe:true},...friends],expenses:[],installments:[],cycles:[],checkItems:[]};
   S.groups.push(g);save();toast(`"${name}" ${t('groupCreated')}`);go('group',g.id);
 }
-
+ 
 function scrEditGroup(){
   const g=getG(S.selectedGroupId);if(!g)return go('home');
   const mh=g.members.map((m,i)=>`
@@ -822,7 +925,7 @@ function confDelG(gid){
     <button class="btn btn-danger w-full" onclick="S.groups=S.groups.filter(g=>g.id!=='${gid}');save();closeSheet();toast(t('groupDeleted'));go('home')">${t('yesDelete')}</button>
     <button class="btn btn-ghost mt8" onclick="closeSheet()">${t('cancel')}</button>`);
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    GROUP DETAIL
 ═══════════════════════════════════════════════════════════ */
@@ -831,13 +934,13 @@ function scrGroup(){
   const bals=calcBal(g.members,g.expenses);
   const myId=g.members[0]?.id,myBal=bals[myId]||0;
   const col=myBal>=0?'var(--sage)':'var(--danger)';
-
+ 
   const membRow=g.members.slice(0,6).map((m,i)=>`
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
       <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
       <span style="color:rgba(255,255,255,.55);font-size:10px;font-weight:500">${m.isMe?t('youLabel'):m.name.split(' ')[0]}</span>
     </div>`).join('');
-
+ 
   const expList=g.expenses.length===0
     ?`<div class="empty"><div class="ei">🧾</div><p>${S.lang==='th'?'ยังไม่มีรายจ่าย':'No expenses yet'}</p></div>`
     :[...g.expenses].reverse().map(exp=>{
@@ -858,14 +961,14 @@ function scrGroup(){
           </div>
         </div>`;
       }).join('');
-
+ 
   const acts=[
     {i:'➕',l:t('addExpense'),f:`go('add-expense','${g.id}')`},
     {i:'📊',l:t('summary'),f:`go('summary','${g.id}')`},
     {i:'📋',l:t('checklist'),f:`go('checklist','${g.id}')`},
     {i:'🔄',l:t('billCycles'),f:`go('cycles','${g.id}')`},
   ];
-
+ 
   return `<div class="screen">
     <div style="background:linear-gradient(135deg,#1A1A2E 0%,#252545 100%);padding:56px 20px 24px">
       <div class="flex items-center gap12" style="margin-bottom:18px">
@@ -896,7 +999,7 @@ function scrGroup(){
   </div>`;
 }
 function delExp(gid,eid){const g=getG(gid);updG({...g,expenses:g.expenses.filter(e=>e.id!==eid)});toast(t('expenseRemoved'));render();}
-
+ 
 /* ── Add / Edit Expense ──────────────────────────── */
 function scrAddExp(editId){
   const g=getG(S.selectedGroupId);if(!g)return go('home');
@@ -904,7 +1007,7 @@ function scrAddExp(editId){
   const dEmoji=exp?.emoji||'🍽️',dSplit=exp?.splitType||'equal';
   const hasSubItems=exp?.subItems&&exp.subItems.length>0;
   const exPayers=exp?.payers||[{id:g.members[0].id,amt:''}];
-
+ 
   const mRows=g.members.map((m,i)=>{
     const inc=!exp||(exp.participants||g.members.map(x=>x.id)).includes(m.id);
     return `<div class="member-row" id="pr-${m.id}">
@@ -919,7 +1022,7 @@ function scrAddExp(editId){
       </div>
     </div>`;
   }).join('');
-
+ 
   const mpRows=g.members.map((m,i)=>{
     const pp=exPayers.find(p=>p.id===m.id);
     return `<div class="member-row">
@@ -928,20 +1031,20 @@ function scrAddExp(editId){
       <input type="text" inputmode="decimal" id="mp-${m.id}" placeholder="0" value="${pp&&exp?.splitType==='multipayer'?pp.amt:''}" style="width:100px;padding:7px 10px;font-size:14px;text-align:right" oninput="updMP()"/>
     </div>`;
   }).join('');
-
+ 
   // Pre-populate _subItems when editing
   _subItems = hasSubItems ? exp.subItems.map(s=>({...s,consumers:[...(s.consumers||[])]})) : [];
   _expMode  = hasSubItems ? 'detail' : 'simple';
-
+ 
   const siHTML=_subItems.map((item,idx)=>renderSIRow(g,item,idx)).join('');
-
+ 
   return `<div class="screen">
     <div class="flex items-center gap12 p20 pt56">
       <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
       <h1 class="ff-s" style="font-size:22px;font-weight:700">${isEdit?t('editExpenseTitle'):t('addExpenseTitle')}</h1>
     </div>
     <div class="px16 gap-col">
-
+ 
       <!-- Amount -->
       <div class="card" style="text-align:center;padding:24px 20px">
         <p class="lbl" style="margin-bottom:12px">${t('amount')}</p>
@@ -951,7 +1054,7 @@ function scrAddExp(editId){
             style="font-family:'Fraunces',serif;font-size:46px;font-weight:700;border:none;background:transparent;outline:none;width:180px;text-align:center;color:var(--ink)" oninput="updSplit()"/>
         </div>
       </div>
-
+ 
       <!-- Description -->
       <div class="card">
         <p class="lbl">${t('description')}</p>
@@ -960,7 +1063,7 @@ function scrAddExp(editId){
           <input class="input" id="et" placeholder="${t('whatsFor')}" value="${exp?esc(exp.title):''}" oninput="chkExpForm()"/>
         </div>
       </div>
-
+ 
       <!-- Paid by (always shown) -->
       <div class="card">
         <p class="lbl">${t('paidBy')}</p>
@@ -975,7 +1078,7 @@ function scrAddExp(editId){
           }).join('')}
         </div>
       </div>
-
+ 
       <!-- Split card -->
       <div class="card gap-col">
         <div>
@@ -985,7 +1088,7 @@ function scrAddExp(editId){
             <button class="pill${hasSubItems?' on':''}" id="mode-detail" onclick="setMode('detail')">🧾 ${t('detailMode')}</button>
           </div>
         </div>
-
+ 
         <!-- SIMPLE MODE -->
         <div id="simple-mode-sec" class="${hasSubItems?'hidden':''}">
           <div class="pills" id="split-pills" style="margin-bottom:12px">
@@ -1014,7 +1117,7 @@ function scrAddExp(editId){
             <span class="ff-s fw7" id="sf-val" style="font-size:15px"></span>
           </div>
         </div>
-
+ 
         <!-- ITEM DETAIL MODE -->
         <div id="detail-mode-sec" class="${hasSubItems?'':'hidden'}">
           <p class="txt-muted" style="font-size:12px;margin-bottom:12px">${t('subItemDesc')}</p>
@@ -1026,7 +1129,7 @@ function scrAddExp(editId){
           </div>
         </div>
       </div>
-
+ 
       <button class="btn btn-primary" id="se-btn" disabled onclick="doSaveExp(${isEdit?`'${editId}'`:'null'},'${g.id}')">
         ${isEdit?t('saveChangesBtn'):t('addExpenseBtn')}
       </button>
@@ -1034,11 +1137,11 @@ function scrAddExp(editId){
     </div>
   </div>`;
 }
-
+ 
 /* ── Sub-item state & helpers ───────────── */
 let _subItems=[];
 let _expMode='simple';
-
+ 
 function renderSIRow(g,item,idx){
   const cBtns=g.members.map((m,mi)=>{
     const on=(item.consumers||[]).includes(m.id);
@@ -1063,7 +1166,7 @@ function renderSIRow(g,item,idx){
     </div>
   </div>`;
 }
-
+ 
 function setMode(mode){
   _expMode=mode;
   document.getElementById('mode-simple')?.classList.toggle('on',mode==='simple');
@@ -1073,7 +1176,7 @@ function setMode(mode){
   if(mode==='simple')updSplit();else{updSITotal();}
   chkExpForm();
 }
-
+ 
 function addSI(){
   const g=getG(S.selectedGroupId);
   const item={id:uid(),name:'',price:0,consumers:g.members.map(m=>m.id)};
@@ -1083,6 +1186,7 @@ function addSI(){
     const div=document.createElement('div');
     div.innerHTML=renderSIRow(g,item,_subItems.length-1);
     list.appendChild(div.firstElementChild);
+    requestAnimationFrame(() => initMathFields(list));
   }
   updSITotal();
 }
@@ -1115,7 +1219,7 @@ function updSITotal(){
   }
   chkExpForm();
 }
-
+ 
 let _ST='equal';
 function initAE(){
   _ST='equal';_expMode='simple';_subItems=[];
@@ -1221,7 +1325,7 @@ function doSaveExp(editId,gid){
   const payers=[{id:paidById,amt}];
   const prevNote=editId?g.expenses.find(e=>e.id===editId)?.note||'':'';
   const prevDate=editId?g.expenses.find(e=>e.id===editId)?.date:new Date().toISOString();
-
+ 
   let expData;
   if(_expMode==='detail'){
     const builtItems=_subItems.map(item=>{
@@ -1265,7 +1369,7 @@ function openEP(){
     <div class="emoji-grid">${EE.map(({e,l})=>`<button onclick="pickEE('${e}')" style="background:var(--bg);border:none;border-radius:14px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-size:26px">${e}</span><span style="font-size:10px;color:var(--muted)">${l}</span></button>`).join('')}</div>`);
 }
 function pickEE(e){const b=document.getElementById('ee-btn');if(b){b.textContent=e;b.dataset.e=e;}closeSheet();}
-
+ 
 /* ═══════════════════════════════════════════════════════════
    SUMMARY
 ═══════════════════════════════════════════════════════════ */
@@ -1274,7 +1378,7 @@ function scrSummary(){
   const bals=calcBal(g.members,g.expenses);
   const txns=getPairwise(g.members,g.expenses);
   const total=g.expenses.reduce((a,e)=>a+(+e.amount||0),0);
-
+ 
   const bRows=g.members.map((m,i)=>{
     const b=bals[m.id]||0,col=b>=0?'var(--sage)':'var(--danger)';
     
@@ -1293,7 +1397,7 @@ function scrSummary(){
       });
       detail += '</div>';
     }
-
+ 
     return `<div class="flex-col" style="padding:14px 0;border-bottom:1px solid var(--border)">
       <div class="flex items-center gap12">
         <div class="av ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
@@ -1304,7 +1408,7 @@ function scrSummary(){
       ${detail}
     </div>`;
   }).join('');
-
+ 
   const sRows=txns.length===0
     ?`<div style="text-align:center;padding:20px;color:var(--sage)"><div style="font-size:28px">✅</div><p class="fw7 mt8">${t('allSettled')}</p></div>`
     :txns.map(tx=>{
@@ -1316,7 +1420,7 @@ function scrSummary(){
           <span class="ff-s fw7 txt-accent" style="font-size:17px;margin-left:4px">${fmt(tx.amount)}</span>
         </div>`;
       }).join('');
-
+ 
   // Per-expense breakdown
   const expBD=[...g.expenses].reverse().map(exp=>{
     const amt=+exp.amount||0;
@@ -1355,7 +1459,7 @@ function scrSummary(){
       </div>
     </div>`;
   }).join('');
-
+ 
   return `<div class="screen">
     <div class="flex items-center gap12 p20 pt56">
       <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
@@ -1378,7 +1482,7 @@ function scrSummary(){
   </div>`;
 }
 function settleAll(gid){const g=getG(gid);updG({...g,expenses:[]});toast(t('allSettledToast'));go('group',gid);}
-
+ 
 /* ═══════════════════════════════════════════════════════════
    INSTALLMENTS
 ═══════════════════════════════════════════════════════════ */
@@ -1418,7 +1522,7 @@ function scrInstall(){
       </div>
     </div>`;
   }).join('');
-
+ 
   return `<div class="screen">
     <div class="flex items-center gap12 p20 pt56">
       <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
@@ -1473,7 +1577,7 @@ function prvInst(){
 }
 function addInst(gid){
   const g=getG(gid);
-  const title=document.getElementById('it').value.trim(),total=+document.getElementById('iv').value||0,months=+document.getElementById('im').value||1;
+  const title=document.getElementById('it').value.trim(),total=getV('iv'),months=+document.getElementById('im').value||1;
   if(!title||!total){toast(t('fillTitleAmt'));return;}
   const plan={id:uid(),title,totalAmt:total,numMonths:months,numMembers:g.members.length,paidMonths:0,cycleType:_ICT};
   updG({...g,installments:[...(g.installments||[]),plan]});toast(t('planAdded'));go('installments',gid);
@@ -1483,7 +1587,7 @@ function updInst(gid,pid,d){
   updG({...g,installments:(g.installments||[]).map(p=>p.id===pid?{...p,paidMonths:Math.max(0,Math.min(p.numMonths,p.paidMonths+d))}:p)});render();
 }
 function delInst(gid,pid){const g=getG(gid);updG({...g,installments:(g.installments||[]).filter(p=>p.id!==pid)});toast(t('planRemoved'));render();}
-
+ 
 /* ═══════════════════════════════════════════════════════════
    BILL CYCLES
 ═══════════════════════════════════════════════════════════ */
@@ -1491,7 +1595,7 @@ function scrCycles(){
   const g=getG(S.selectedGroupId);if(!g)return go('home');
   if(!g.cycles)g.cycles=[];
   const today=new Date();
-
+ 
   const cCards=g.cycles.map(c=>{
     const nd=nextDue(c),isOD=nd<today&&!c.paidDates?.includes(todayStr()),isPaid=c.paidDates?.includes(todayStr());
     const scol=isPaid?'var(--sage)':isOD?'var(--danger)':'var(--gold)';
@@ -1518,7 +1622,7 @@ function scrCycles(){
       </button>
     </div>`;
   }).join('');
-
+ 
   return `<div class="screen">
     <div class="flex items-center gap12 p20 pt56">
       <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
@@ -1557,12 +1661,12 @@ function nextDue(c){
   while(d<=today){if(c.freq==='weekly')d.setDate(d.getDate()+7);else d.setMonth(d.getMonth()+1);}
   return d;
 }
-
+ 
 function saveCycle(gid){
   const g=getG(gid);
   const name=document.getElementById('cn').value.trim(),amount=getV('ca2');
   if(!name||!amount){toast(t('fillTitleAmt'));return;}
-
+ 
   const cycle={id:uid(),name,amount,freq:_CF,startDate:document.getElementById('cs').value||todayStr(),endDate:document.getElementById('ce').value||null,paidDates:[]};
   updG({...g,cycles:[...(g.cycles||[]),cycle]});toast(t('planAdded'));go('cycles',gid);
 }
@@ -1571,7 +1675,7 @@ function markCPaid(gid,cid){
   updG({...g,cycles:(g.cycles||[]).map(c=>c.id===cid?{...c,paidDates:[...(c.paidDates||[]),todayStr()]}:c)});render();
 }
 function delCycle(gid,cid){const g=getG(gid);updG({...g,cycles:(g.cycles||[]).filter(c=>c.id!==cid)});toast(t('planRemoved'));render();}
-
+ 
 /* ═══════════════════════════════════════════════════════════
    CHECKLIST
 ═══════════════════════════════════════════════════════════ */
@@ -1579,7 +1683,7 @@ function scrChecklist(){
   const g=getG(S.selectedGroupId);if(!g)return go('home');
   if(!g.checkItems)g.checkItems=[];
   const filter=S.clFilter||'all';
-
+ 
   // Build items from expenses + cycles
   let items=[
     ...(g.cycles||[]).map(c=>{
@@ -1590,12 +1694,12 @@ function scrChecklist(){
   ];
   // Apply persisted done states
   items=items.map(item=>{const sv=g.checkItems?.find(c=>c.id===item.id);return sv?{...item,done:sv.done}:item;});
-
+ 
   const shown=items.filter(i=>filter==='all'||(filter==='paid'&&i.done)||(filter==='unpaid'&&!i.done));
   const totalAmt=items.reduce((a,i)=>a+(+i.amount||0),0);
   const paidAmt=items.filter(i=>i.done).reduce((a,i)=>a+(+i.amount||0),0);
   const prog=totalAmt>0?Math.round(paidAmt/totalAmt*100):0;
-
+ 
   const html=shown.length===0
     ?`<div class="empty"><div class="ei">✅</div><p>${filter==='unpaid'?t('allSettled'):t('noChecklist')}</p></div>`
     :shown.map(item=>`<div class="cl-item${item.done?' done':''}">
@@ -1607,7 +1711,7 @@ function scrChecklist(){
         </div>
         <span class="ff-s fw7" style="font-size:14px;color:${item.done?'var(--sage)':'var(--ink)'}">${fmt(item.amount)}</span>
       </div>`).join('');
-
+ 
   return `<div class="screen">
     <div class="flex items-center gap12 p20 pt56">
       <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
@@ -1638,7 +1742,7 @@ function togCI(gid,itemId,done){
   updated.push({id:itemId,done});
   updG({...g,checkItems:updated});render();
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    ACTIVITY (Timeline)
 ═══════════════════════════════════════════════════════════ */
@@ -1662,7 +1766,7 @@ function scrActivity(){
           <span class="ff-s fw7" style="font-size:16px">${fmt(exp.amount)}</span>
         </div>`).join('')}
       </div>`).join('');
-
+ 
   return `<div class="screen">
     <div class="p20 pt56" style="display:flex;justify-content:space-between;align-items:flex-start">
       <div><h1 class="ff-s" style="font-size:28px;font-weight:700">${t('activityTitle')}</h1>
@@ -1672,7 +1776,7 @@ function scrActivity(){
     <div class="px16">${rows}</div>
   </div>`;
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    PROFILE
 ═══════════════════════════════════════════════════════════ */
@@ -1705,7 +1809,7 @@ function confClear(){
     <button class="btn btn-danger w-full" onclick="S.groups=[];save();closeSheet();toast(t('allCleared'));S.screen='home';S.activeNav='home';render()">${t('yesClear')}</button>
     <button class="btn btn-ghost mt8" onclick="closeSheet()">${t('cancel')}</button>`);
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    SHEET UTILITY
 ═══════════════════════════════════════════════════════════ */
@@ -1715,9 +1819,10 @@ function openSheet(html){
   ov.innerHTML=`<div class="sheet"><div class="sheet-handle"></div>${html}</div>`;
   ov.addEventListener('click',e=>{if(e.target===ov)closeSheet();});
   document.getElementById('app').appendChild(ov);
+  requestAnimationFrame(() => initMathFields(ov));
 }
 function closeSheet(){document.getElementById('sov')?.remove();}
-
+ 
 /* ═══════════════════════════════════════════════════════════
    MONTHLY SUMMARY — expenses + cycles + installments
 ═══════════════════════════════════════════════════════════ */
@@ -1727,13 +1832,13 @@ function scrMonthlySummary(){
   const mo=now.getMonth(),yr=now.getFullYear();
   const moLabel=now.toLocaleDateString(S.lang==='th'?'th-TH':'en-GB',{month:'long',year:'numeric'});
   const nm=g.members.length;
-
+ 
   // 1) One-time expenses this month
   const oneTime=g.expenses.filter(e=>{
     const d=new Date(e.date);return d.getMonth()===mo&&d.getFullYear()===yr;
   });
   const oneTimeTotal=oneTime.reduce((a,e)=>a+(+e.amount||0),0);
-
+ 
   // 2) Bill cycles — amount due this month
   const cyclesThisMonth=(g.cycles||[]).filter(c=>{
     const start=new Date(c.startDate||todayStr());
@@ -1743,14 +1848,14 @@ function scrMonthlySummary(){
     return true;
   });
   const cyclesTotal=cyclesThisMonth.reduce((a,c)=>a+(+c.amount||0),0);
-
+ 
   // 3) Installments — monthly payment due
   const instThisMonth=(g.installments||[]).filter(p=>p.paidMonths<p.numMonths);
   const instTotal=instThisMonth.reduce((a,p)=>a+(p.totalAmt/p.numMonths),0);
-
+ 
   const grandTotal=oneTimeTotal+cyclesTotal+instTotal;
   const perPerson=nm>0?grandTotal/nm:0;
-
+ 
   // Spending chart data — last 6 months
   const chartData=[];
   for(let i=5;i>=0;i--){
@@ -1761,7 +1866,7 @@ function scrMonthlySummary(){
     chartData.push({label:d.toLocaleDateString(S.lang==='th'?'th-TH':'en-GB',{month:'short'}),val:tot});
   }
   const maxVal=Math.max(...chartData.map(d=>d.val),1);
-
+ 
   // SVG bar chart
   const W=340,H=110,BAR_W=32,GAP=(W-6*BAR_W)/7;
   const bars=chartData.map((d,i)=>{
@@ -1773,7 +1878,7 @@ function scrMonthlySummary(){
       <text x="${x+BAR_W/2}" y="${H-4}" class="chart-label">${d.label}</text>
       ${d.val>0?`<text x="${x+BAR_W/2}" y="${y-4}" class="chart-val">${d.val>=1000?Math.round(d.val/1000)+'k':Math.round(d.val)}</text>`:''}`;
   }).join('');
-
+ 
   const oneTimeRows=oneTime.length===0
     ?`<p class="txt-muted" style="font-size:13px;padding:8px 0">${t('noExpenses')}</p>`
     :oneTime.map(e=>`<div class="mo-row">
@@ -1783,7 +1888,7 @@ function scrMonthlySummary(){
         </div>
         <span class="ff-s fw7" style="font-size:14px">${fmt(e.amount)}</span>
       </div>`).join('');
-
+ 
   const cycleRows=cyclesThisMonth.length===0
     ?`<p class="txt-muted" style="font-size:13px;padding:8px 0">${t('noCycles')}</p>`
     :cyclesThisMonth.map(c=>`<div class="mo-row">
@@ -1796,7 +1901,7 @@ function scrMonthlySummary(){
         </div>
         <span class="ff-s fw7" style="font-size:14px">${fmt(c.amount)}</span>
       </div>`).join('');
-
+ 
   const instRows=instThisMonth.length===0
     ?`<p class="txt-muted" style="font-size:13px;padding:8px 0">${t('noInstallYet')}</p>`
     :instThisMonth.map(p=>{
@@ -1813,7 +1918,7 @@ function scrMonthlySummary(){
           <span class="ff-s fw7" style="font-size:14px">${fmt(ppmo)}</span>
         </div>`;
       }).join('');
-
+ 
   return `<div class="screen">
     <div class="flex items-center gap12 p20 pt56">
       <button class="btn-icon" onclick="go('group','${g.id}')">←</button>
@@ -1823,7 +1928,7 @@ function scrMonthlySummary(){
       </div>
     </div>
     <div class="px16 gap-col">
-
+ 
       <!-- Grand total banner -->
       <div class="mo-total">
         <div>
@@ -1842,14 +1947,14 @@ function scrMonthlySummary(){
           </div>`).join('')}
         </div>
       </div>
-
+ 
       <!-- Spending Chart -->
       <div class="chart-wrap">
         <p class="lbl">${t('spendingChart')} — ${t('last6months')}</p>
         ${maxVal>1?`<svg width="100%" viewBox="0 0 ${W} ${H}" style="overflow:visible">${bars}</svg>`
           :`<p class="txt-muted" style="font-size:13px;text-align:center;padding:20px 0">${t('noChartData')}</p>`}
       </div>
-
+ 
       <!-- One-time expenses -->
       <div class="mo-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -1858,7 +1963,7 @@ function scrMonthlySummary(){
         </div>
         ${oneTimeRows}
       </div>
-
+ 
       <!-- Recurring bills -->
       <div class="mo-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -1867,7 +1972,7 @@ function scrMonthlySummary(){
         </div>
         ${cycleRows}
       </div>
-
+ 
       <!-- Installments -->
       <div class="mo-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -1876,12 +1981,12 @@ function scrMonthlySummary(){
         </div>
         ${instRows}
       </div>
-
+ 
       <div style="height:10px"></div>
     </div>
   </div>`;
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    I OWE / I AM OWED — Cross-group dashboard
 ═══════════════════════════════════════════════════════════ */
@@ -1900,10 +2005,10 @@ function scrIOwe(){
       iAmOwedList.push({gid:g.id,gname:g.name,gemoji:g.emoji,fromId:tx.from,fromName:GN(g,tx.from),fromIdx:GI(g,tx.from),amount:tx.amount});
     });
   });
-
+ 
   const totalIOwe=iOweList.reduce((a,x)=>a+x.amount,0);
   const totalOwed=iAmOwedList.reduce((a,x)=>a+x.amount,0);
-
+ 
   const oweRows=iOweList.length===0
     ?`<p class="txt-muted" style="font-size:13px;padding:10px 0;text-align:center">${t('noDebts')}</p>`
     :iOweList.map(x=>`<div class="bal-card">
@@ -1917,7 +2022,7 @@ function scrIOwe(){
           <button onclick="openSettleSheet('${x.gid}','${x.toId}',${x.amount.toFixed(2)})" style="font-size:11px;font-weight:700;color:var(--accent);background:none;border:none;cursor:pointer">${t('settleWith')} →</button>
         </div>
       </div>`).join('');
-
+ 
   const owedRows=iAmOwedList.length===0
     ?`<p class="txt-muted" style="font-size:13px;padding:10px 0;text-align:center">${t('noDebts')}</p>`
     :iAmOwedList.map(x=>`<div class="bal-card">
@@ -1928,7 +2033,7 @@ function scrIOwe(){
         </div>
         <span class="amt-pill amt-owed">${fmt(x.amount)}</span>
       </div>`).join('');
-
+ 
   return `<div class="screen">
     <div class="hero">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
@@ -1959,7 +2064,7 @@ function scrIOwe(){
     </div>
   </div>`;
 }
-
+ 
 /* ── Settle with specific person sheet ───── */
 function openSettleSheet(gid,toId,suggestedAmt){
   const g=getG(gid);const toName=GN(g,toId);
@@ -1996,7 +2101,7 @@ function doSettle(gid,toId){
   closeSheet();toast(t('paymentRecorded'));
   go('iowe');
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    GROUP DETAIL with Category Filter + Note on expense
 ═══════════════════════════════════════════════════════════ */
@@ -2007,19 +2112,19 @@ function scrGroupFiltered(){
   const col=myBal>=0?'var(--sage)':'var(--danger)';
   const hasDebt=myBal<-0.5;
   const filter=S.catFilter||'all';
-
+ 
   const membRow=g.members.slice(0,6).map((m,i)=>`
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
       <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
       <span style="color:rgba(255,255,255,.55);font-size:10px;font-weight:500">${m.isMe?t('youLabel'):m.name.split(' ')[0]}</span>
     </div>`).join('');
-
+ 
   // Category chips
   const chips=CAT_KEYS.map(k=>`<button class="cat-chip${filter===k?' on':''}" onclick="S.catFilter='${k}';render()">${catEmoji(k)} ${catLabel(k)}</button>`).join('');
-
+ 
   // Filter expenses
   const filtered=g.expenses.filter(e=>filter==='all'||(CAT_MAP[e.emoji]||'other')===filter);
-
+ 
   const expList=filtered.length===0
     ?`<div class="empty"><div class="ei">🔍</div><p>${filter==='all'?'No expenses yet':'No expenses in this category'}</p></div>`
     :[...filtered].reverse().map(exp=>{
@@ -2041,7 +2146,7 @@ function scrGroupFiltered(){
           </div>
         </div>`;
       }).join('');
-
+ 
   const acts=[
     {i:'➕',l:t('addExpense'),f:`go('add-expense','${g.id}')`},
     {i:'📊',l:t('summary'),f:`go('summary','${g.id}')`},
@@ -2050,7 +2155,7 @@ function scrGroupFiltered(){
     {i:'🔄',l:t('billCycles'),f:`go('cycles','${g.id}')`},
     {i:'📅',l:t('installments'),f:`go('installments','${g.id}')`},
   ];
-
+ 
   return `<div class="screen">
     <div style="background:linear-gradient(135deg,#1A1A2E 0%,#252545 100%);padding:56px 20px 24px">
       <div class="flex items-center gap12" style="margin-bottom:18px">
@@ -2089,7 +2194,7 @@ function scrGroupFiltered(){
     </div>
   </div>`;
 }
-
+ 
 /* ═══════════════════════════════════════════════════════════
    EXPENSE NOTE — added to Add/Edit expense form
    (injected via openNoteSheet called from expense detail)
@@ -2110,18 +2215,18 @@ function saveNote(gid,eid){
   updG({...g,expenses:g.expenses.map(e=>e.id===eid?{...e,note}:e)});
   closeSheet();toast(t('noteSaved'));render();
 }
-
+ 
 /* ── Override openExpDetail to include note button ── */
 function openExpDetail(gid,eid){
   const g=getG(gid),exp=g.expenses.find(e=>e.id===eid);if(!exp)return;
   const amt=+exp.amount||0;
   const payers=exp.payers||[{id:exp.paidById,amt}];
   const pm={};payers.forEach(p=>pm[p.id]=(pm[p.id]||0)+(+p.amt||0));
-
+ 
   // Compute per-person shares — single source of truth
   const shares=getShares(exp, g.members);
   const allIds=[...new Set([...Object.keys(shares),...Object.keys(pm)])];
-
+ 
   const pRows=payers.map(p=>{
     const idx=GI(g,p.id);
     return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
@@ -2130,7 +2235,7 @@ function openExpDetail(gid,eid){
       <span style="background:var(--accent-lt);color:var(--accent);padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700">${fmt(p.amt)}</span>
     </div>`;
   }).join('');
-
+ 
   // Sub-item breakdown section
   const siSection=exp.subItems&&exp.subItems.length>0?`
     <p class="lbl" style="margin-top:16px">🧾 ${t('subItems')}</p>
@@ -2152,7 +2257,7 @@ function openExpDetail(gid,eid){
         </div>
       </div>`;
     }).join('')}`:'';
-
+ 
   const oRows=allIds.map(id=>{
     const idx=GI(g,id);
     const share=shares[id]||0;
@@ -2171,7 +2276,7 @@ function openExpDetail(gid,eid){
       </div>
     </div>`;
   }).join('');
-
+ 
   openSheet(`
     <p class="ff-s fw7" style="font-size:20px;margin-bottom:4px">${esc(exp.title)}</p>
     <p class="txt-muted" style="font-size:13px;margin-bottom:${exp.note?'10px':'16px'}">${exp.emoji} · ${fmt(amt)} · ${exp.splitType==='subitem'?t('detailMode'):exp.splitType}</p>
@@ -2225,8 +2330,10 @@ function render(){
   if(S.screen==='installments'){_ICT='monthly';prvInst();}
   if(S.screen==='cycles')_CF='monthly';
   window.scrollTo(0,0);
+  // Attach math calculator to all numeric fields after render
+  requestAnimationFrame(() => initMathFields(document.getElementById('mc') || document));
 }
-
+ 
 /* ═══════════════ BOOT ═══════════════════════════════════ */
 load();render();
 </script>
