@@ -1556,6 +1556,7 @@ function nextDue(c){
   const start=new Date(c.startDate||todayStr()),today=new Date();let d=new Date(start);
   while(d<=today){if(c.freq==='weekly')d.setDate(d.getDate()+7);else d.setMonth(d.getMonth()+1);}
   return d;
+}
 
 function saveCycle(gid){
   const g=getG(gid);
