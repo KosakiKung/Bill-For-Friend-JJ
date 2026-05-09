@@ -756,7 +756,8 @@ function getPairwise(members, expenses) {
         const itemPayerId = item.payerId || exp.paidById;
         const consumers = item.consumers || [];
         if (!consumers.length) return;
-        const share = (+item.price || 0) / consumers.length;
+        const priceToSplit = item.finalPrice !== undefined ? item.finalPrice : (+item.price || 0);
+        const share = priceToSplit / consumers.length;
         consumers.forEach(debtorId => {
           if (debtorId !== itemPayerId) {
             const key = `${debtorId}->${itemPayerId}`;
@@ -817,7 +818,8 @@ function getShares(exp, members) {
     exp.subItems.forEach(item => {
       const c = item.consumers || [];
       if (!c.length) return;
-      const sh = (+item.price || 0) / c.length;
+      const priceToSplit = item.finalPrice !== undefined ? item.finalPrice : (+item.price || 0);
+      const sh = priceToSplit / c.length;
       c.forEach(id => { shares[id] = (shares[id] || 0) + sh; });
     });
   } else {
@@ -1296,6 +1298,16 @@ function scrAddExp(editId){
         <!-- ITEM DETAIL MODE -->
         <div id="detail-mode-sec" class="${hasSubItems?'':'hidden'}">
           <p class="txt-muted" style="font-size:12px;margin-bottom:12px">${t('subItemDesc')}</p>
+          <div class="grid2 mb12">
+            <div>
+              <p class="lbl">VAT (%)</p>
+              <input class="input" type="number" id="vat-pct" value="${exp?.vat_percent!==undefined?exp.vat_percent:7}" oninput="updSITotal()"/>
+            </div>
+            <div>
+              <p class="lbl">Service (%)</p>
+              <input class="input" type="number" id="svc-pct" value="${exp?.service_percent!==undefined?exp.service_percent:10}" oninput="updSITotal()"/>
+            </div>
+          </div>
           <div id="si-list">${siHTML}</div>
           <button class="btn btn-ghost" style="margin-top:8px" onclick="addSI()">${t('addSubItem')}</button>
           <div id="si-total-bar" class="si-total-bar" style="margin-top:10px;${_subItems.length>0?'':'display:none'}">
@@ -1344,6 +1356,16 @@ function renderSIRow(g,item,idx){
         oninput="updSplit()"/>
       <button onclick="removeSI('${item.id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px;flex-shrink:0">×</button>
     </div>
+    <div style="display:flex;gap:12px;margin-top:8px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer" onclick="togSIVat('${item.id}')">
+        <div class="chk-sq${item.hasVat?' on':''}" id="si-vat-${item.id}">✓</div>
+        <span style="font-size:12px;font-weight:600">VAT</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer" onclick="togSISvc('${item.id}')">
+        <div class="chk-sq${item.hasService?' on':''}" id="si-svc-${item.id}">✓</div>
+        <span style="font-size:12px;font-weight:600">Service</span>
+      </label>
+    </div>
     <div>
       <p style="font-size:11px;color:var(--muted);font-weight:600;margin:8px 0 4px">${S.lang==='th'?'ใครจ่าย?':'Who paid?'}</p>
       <div class="si-consumer-row" id="si-payers-${item.id}">${pBtns}</div>
@@ -1368,7 +1390,7 @@ function setMode(mode){
 function addSI(){
   const g=getG(S.selectedGroupId);
   const mainPayerId = document.querySelector('.po')?.dataset.id || g.members[0].id;
-  const item={id:uid(),name:'',price:0,consumers:g.members.map(m=>m.id), payerId: mainPayerId};
+  const item={id:uid(),name:'',price:0,consumers:g.members.map(m=>m.id), payerId: mainPayerId, hasVat: true, hasService: true};
   _subItems.push(item);
   const list=document.getElementById('si-list');
   if(list){
@@ -1392,6 +1414,20 @@ function togSIC(iid,mid){
   if(btn)btn.classList.toggle('on',item.consumers.includes(mid));
   updSITotal();chkExpForm();
 }
+function togSIVat(iid){
+  const item=_subItems.find(s=>s.id===iid);if(!item)return;
+  item.hasVat=!item.hasVat;
+  const btn=document.getElementById('si-vat-'+iid);
+  if(btn)btn.classList.toggle('on',item.hasVat);
+  updSITotal();
+}
+function togSISvc(iid){
+  const item=_subItems.find(s=>s.id===iid);if(!item)return;
+  item.hasService=!item.hasService;
+  const btn=document.getElementById('si-svc-'+iid);
+  if(btn)btn.classList.toggle('on',item.hasService);
+  updSITotal();
+}
 function togSIPR(iid,mid){
   const item=_subItems.find(s=>s.id===iid);if(!item)return;
   item.payerId=mid;
@@ -1405,7 +1441,20 @@ function togSIPR(iid,mid){
 function updSIName(iid,v){const s=_subItems.find(x=>x.id===iid);if(s)s.name=v;}
 function updSIPrice(iid,v){const s=_subItems.find(x=>x.id===iid);if(s){s.price=v;updSITotal();}}
 function updSITotal(){
-  const tot=_subItems.reduce((a,s)=>a+getV('sip-'+s.id),0);
+  const vatRate = (+document.getElementById('vat-pct')?.value || 0) / 100;
+  const svcRate = (+document.getElementById('svc-pct')?.value || 0) / 100;
+
+  let tot = 0;
+  _subItems.forEach(s => {
+    const base = getV('sip-'+s.id);
+    const hasVat = document.getElementById('si-vat-'+s.id)?.classList.contains('on');
+    const hasSvc = document.getElementById('si-svc-'+s.id)?.classList.contains('on');
+    
+    let sc = hasSvc ? base * svcRate : 0;
+    let vat = hasVat ? (base + sc) * vatRate : 0;
+    tot += base + sc + vat;
+  });
+
   const bar=document.getElementById('si-total-bar');
   const val=document.getElementById('si-total-val');
   const billAmt=getV('ea');
@@ -1527,24 +1576,41 @@ function doSaveExp(editId,gid){
 
   let expData;
   if(_expMode==='detail'){
+    const vatRate = (+document.getElementById('vat-pct')?.value || 0);
+    const svcRate = (+document.getElementById('svc-pct')?.value || 0);
+
     const builtItems=_subItems.map(item=>{
       const card=document.getElementById('si-'+item.id);
       let name=item.name, price=item.price, payerId=item.payerId;
+      let hasVat = document.getElementById('si-vat-'+item.id)?.classList.contains('on');
+      let hasSvc = document.getElementById('si-svc-'+item.id)?.classList.contains('on');
+
       if(card){
-        const nameIn=card.querySelector('input:not([type="number"])');
         price = getV('sip-'+item.id);
+        const nameIn=card.querySelector('input:not([id^="sip-"])');
         if(nameIn) name=nameIn.value.trim()||name;
-        // payerId is already updated via togSIPR
       }
-      return {id:item.id, name, price:+price.toFixed(2), consumers:[...item.consumers], payerId: payerId};
+      
+      let sc = hasSvc ? price * (svcRate/100) : 0;
+      let vt = hasVat ? (price + sc) * (vatRate/100) : 0;
+      const finalItemPrice = price + sc + vt;
+
+      return {id:item.id, name, price:+price.toFixed(2), 
+              hasVat, hasService: hasSvc,
+              finalPrice: +finalItemPrice.toFixed(2),
+              consumers:[...item.consumers], payerId: payerId};
     });
+    
     const payersMap = {};
-    builtItems.forEach(it => { payersMap[it.payerId] = (payersMap[it.payerId] || 0) + it.price; });
+    builtItems.forEach(it => { payersMap[it.payerId] = (payersMap[it.payerId] || 0) + it.finalPrice; });
     const finalPayers = Object.entries(payersMap).map(([id, amt]) => ({id, amt: +amt.toFixed(2)}));
     const allConsumers=[...new Set(builtItems.flatMap(s=>s.consumers))];
+    
     expData={id:editId||uid(),title,amount:amt,emoji,paidById:finalPayers[0]?.id||paidById,payers:finalPayers,
       splitType:'subitem',participants:allConsumers,
       subItems:builtItems,
+      vat_percent: vatRate,
+      service_percent: svcRate,
       customAmounts:{},percentages:{},date:prevDate,note:prevNote};
   } else {
     const pts=getParts();
@@ -2441,13 +2507,24 @@ function openExpDetail(gid,eid){
   const siSection=exp.subItems&&exp.subItems.length>0?`
     <p class="lbl" style="margin-top:16px">🧾 ${t('subItems')}</p>
     ${exp.subItems.map(item=>{
-      const c=item.consumers||[];const sh=c.length?(+item.price||0)/c.length:0;
+      const c=item.consumers||[];
+      const priceToSplit = item.finalPrice !== undefined ? item.finalPrice : (+item.price || 0);
+      const sh=c.length?priceToSplit/c.length:0;
       const iPayerId = item.payerId || exp.paidById;
       const iPayerName = GN(g, iPayerId);
+      
+      let chargeInfo = [];
+      if (item.hasService) chargeInfo.push(`SC ${exp.service_percent || 0}%`);
+      if (item.hasVat) chargeInfo.push(`VAT ${exp.vat_percent || 0}%`);
+      const chargeStr = chargeInfo.length ? ` (${chargeInfo.join(' + ')})` : '';
+
       return `<div style="background:var(--bg);border-radius:12px;padding:10px 12px;margin-bottom:6px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span class="fw7" style="font-size:13px">${esc(item.name||'?')}</span>
-          <span class="ff-s fw7 txt-accent" style="font-size:14px">${fmt(item.price||0)}</span>
+          <div>
+            <span class="fw7" style="font-size:13px">${esc(item.name||'?')}</span>
+            <span style="font-size:10px;color:var(--muted)">${chargeStr}</span>
+          </div>
+          <span class="ff-s fw7 txt-accent" style="font-size:14px">${fmt(priceToSplit)}</span>
         </div>
         <p style="font-size:11px;color:var(--muted);margin-bottom:6px">${t('paidBy')}: <strong style="color:var(--ink)">${esc(iPayerName)}</strong></p>
         <div style="display:flex;flex-wrap:wrap;gap:4px">
