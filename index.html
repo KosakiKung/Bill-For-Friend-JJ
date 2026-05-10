@@ -10,6 +10,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/tesseract.js@v4.0.1/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -65,6 +69,7 @@ body.th .lang-btn{font-family:'Sarabun',sans-serif}
 
 .av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
 .av-sm{width:32px;height:32px;font-size:11px}
+.av-xs{width:22px;height:22px;font-size:9px}
 .av-0{background:#FFD6CE;color:#FF5C3A}.av-1{background:#D6E8FF;color:#2563EB}
 .av-2{background:#D6F5E3;color:#16A34A}.av-3{background:#FEF3C7;color:#D97706}
 .av-4{background:#EDE9FE;color:#7C3AED}.av-5{background:#FCE7F3;color:#DB2777}
@@ -399,6 +404,17 @@ const TR = {
     subItemTotal:'Items total',subItemMismatch:'⚠ Items total must equal bill amount',
     noSubItems:'No items yet — tap "+ Add Item"',
     simpleMode:'Simple Mode',detailMode:'Item Detail',
+    importBill:'Import Bill',importMethod:'Choose Import Method',
+    pasteLineText:'Paste LINE Text',uploadImage:'Upload Image',uploadPdf:'Upload PDF',
+    parseText:'Parse Text',previewImport:'Preview Import',confirmImport:'Confirm Import',
+    detectFailed:'Unable to detect bill items. Please edit manually.',
+    pastePh:'Paste bill text here\ne.g.\nPizza 300\nBeer 200\nVAT 7%',
+    detecting:'Detecting items...',
+    exportSummary:'Export Summary',copyLineText:'Copy as LINE Text',
+    exportImage:'Export as Image',exportPdf:'Export as PDF',
+    copySuccess:'Copied to clipboard!',downloadImage:'Download Image',
+    downloadPdf:'Download PDF',perPersonSum:'Per-person Summary',
+    ate:'ate',pays:'pays',receives:'receives',tripSummary:'Trip Summary',
   },
   th:{
     appName:'สปลิตอีซี่',goodDay:'สวัสดี 👋',netBalance:'ยอดสุทธิ',
@@ -502,12 +518,24 @@ const TR = {
     subItemTotal:'รวมรายการ',subItemMismatch:'⚠ ยอดรวมรายการต้องเท่ากับบิลรวม',
     noSubItems:'ยังไม่มีรายการ — กด "+ เพิ่มรายการ"',
     simpleMode:'แบบเร็ว',detailMode:'แยกรายการ',
+    importBill:'นำเข้าบิล',importMethod:'เลือกวิธีนำเข้า',
+    pasteLineText:'วางข้อความจาก LINE',uploadImage:'อัปโหลดรูปภาพ',uploadPdf:'อัปโหลดไฟล์ PDF',
+    parseText:'ตรวจสอบข้อความ',previewImport:'ตรวจสอบข้อมูล',confirmImport:'ยืนยันการนำเข้า',
+    detectFailed:'ไม่สามารถระบุรายการได้ กรุณาแก้ไขเอง',
+    pastePh:'วางข้อความบิลที่นี่\nเช่น\nพิซซ่า 300\nเบียร์ 200\nVAT 7%',
+    detecting:'กำลังตรวจสอบรายการ...',
+    exportSummary:'ส่งออกข้อมูล',copyLineText:'คัดลอกข้อความ LINE',
+    exportImage:'บันทึกเป็นรูปภาพ',exportPdf:'บันทึกเป็น PDF',
+    copySuccess:'คัดลอกลงคลิปบอร์ดแล้ว!',downloadImage:'ดาวน์โหลดรูปภาพ',
+    downloadPdf:'ดาวน์โหลด PDF',perPersonSum:'สรุปรายบุคคล',
+    ate:'ส่วนที่ใช้ไป',pays:'ต้องจ่ายเพิ่ม',paid:'จ่ายไปแล้ว',receives:'ได้รับคืน',tripSummary:'สรุปยอดทริป',
   }
 };
 function t(k){return(TR[S.lang]||TR.en)[k]||k;}
 
 /* ═══════════════ CONSTANTS ═══════════════════════════════ */
 const AVC=['av-0','av-1','av-2','av-3','av-4','av-5','av-6','av-7'];
+const PXA=['👾','🤖','🐱','🐶','🦊','🐸','🐙','🦄','🐼','🐯','🦁','🐮','🐷','🐵','🐧','🐔','🦄','🐲','🌵','🍄','⭐','💎','🍎','🍦','🎮','🕹️','🚀','🛸','🌈'];
 const GE=['👥','🍕','✈️','🏠','🎉','🎮','🏋️','🚗','🎸','🌴','⛺','🎓'];
 const EE=[
   {e:'🍽️',l:'Food'},{e:'🍕',l:'Pizza'},{e:'🍺',l:'Drinks'},
@@ -558,8 +586,14 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const fmt=n=>'฿'+(+n||0).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const avC=i=>AVC[i%AVC.length];
+const isNear=(a,b,t=0.05)=>Math.abs((+a||0)-(+b||0))<=t;
+const stColor=ok=>ok?'var(--sage)':'var(--danger)';
 const GN=(g,id)=>{const m=g.members.find(m=>m.id===id);return m?.isMe?t('youLabel'):m?.name||'?';};
 const GI=(g,id)=>g.members.findIndex(m=>m.id===id);
+function renderAv(g,m,sz=''){
+  const idx=GI(g,m.id);const emoji=m.emoji||PXA[idx%PXA.length];
+  return `<div class="av ${sz} ${avC(idx)}">${emoji}</div>`;
+}
 function getG(id){return S.groups.find(g=>g.id===id);}
 function updG(g){S.groups=S.groups.map(x=>x.id===g.id?g:x);save();}
 const todayStr=()=>new Date().toISOString().slice(0,10);
@@ -1049,11 +1083,19 @@ function doCG(){
 function scrEditGroup(){
   const g=getG(S.selectedGroupId);if(!g)return go('home');
   const mh=g.members.map((m,i)=>`
-    <div class="member-row" id="em-${m.id}">
-      <span class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</span>
-      ${m.isMe?`<span class="flex1" style="font-size:14px;font-weight:600">${t('ownerLabel')}</span>`
-              :`<input class="input flex1" value="${esc(m.name)}" style="padding:10px 12px" data-mid="${m.id}"/>`}
-      ${m.isMe?'':`<button onclick="document.getElementById('em-${m.id}').remove();toast(t('memberRemoved'))" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>`}
+    <div class="member-row" id="em-${m.id}" style="align-items:flex-start">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <button onclick="openAP('${g.id}','${m.id}')" style="background:none;border:none;padding:0;cursor:pointer">
+          ${renderAv(g,m,'av-sm')}
+        </button>
+        <span style="font-size:9px;color:var(--accent);font-weight:700;text-transform:uppercase">${t('edit')}</span>
+      </div>
+      <div class="flex1">
+        ${m.isMe?`<span style="font-size:14px;font-weight:600;display:block;margin-bottom:4px">${t('ownerLabel')}</span>`
+                :`<input class="input" value="${esc(m.name)}" style="padding:10px 12px;margin-bottom:4px" data-mid="${m.id}"/>`}
+        <input type="hidden" id="eav-${m.id}" value="${m.emoji||''}"/>
+      </div>
+      ${m.isMe?'':`<button onclick="document.getElementById('em-${m.id}').remove();toast(t('memberRemoved'))" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px;margin-top:6px">×</button>`}
     </div>`).join('');
   return `<div class="screen">
     <div class="flex items-center gap12 p20 pt56">
@@ -1077,10 +1119,29 @@ function scrEditGroup(){
 }
 function addEGM(){
   const d=document.createElement('div');d.className='member-row';d.id='egm-'+uid();
-  d.innerHTML=`<span class="av av-sm av-1" style="font-size:10px">N</span>
-    <input class="input flex1" placeholder="${S.lang==='th'?'ชื่อสมาชิก':'Member name'}" style="padding:10px 12px" data-mid="new-${uid()}"/>
+  const nid='new-'+uid();
+  d.innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div class="av av-sm av-1">?</div>
+    </div>
+    <div class="flex1">
+      <input class="input" placeholder="${S.lang==='th'?'ชื่อสมาชิก':'Member name'}" style="padding:10px 12px;margin-bottom:4px" data-mid="${nid}"/>
+      <input type="hidden" id="eav-${nid}" value=""/>
+    </div>
     <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px">×</button>`;
   document.getElementById('eg-m').appendChild(d);
+}
+function openAP(gid,mid){
+  openSheet(`<p class="ff-s fw7" style="font-size:20px;margin-bottom:16px">${t('chooseEmoji')}</p>
+    <div class="emoji-grid" style="max-height:400px;overflow-y:auto">
+      ${PXA.map(e=>`<button onclick="pickAP('${mid}','${e}')" style="background:var(--bg);border:none;border-radius:14px;padding:12px;cursor:pointer;font-size:32px">${e}</button>`).join('')}
+    </div>`);
+}
+function pickAP(mid,e){
+  const el=document.getElementById('eav-'+mid);if(el)el.value=e;
+  const row=document.getElementById('em-'+mid)||document.getElementById('egm-'+mid);
+  if(row){const av=row.querySelector('.av');if(av)av.textContent=e;}
+  closeSheet();
 }
 function doEG(gid){
   const g=getG(gid);
@@ -1089,10 +1150,16 @@ function doEG(gid){
   const members=[];
   document.querySelectorAll('#eg-m .member-row').forEach(row=>{
     const inp=row.querySelector('input[data-mid]');
-    if(!inp){members.push(g.members.find(m=>m.isMe));return;}
-    const mid=inp.dataset.mid,val=inp.value.trim();if(!val)return;
-    if(mid.startsWith('new-'))members.push({id:uid(),name:val});
-    else{const ex=g.members.find(m=>m.id===mid);if(ex)members.push({...ex,name:val});}
+    const mid=inp?.dataset.mid;
+    const val=inp?inp.value.trim():g.members.find(m=>m.isMe).name;
+    const eav=row.querySelector('input[type="hidden"]')?.value||'';
+    if(mid){
+      if(mid.startsWith('new-')){if(val)members.push({id:uid(),name:val,emoji:eav});}
+      else{const ex=g.members.find(m=>m.id===mid);if(ex)members.push({...ex,name:val,emoji:eav});}
+    }else{
+      const me=g.members.find(m=>m.isMe);
+      members.push({...me,emoji:eav});
+    }
   });
   updG({...g,name,emoji,members});toast(t('groupUpdated'));go('group',gid);
 }
@@ -1114,7 +1181,7 @@ function scrGroup(){
 
   const membRow=g.members.slice(0,6).map((m,i)=>`
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      ${renderAv(g,m,'av-sm')}
       <span style="color:rgba(255,255,255,.55);font-size:10px;font-weight:500">${m.isMe?t('youLabel'):m.name.split(' ')[0]}</span>
     </div>`).join('');
 
@@ -1189,7 +1256,7 @@ function scrAddExp(editId){
     const inc=!exp||(exp.participants||g.members.map(x=>x.id)).includes(m.id);
     return `<div class="member-row" id="pr-${m.id}">
       <div class="chk${inc?' on':''}" id="chk-${m.id}" onclick="togPart('${m.id}')">✓</div>
-      <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      ${renderAv(g,m,'av-sm')}
       <span class="flex1" style="font-size:14px;font-weight:500">${m.isMe?t('youLabel'):esc(m.name)}</span>
       <span id="eq-${m.id}" class="${dSplit==='equal'&&!hasSubItems?'':'hidden'}" style="font-family:'Fraunces',serif;font-weight:700;color:var(--accent);font-size:13px"></span>
       <input type="text" inputmode="decimal" class="input ${dSplit==='custom'&&!hasSubItems?'':'hidden'}" id="ca-${m.id}" placeholder="0" value="${exp?.customAmounts?.[m.id]||''}" style="width:82px;padding:7px 10px;font-size:14px;text-align:right" oninput="updCustom()"/>
@@ -1203,7 +1270,7 @@ function scrAddExp(editId){
   const mpRows=g.members.map((m,i)=>{
     const pp=exPayers.find(p=>p.id===m.id);
     return `<div class="member-row">
-      <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      ${renderAv(g,m,'av-sm')}
       <span class="flex1" style="font-size:14px;font-weight:500">${m.isMe?t('youLabel'):esc(m.name)}</span>
       <input type="text" inputmode="decimal" id="mp-${m.id}" placeholder="0" value="${pp&&exp?.splitType==='multipayer'?pp.amt:''}" style="width:100px;padding:7px 10px;font-size:14px;text-align:right" oninput="updMP()"/>
     </div>`;
@@ -1249,7 +1316,7 @@ function scrAddExp(editId){
             const sel=exp?exp.paidById===m.id:i===0;
             return `<button class="payer-btn${sel?' po':''}" data-id="${m.id}" onclick="selPayer('${m.id}')"
               style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:100px;border:2px solid ${sel?'var(--accent)':'var(--border)'};background:${sel?'var(--accent-lt)':'white'};cursor:pointer;transition:all .15s">
-              <div class="av av-sm ${avC(i)}" style="width:28px;height:28px;font-size:10px">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+              ${renderAv(g,m,'av-xs')}
               <span style="font-size:13px;font-weight:600;color:${sel?'var(--accent)':'var(--ink)'}">${m.isMe?t('youLabel'):esc(m.name)}</span>
             </button>`;
           }).join('')}
@@ -1297,7 +1364,10 @@ function scrAddExp(editId){
 
         <!-- ITEM DETAIL MODE -->
         <div id="detail-mode-sec" class="${hasSubItems?'':'hidden'}">
-          <p class="txt-muted" style="font-size:12px;margin-bottom:12px">${t('subItemDesc')}</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <p class="txt-muted" style="font-size:12px;margin-bottom:0">${t('subItemDesc')}</p>
+            <button class="btn btn-secondary btn-sm" onclick="openImportModal()" style="width:auto;padding:6px 12px;font-size:12px">📥 ${t('importBill')}</button>
+          </div>
           <div class="grid2 mb12">
             <div>
               <p class="lbl">VAT (%)</p>
@@ -1333,7 +1403,7 @@ function renderSIRow(g,item,idx){
   const pBtns=g.members.map((m,mi)=>{
     const sel=item.payerId===m.id;
     return `<button class="si-payer-btn${sel?' on':''}" id="sipr-${item.id}-${m.id}" onclick="togSIPR('${item.id}','${m.id}')">
-      <div class="av av-sm ${avC(mi)}" style="width:20px;height:20px;font-size:9px">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      ${renderAv(g,m,'av-xs')}
       <span style="font-size:11px">${m.isMe?t('youLabel'):m.name.split(' ')[0]}</span>
     </button>`;
   }).join('');
@@ -1341,7 +1411,7 @@ function renderSIRow(g,item,idx){
   const cBtns=g.members.map((m,mi)=>{
     const on=(item.consumers||[]).includes(m.id);
     return `<button class="si-consumer-btn${on?' on':''}" id="sic-${item.id}-${m.id}" onclick="togSIC('${item.id}','${m.id}')">
-      <span class="av av-sm ${avC(mi)}" style="width:20px;height:20px;font-size:9px">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</span>
+      ${renderAv(g,m,'av-xs')}
       ${m.isMe?t('youLabel'):m.name.split(' ')[0]}
     </button>`;
   }).join('');
@@ -1383,7 +1453,19 @@ function setMode(mode){
   document.getElementById('mode-detail')?.classList.toggle('on',mode==='detail');
   document.getElementById('simple-mode-sec')?.classList.toggle('hidden',mode==='detail');
   document.getElementById('detail-mode-sec')?.classList.toggle('hidden',mode==='simple');
-  if(mode==='simple')updSplit();else{updSITotal();}
+  
+  const ea = document.getElementById('ea');
+  if(ea) {
+    if(mode === 'detail') {
+      ea.setAttribute('readonly', true);
+      ea.style.pointerEvents = 'none'; // Prevent opening calculator
+      updSITotal();
+    } else {
+      ea.removeAttribute('readonly');
+      ea.style.pointerEvents = 'auto';
+      updSplit();
+    }
+  }
   chkExpForm();
 }
 
@@ -1455,15 +1537,18 @@ function updSITotal(){
     tot += base + sc + vat;
   });
 
+  if(_expMode === 'detail') {
+    const ea = document.getElementById('ea');
+    if(ea) ea.value = tot > 0 ? tot.toFixed(2) : '';
+  }
+
   const bar=document.getElementById('si-total-bar');
   const val=document.getElementById('si-total-val');
-  const billAmt=getV('ea');
   if(bar)bar.style.display=_subItems.length>0?'flex':'none';
   if(val){
-    const ok=billAmt===0||Math.abs(tot-billAmt)<0.5;
-    val.textContent=billAmt>0?`${fmt(tot)} / ${fmt(billAmt)}`:fmt(tot);
-    val.style.color=ok?'var(--sage)':'var(--danger)';
-    if(bar)bar.className='si-total-bar '+(ok?'si-total-ok':'si-total-err');
+    val.textContent=fmt(tot);
+    val.style.color=stColor(true);
+    if(bar)bar.className='si-total-bar si-total-ok';
   }
   chkExpForm();
 }
@@ -1515,7 +1600,7 @@ function updSplit(){
     pts.forEach(id=>{const el=document.getElementById('eq-'+id);if(el)el.textContent=fmt(sh);});
     const g=getG(S.selectedGroupId);
     g.members.filter(m=>!pts.includes(m.id)).forEach(m=>{const el=document.getElementById('eq-'+m.id);if(el)el.textContent='';});
-    fv.textContent=fmt(sh);fv.style.color='var(--accent)';
+    fv.textContent=fmt(sh);fv.style.color=stColor(true);
   } else if(_ST==='custom')updCustom();
   else if(_ST==='percentage')updPct();
   if(_ST==='multipayer')updMP();
@@ -1524,23 +1609,23 @@ function updSplit(){
 function updCustom(){
   const amt=getV('ea'),pts=getParts();let tot=0;
   pts.forEach(id=>{tot+=getV('ca-'+id);});
-  const ok=Math.abs(tot-amt)<0.5,fv=document.getElementById('sf-val');
-  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
+  const ok=isNear(tot,amt),fv=document.getElementById('sf-val');
+  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=stColor(ok);}
   chkExpForm();
 }
 function updPct(){
   const pts=getParts();let tot=0;
   pts.forEach(id=>{tot+=getV('pct-'+id);});
-  const ok=Math.abs(tot-100)<0.5,fv=document.getElementById('sf-val');
-  if(fv){fv.textContent=`${tot.toFixed(0)}%`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
+  const ok=isNear(tot,100,0.1),fv=document.getElementById('sf-val');
+  if(fv){fv.textContent=`${tot.toFixed(1)}%`;fv.style.color=stColor(ok);}
   chkExpForm();
 }
 function updMP(){
   const amt=getV('ea');
   const g=getG(S.selectedGroupId);let tot=0;
   g.members.forEach(m=>{tot+=getV('mp-'+m.id);});
-  const ok=Math.abs(tot-amt)<0.5,fv=document.getElementById('mp-tv');
-  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=ok?'var(--sage)':'var(--danger)';}
+  const ok=isNear(tot,amt),fv=document.getElementById('mp-tv');
+  if(fv){fv.textContent=`${fmt(tot)} / ${fmt(amt)}`;fv.style.color=stColor(ok);}
   chkExpForm();
 }
 function chkExpForm(){
@@ -1548,13 +1633,12 @@ function chkExpForm(){
   const title=(document.getElementById('et')?.value||'').trim();
   let valid=amt>0&&title;
   if(_expMode==='detail'){
-    const siTot=_subItems.reduce((a,s)=>a+getV('sip-'+s.id),0);
-    valid=valid&&_subItems.length>0&&Math.abs(siTot-amt)<0.5&&_subItems.every(s=>s.consumers&&s.consumers.length>0);
+    valid=valid&&_subItems.length>0&&_subItems.every(s=>s.consumers&&s.consumers.length>0);
   } else {
     const pts=getParts();valid=valid&&pts.length>0;
-    if(_ST==='custom'){let ct=0;pts.forEach(id=>{ct+=getV('ca-'+id);});valid=valid&&Math.abs(ct-amt)<0.5;}
-    if(_ST==='percentage'){let pt=0;pts.forEach(id=>{pt+=getV('pct-'+id);});valid=valid&&Math.abs(pt-100)<0.5;}
-    if(_ST==='multipayer'){const g=getG(S.selectedGroupId);let mt=0;g.members.forEach(m=>{mt+=getV('mp-'+m.id);});valid=valid&&Math.abs(mt-amt)<0.5;}
+    if(_ST==='custom'){let ct=0;pts.forEach(id=>{ct+=getV('ca-'+id);});valid=valid&&isNear(ct,amt);}
+    if(_ST==='percentage'){let pt=0;pts.forEach(id=>{pt+=getV('pct-'+id);});valid=valid&&isNear(pt,100,0.1);}
+    if(_ST==='multipayer'){const g=getG(S.selectedGroupId);let mt=0;g.members.forEach(m=>{mt+=getV('mp-'+m.id);});valid=valid&&isNear(mt,amt);}
   }
   const b=document.getElementById('se-btn');if(b)b.disabled=!valid;
 }
@@ -1669,7 +1753,7 @@ function scrSummary(){
 
     return `<div class="flex-col" style="padding:14px 0;border-bottom:1px solid var(--border)">
       <div class="flex items-center gap12">
-        <div class="av ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+        ${renderAv(g,m)}
         <div class="flex1"><p class="fw7" style="font-size:14px">${m.isMe?t('youLabel'):esc(m.name)}</p>
           <p class="txt-muted" style="font-size:12px">${b>=0?t('getsBack'):t('owes')}</p></div>
         <span class="ff-s fw7" style="font-size:18px;color:${col}">${b>=0?'+':'−'}${fmt(Math.abs(b))}</span>
@@ -1681,11 +1765,11 @@ function scrSummary(){
   const sRows=txns.length===0
     ?`<div style="text-align:center;padding:20px;color:var(--sage)"><div style="font-size:28px">✅</div><p class="fw7 mt8">${t('allSettled')}</p></div>`
     :txns.map(tx=>{
-        const fi=GI(g,tx.from),ti=GI(g,tx.to);
+        const f=g.members.find(m=>m.id===tx.from),t_m=g.members.find(m=>m.id===tx.to);
         return `<div class="flex items-center gap12" style="padding:12px 0;border-bottom:1px solid var(--border)">
-          <div class="av av-sm ${avC(fi)}">${GN(g,tx.from).slice(0,2).toUpperCase()}</div>
+          ${renderAv(g,f,'av-sm')}
           <div class="flex1" style="font-size:13px;font-weight:500"><strong>${esc(GN(g,tx.from))}</strong> → <strong>${esc(GN(g,tx.to))}</strong></div>
-          <div class="av av-sm ${avC(ti)}">${GN(g,tx.to).slice(0,2).toUpperCase()}</div>
+          ${renderAv(g,t_m,'av-sm')}
           <span class="ff-s fw7 txt-accent" style="font-size:17px;margin-left:4px">${fmt(tx.amount)}</span>
         </div>`;
       }).join('');
@@ -1710,11 +1794,11 @@ function scrSummary(){
       </div>
       <div style="border-top:1px solid var(--border);padding-top:8px">
         ${allIds.map(id=>{
-          const idx=GI(g,id);
+          const m=g.members.find(x=>x.id===id);
           const share=shares[id]||0,paid=pm[id]||0,net=share-paid;
           return `<div class="owe-row">
             <div style="display:flex;align-items:center;gap:6px">
-              <div class="av av-sm ${avC(idx)}" style="width:26px;height:26px;font-size:10px">${GN(g,id).slice(0,2).toUpperCase()}</div>
+              ${renderAv(g,m,'av-sm')}
               <span style="font-size:13px;font-weight:600">${GN(g,id)}</span>
             </div>
             <div style="text-align:right">
@@ -1735,6 +1819,9 @@ function scrSummary(){
       <h1 class="ff-s" style="font-size:24px;font-weight:700">${t('summaryTitle')}</h1>
     </div>
     <div class="px16 gap-col">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" style="flex:1" onclick="openExportModal()" ${g.expenses.length===0?'disabled':''}>📤 ${t('exportSummary')}</button>
+      </div>
       <div class="card" style="background:linear-gradient(135deg,#1A1A2E,#2D2D4E);padding:24px">
         <p style="color:rgba(255,255,255,.55);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">${t('totalSpent')}</p>
         <p class="fs-big" style="color:#fff;margin-top:6px">${fmt(total)}</p>
@@ -2265,11 +2352,13 @@ function scrIOwe(){
     const txns=getPairwise(g.members,g.expenses);
     // I owe: transactions where from===myId
     txns.filter(tx=>tx.from===myId).forEach(tx=>{
-      iOweList.push({gid:g.id,gname:g.name,gemoji:g.emoji,toId:tx.to,toName:GN(g,tx.to),toIdx:GI(g,tx.to),amount:tx.amount});
+      const target=g.members.find(m=>m.id===tx.to);
+      iOweList.push({gid:g.id,gname:g.name,gemoji:g.emoji,toId:tx.to,toName:GN(g,tx.to),toM:target,amount:tx.amount});
     });
     // I am owed: transactions where to===myId
     txns.filter(tx=>tx.to===myId).forEach(tx=>{
-      iAmOwedList.push({gid:g.id,gname:g.name,gemoji:g.emoji,fromId:tx.from,fromName:GN(g,tx.from),fromIdx:GI(g,tx.from),amount:tx.amount});
+      const target=g.members.find(m=>m.id===tx.from);
+      iAmOwedList.push({gid:g.id,gname:g.name,gemoji:g.emoji,fromId:tx.from,fromName:GN(g,tx.from),fromM:target,amount:tx.amount});
     });
   });
 
@@ -2279,7 +2368,7 @@ function scrIOwe(){
   const oweRows=iOweList.length===0
     ?`<p class="txt-muted" style="font-size:13px;padding:10px 0;text-align:center">${t('noDebts')}</p>`
     :iOweList.map(x=>`<div class="bal-card">
-        <div class="av av-sm ${avC(x.toIdx)}">${x.toName.slice(0,2).toUpperCase()}</div>
+        ${renderAv(getG(x.gid),x.toM,'av-sm')}
         <div class="flex1">
           <p class="fw7" style="font-size:14px">${esc(x.toName)}</p>
           <p class="txt-muted" style="font-size:12px">${x.gemoji} ${esc(x.gname)}</p>
@@ -2293,7 +2382,7 @@ function scrIOwe(){
   const owedRows=iAmOwedList.length===0
     ?`<p class="txt-muted" style="font-size:13px;padding:10px 0;text-align:center">${t('noDebts')}</p>`
     :iAmOwedList.map(x=>`<div class="bal-card">
-        <div class="av av-sm ${avC(x.fromIdx)}">${x.fromName.slice(0,2).toUpperCase()}</div>
+        ${renderAv(getG(x.gid),x.fromM,'av-sm')}
         <div class="flex1">
           <p class="fw7" style="font-size:14px">${esc(x.fromName)}</p>
           <p class="txt-muted" style="font-size:12px">${x.gemoji} ${esc(x.gname)}</p>
@@ -2382,7 +2471,7 @@ function scrGroupFiltered(){
 
   const membRow=g.members.slice(0,6).map((m,i)=>`
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <div class="av av-sm ${avC(i)}">${(m.isMe?'Me':m.name).slice(0,2).toUpperCase()}</div>
+      ${renderAv(g,m,'av-sm')}
       <span style="color:rgba(255,255,255,.55);font-size:10px;font-weight:500">${m.isMe?t('youLabel'):m.name.split(' ')[0]}</span>
     </div>`).join('');
 
@@ -2495,9 +2584,9 @@ function openExpDetail(gid,eid){
   const allIds=[...new Set([...Object.keys(shares),...Object.keys(pm)])];
 
   const pRows=payers.map(p=>{
-    const idx=GI(g,p.id);
+    const m=g.members.find(x=>x.id===p.id);
     return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div class="av av-sm ${avC(idx)}">${GN(g,p.id).slice(0,2).toUpperCase()}</div>
+      ${renderAv(g,m,'av-sm')}
       <span class="flex1 fw7" style="font-size:13px">${GN(g,p.id)}</span>
       <span style="background:var(--accent-lt);color:var(--accent);padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700">${fmt(p.amt)}</span>
     </div>`;
@@ -2529,9 +2618,9 @@ function openExpDetail(gid,eid){
         <p style="font-size:11px;color:var(--muted);margin-bottom:6px">${t('paidBy')}: <strong style="color:var(--ink)">${esc(iPayerName)}</strong></p>
         <div style="display:flex;flex-wrap:wrap;gap:4px">
           ${c.map(id=>{
-            const idx=GI(g,id);
+            const m=g.members.find(x=>x.id===id);
             return `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:3px 9px;font-size:11px;font-weight:600">
-              <span class="av av-sm ${avC(idx)}" style="width:16px;height:16px;font-size:8px">${GN(g,id).slice(0,1)}</span>
+              ${renderAv(g,m,'av-xs')}
               ${GN(g,id)} <span class="txt-muted">${fmt(sh)}</span>
             </span>`;
           }).join('')}
@@ -2540,13 +2629,13 @@ function openExpDetail(gid,eid){
     }).join('')}`:'';
 
   const oRows=allIds.map(id=>{
-    const idx=GI(g,id);
+    const m=g.members.find(x=>x.id===id);
     const share=shares[id]||0;
     const paid=pm[id]||0;
     const net=share-paid; // positive = owes, negative = overpaid
     return `<div class="owe-row">
       <div style="display:flex;align-items:center;gap:8px">
-        <div class="av av-sm ${avC(idx)}">${GN(g,id).slice(0,2).toUpperCase()}</div>
+        ${renderAv(g,m,'av-sm')}
         <span class="fw7" style="font-size:13px">${GN(g,id)}</span>
       </div>
       <div class="text-right">
@@ -2572,6 +2661,438 @@ function openExpDetail(gid,eid){
     </div>
   `);
 }
+/* ═══════════════════════════════════════════════════════════
+   IMPORT BILL LOGIC
+═══════════════════════════════════════════════════════════ */
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+}
+
+function openImportModal() {
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:18px">${t('importMethod')}</p>
+    <div class="gap-col">
+      <button class="btn btn-secondary" style="display:flex;align-items:center;gap:12px;justify-content:flex-start" onclick="openPasteModal()">
+        <span style="font-size:20px">💬</span> <span>${t('pasteLineText')}</span>
+      </button>
+      <button class="btn btn-secondary" style="display:flex;align-items:center;gap:12px;justify-content:flex-start" onclick="triggerFileUpload('image')">
+        <span style="font-size:20px">📸</span> <span>${t('uploadImage')}</span>
+      </button>
+      <button class="btn btn-secondary" style="display:flex;align-items:center;gap:12px;justify-content:flex-start" onclick="triggerFileUpload('pdf')">
+        <span style="font-size:20px">📄</span> <span>${t('uploadPdf')}</span>
+      </button>
+    </div>
+    <input type="file" id="import-file" style="display:none" onchange="handleImportFile(this)"/>
+  `);
+}
+
+function openPasteModal() {
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:12px">${t('pasteLineText')}</p>
+    <textarea class="note-ta mb12" id="paste-ta" placeholder="${t('pastePh')}" style="min-height:200px"></textarea>
+    <button class="btn btn-primary" onclick="doPasteImport()">${t('parseText')}</button>
+    <button class="btn btn-ghost mt8" onclick="openImportModal()">${t('cancel')}</button>
+  `);
+}
+
+function triggerFileUpload(type) {
+  const inp = document.getElementById('import-file');
+  if (type === 'image') inp.accept = 'image/*';
+  else if (type === 'pdf') inp.accept = '.pdf';
+  inp.click();
+}
+
+async function handleImportFile(inp) {
+  const file = inp.files[0];
+  if (!file) return;
+  
+  toast(t('detecting'));
+  
+  try {
+    if (file.type.startsWith('image/')) {
+      const { data: { text } } = await Tesseract.recognize(file, 'eng+tha');
+      showImportPreview(parseBillText(text));
+    } else if (file.type === 'application/pdf') {
+      const reader = new FileReader();
+      reader.onload = async function() {
+        const typedarray = new Uint8Array(this.result);
+        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          fullText += textContent.items.map(s => s.str).join(' ') + '\n';
+        }
+        showImportPreview(parseBillText(fullText));
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  } catch (e) {
+    console.error(e);
+    toast(t('detectFailed'));
+  }
+  inp.value = ''; // Reset
+}
+
+function doPasteImport() {
+  const text = document.getElementById('paste-ta')?.value || '';
+  if (!text.trim()) return;
+  showImportPreview(parseBillText(text));
+}
+
+function parseBillText(text) {
+  const lines = text.split('\n');
+  const items = [];
+  let vat = 7;
+  let svc = 10;
+  
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    // Check for VAT
+    const vatMatch = trimmed.match(/(?:VAT|ภาษี)\s*([\d,.]+)\s*%?/i);
+    if (vatMatch) { 
+      const v = parseFloat(vatMatch[1].replace(/,/g, ''));
+      if (!isNaN(v)) vat = v; 
+      return; 
+    }
+
+    // Check for Service Charge
+    const svcMatch = trimmed.match(/(?:Service|Svc|ค่าบริการ|ค่าเซอ)\s*([\d,.]+)\s*%?/i);
+    if (svcMatch) { 
+      const v = parseFloat(svcMatch[1].replace(/,/g, ''));
+      if (!isNaN(v)) svc = v; 
+      return; 
+    }
+
+    // Check for items: "Item Name 100" or "100 Item Name"
+    const itemMatch = trimmed.match(/^(.+?)\s+([\d,.]+)$/);
+    if (itemMatch) {
+      const p = parseFloat(itemMatch[2].replace(/,/g, ''));
+      if (!isNaN(p)) items.push({ id: uid(), name: itemMatch[1].trim(), price: p });
+    } else {
+      const itemMatchRev = trimmed.match(/^([\d,.]+)\s+(.+)$/);
+      if (itemMatchRev) {
+        const p = parseFloat(itemMatchRev[1].replace(/,/g, ''));
+        if (!isNaN(p)) items.push({ id: uid(), name: itemMatchRev[2].trim(), price: p });
+      }
+    }
+  });
+
+  return { items, vat, svc };
+}
+
+function showImportPreview(data) {
+  if (!data.items.length) {
+    toast(t('detectFailed'));
+    return;
+  }
+
+  const rows = data.items.map((item, idx) => `
+    <div class="flex gap8 mb8 items-center">
+      <input class="input flex1" value="${esc(item.name)}" id="pre-n-${idx}" style="padding:8px 10px;font-size:13px"/>
+      <input class="input" type="text" inputmode="decimal" value="${item.price}" id="pre-p-${idx}" style="width:80px;padding:8px 10px;font-size:13px;text-align:right"/>
+      <button onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer">×</button>
+    </div>
+  `).join('');
+
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:12px">${t('previewImport')}</p>
+    <div style="max-height:300px;overflow-y:auto;margin-bottom:16px" id="pre-list">${rows}</div>
+    <div class="grid2 mb12">
+      <div>
+        <p class="lbl">VAT (%)</p>
+        <input class="input" type="number" id="pre-vat" value="${data.vat}"/>
+      </div>
+      <div>
+        <p class="lbl">Service (%)</p>
+        <input class="input" type="number" id="pre-svc" value="${data.svc}"/>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="confirmImport()">${t('confirmImport')}</button>
+    <button class="btn btn-ghost mt8" onclick="openImportModal()">${t('cancel')}</button>
+  `);
+}
+
+function confirmImport() {
+  const g = getG(S.selectedGroupId);
+  const mainPayerId = document.querySelector('.po')?.dataset.id || g.members[0].id;
+  const items = [];
+  document.querySelectorAll('[id^="pre-n-"]').forEach(el => {
+    const idx = el.id.split('-').pop();
+    const name = el.value.trim();
+    const price = parseFloat(document.getElementById('pre-p-' + idx)?.value || 0);
+    if (name && !isNaN(price)) {
+      items.push({ 
+        id: uid(), name, price, 
+        consumers: g.members.map(m => m.id), 
+        payerId: mainPayerId, 
+        hasVat: true, hasService: true 
+      });
+    }
+  });
+
+  const vat = parseFloat(document.getElementById('pre-vat')?.value || 0);
+  const svc = parseFloat(document.getElementById('pre-svc')?.value || 0);
+
+  _subItems = items;
+  _expMode = 'detail';
+  
+  closeSheet();
+  setMode('detail');
+  document.getElementById('vat-pct').value = vat;
+  document.getElementById('svc-pct').value = svc;
+  
+  const list = document.getElementById('si-list');
+  if (list) {
+    list.innerHTML = _subItems.map((item, idx) => renderSIRow(g, item, idx)).join('');
+    initMathFields(list);
+  }
+  
+  const currentAmt = getV('ea');
+  if (currentAmt === 0) {
+    let tot = 0;
+    _subItems.forEach(s => {
+      let sc = s.hasService ? s.price * (svc/100) : 0;
+      let vt = s.hasVat ? (s.price + sc) * (vat/100) : 0;
+      tot += s.price + sc + vt;
+    });
+    document.getElementById('ea').value = tot.toFixed(2);
+  }
+  
+  updSITotal();
+  chkExpForm();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EXPORT SUMMARY LOGIC
+═══════════════════════════════════════════════════════════ */
+function openExportModal() {
+  const g = getG(S.selectedGroupId);
+  if (!g || g.expenses.length === 0) return;
+  
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:18px">${t('exportSummary')}</p>
+    <div class="gap-col">
+      <button class="btn btn-secondary" style="display:flex;align-items:center;gap:12px;justify-content:flex-start" onclick="copyLineText()">
+        <span style="font-size:20px">💬</span> <span>${t('copyLineText')}</span>
+      </button>
+      <button class="btn btn-secondary" style="display:flex;align-items:center;gap:12px;justify-content:flex-start" onclick="exportAsImage()">
+        <span style="font-size:20px">📸</span> <span>${t('exportImage')}</span>
+      </button>
+      <button class="btn btn-secondary" style="display:flex;align-items:center;gap:12px;justify-content:flex-start" onclick="exportAsPDF()">
+        <span style="font-size:20px">📄</span> <span>${t('exportPdf')}</span>
+      </button>
+    </div>
+  `);
+}
+
+function getExportData() {
+  const g = getG(S.selectedGroupId);
+  const total = g.expenses.reduce((a, e) => a + (+e.amount || 0), 0);
+  const bals = calcBal(g.members, g.expenses);
+  const txns = getPairwise(g.members, g.expenses);
+  
+  const personSummary = g.members.map((m, i) => {
+    const shares = g.expenses.reduce((acc, exp) => {
+      const s = getShares(exp, g.members);
+      return acc + (s[m.id] || 0);
+    }, 0);
+    const paid = g.expenses.reduce((acc, exp) => {
+      const pm = exp.payers || [{id: exp.paidById, amt: exp.amount}];
+      const p = pm.find(x => x.id === m.id);
+      return acc + (p ? +p.amt : 0);
+    }, 0);
+    const net = shares - paid;
+    return { name: GN(g, m.id), share: shares, paid, net, idx: i };
+  });
+
+  return { g, total, bals, txns, personSummary };
+}
+
+function copyLineText() {
+  const { g, total, txns, personSummary } = getExportData();
+  let txt = `📊 ${g.emoji} ${g.name} - ${t('tripSummary')}\n\n`;
+  
+  txt += `📋 ${t('expenses')}\n`;
+  g.expenses.forEach(e => {
+    txt += `${e.emoji} ${e.title}: ${fmt(e.amount)}\n`;
+  });
+  txt += `\n💰 ${t('total')}: ${fmt(total)}\n\n`;
+  
+  if (txns.length > 0) {
+    txt += `🤝 ${t('settlementPlan')}\n`;
+    txns.forEach(tx => {
+      txt += `${GN(g, tx.from)} ➔ ${GN(g, tx.to)}: ${fmt(tx.amount)}\n`;
+    });
+    txt += `\n`;
+  }
+  
+  txt += `👤 ${t('perPersonSum')}\n`;
+  personSummary.forEach(p => {
+    txt += `\n${p.name}\n`;
+    txt += `- ${t('ate')}: ${fmt(p.share)}\n`;
+    if (p.paid > 0) txt += `- ${t('paid')}: ${fmt(p.paid)}\n`;
+    if (p.net > 0.5) txt += `- ${t('pays')}: ${fmt(p.net)}\n`;
+    if (p.net < -0.5) txt += `- ${t('receives')}: ${fmt(-p.net)}\n`;
+  });
+  
+  navigator.clipboard.writeText(txt).then(() => {
+    toast(t('copySuccess'));
+    closeSheet();
+  });
+}
+
+/* ── Helper to generate summary HTML for Canvas/PDF ── */
+async function generateSummaryCanvas() {
+  const { g, total, txns, personSummary } = getExportData();
+  const container = document.createElement('div');
+  container.style.cssText = `
+    position: fixed; left: -9999px; top: 0; width: 450px;
+    background: #fff; padding: 40px; border-radius: 0;
+    font-family: 'DM Sans', 'Sarabun', sans-serif; color: #1A1A2E;
+    line-height: 1.5;
+  `;
+  
+  let html = `
+    <div style="text-align:center; margin-bottom:30px; border-bottom: 2px solid #F7F5F0; padding-bottom: 20px;">
+      <div style="font-size:54px; margin-bottom:12px;">${g.emoji}</div>
+      <h1 style="font-family:'Fraunces', serif; font-size:32px; margin:0; color:#1A1A2E;">${esc(g.name)}</h1>
+      <p style="color:#8A8A9A; font-size:14px; margin-top:8px; font-weight:600;">${t('tripSummary')} • ${new Date().toLocaleDateString(S.lang==='th'?'th-TH':'en-GB')}</p>
+    </div>
+    
+    <div style="margin-bottom:30px;">
+      <h3 style="font-size:13px; color:#8A8A9A; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; font-weight:700;">${t('expenses')}</h3>
+  `;
+  
+  g.expenses.forEach(e => {
+    html += `
+      <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:16px; border-bottom: 1px dashed #EDEAE4; padding-bottom: 6px;">
+        <span>${e.emoji} ${esc(e.title)}</span>
+        <span style="font-weight:700;">${fmt(e.amount)}</span>
+      </div>
+    `;
+  });
+  
+  html += `
+      <div style="display:flex; justify-content:space-between; margin-top:20px; padding:15px; background:#FFF0ED; border-radius:12px;">
+        <span style="font-weight:700; color:#1A1A2E;">${t('total')}</span>
+        <span style="font-family:'Fraunces', serif; font-size:24px; font-weight:700; color:#FF5C3A;">${fmt(total)}</span>
+      </div>
+    </div>
+  `;
+  
+  if (txns.length > 0) {
+    html += `
+      <div style="margin-bottom:30px;">
+        <h3 style="font-size:13px; color:#8A8A9A; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; font-weight:700;">${t('settlementPlan')}</h3>
+    `;
+    txns.forEach(tx => {
+      const f=g.members.find(m=>m.id===tx.from),t_m=g.members.find(m=>m.id===tx.to);
+      const fav = f.emoji || PXA[g.members.indexOf(f) % PXA.length];
+      const tav = t_m.emoji || PXA[g.members.indexOf(t_m) % PXA.length];
+      html += `
+        <div style="display:flex; align-items:center; gap:12px; background:#F7F5F0; border-radius:14px; padding:12px 18px; margin-bottom:10px;">
+          <span style="font-size:20px;">${fav}</span>
+          <span style="font-weight:700; font-size:15px; color:#1A1A2E;">${esc(GN(g, tx.from))}</span>
+          <span style="color:#8A8A9A; font-size:12px;">➔</span>
+          <span style="font-weight:700; font-size:15px; color:#1A1A2E;">${esc(GN(g, tx.to))}</span>
+          <span style="font-size:20px;">${tav}</span>
+          <span style="margin-left:auto; font-family:'Fraunces', serif; font-weight:700; color:#FF5C3A; font-size:18px;">${fmt(tx.amount)}</span>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+  
+  html += `
+    <div style="margin-bottom:20px;">
+      <h3 style="font-size:13px; color:#8A8A9A; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; font-weight:700;">${t('perPersonSum')}</h3>
+  `;
+  
+  personSummary.forEach(p => {
+    const m=g.members.find(mx=>mx.id===g.members[p.idx].id);
+    const av = m.emoji || PXA[p.idx % PXA.length];
+    html += `
+      <div style="margin-bottom:20px; padding-bottom: 15px; border-bottom: 1px solid #F7F5F0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:22px;">${av}</span>
+            <span style="font-weight:700; font-size:16px; color:#1A1A2E;">${esc(p.name)}</span>
+          </div>
+          <span style="font-size:13px; color:#8A8A9A;">${t('ate')}: <strong>${fmt(p.share)}</strong></span>
+        </div>
+        <div style="display:flex; gap:12px; font-size:13px;">
+          ${p.paid > 0 ? `<div style="background:#E8F5EE; color:#4CAF7D; padding:4px 10px; border-radius:8px; font-weight:700;">${t('paid')} ${fmt(p.paid)}</div>` : ''}
+          ${p.net > 0.5 ? `<div style="background:#FEE2E2; color:#FF3B5C; padding:4px 10px; border-radius:8px; font-weight:700;">${t('pays')} ${fmt(p.net)}</div>` : ''}
+          ${p.net < -0.5 ? `<div style="background:#EFF6FF; color:#3B82F6; padding:4px 10px; border-radius:8px; font-weight:700;">${t('receives')} ${fmt(-p.net)}</div>` : ''}
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `</div>
+    <div style="text-align:center; margin-top:40px; border-top: 1px solid #F7F5F0; padding-top: 20px;">
+      <p style="color:#8A8A9A; font-size:12px; font-weight:600;">Generated by SplitEasy</p>
+    </div>
+  `;
+  
+  container.innerHTML = html;
+  document.body.appendChild(container);
+  
+  const canvas = await html2canvas(container, {
+    backgroundColor: '#ffffff',
+    scale: 2,
+    logging: false,
+    useCORS: true,
+    allowTaint: true
+  });
+  
+  document.body.removeChild(container);
+  return canvas;
+}
+
+async function exportAsImage() {
+  const g = getG(S.selectedGroupId);
+  toast(t('detecting'));
+  const canvas = await generateSummaryCanvas();
+  
+  const link = document.createElement('a');
+  link.download = `SplitEasy_${g.name.replace(/\s+/g, '_')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  closeSheet();
+}
+
+async function exportAsPDF() {
+  const g = getG(S.selectedGroupId);
+  toast(t('detecting'));
+  const canvas = await generateSummaryCanvas();
+  
+  const { jsPDF } = window.jspdf;
+  const imgData = canvas.toDataURL('image/png');
+  
+  // PDF dimensions (A4: 210 x 297 mm)
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const imgProps = doc.getImageProperties(imgData);
+  const pdfWidth = doc.internal.pageSize.getWidth();
+  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  
+  // If content is longer than one page, we might need a longer PDF or multiple pages
+  // For simplicity and best visual, we'll use a dynamic page height if it exceeds A4
+  if (pdfHeight > 297) {
+    const longDoc = new jsPDF('p', 'mm', [pdfWidth, pdfHeight + 20]);
+    longDoc.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
+    longDoc.save(`SplitEasy_${g.name.replace(/\s+/g, '_')}.pdf`);
+  } else {
+    doc.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
+    doc.save(`SplitEasy_${g.name.replace(/\s+/g, '_')}.pdf`);
+  }
+  
+  closeSheet();
+}
+
 function render(){
   document.body.className=S.lang==='th'?'th':'';
   const glt=document.getElementById('global-lang-toggle');
