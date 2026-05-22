@@ -253,6 +253,25 @@ body.th .lang-btn{font-family:'Sarabun',sans-serif}
 .math-wrap-block{position:relative}
 .math-wrap-block .input{width:100%}
 .math-wrap-block .math-preview{bottom:calc(100% + 4px)}
+
+/* ── BANK DROPDOWN & PAYMENT PROFILE ──────────────── */
+.bank-item{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--border);cursor:pointer}
+.bank-item:last-child{border-bottom:none}
+.bank-icon{width:28px;height:28px;border-radius:6px;object-fit:contain;background:#f0f0f0}
+.bank-name{font-size:14px;font-weight:600}
+.bank-code{font-size:11px;color:var(--muted);margin-left:auto}
+
+.pay-card{background:var(--card);border-radius:20px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.08);margin-bottom:16px;border:1px solid var(--border)}
+.pay-qr{width:160px;height:160px;margin:15px auto;display:block;border-radius:12px;background:#f9f9f9;border:1px solid var(--border)}
+.pay-method{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:10px;background:var(--bg);border-radius:12px}
+
+.export-item-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid #f0f0f0}
+.export-item-row:last-child{border-bottom:none}
+.export-participant-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding-left:12px}
+
+/* ── SEARCHABLE SELECT ──────────────────────────── */
+.search-select-wrap{position:relative}
+.search-select-list{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:14px;max-height:200px;overflow-y:auto;z-index:1000;box-shadow:0 10px 30px rgba(0,0,0,0.1);margin-top:4px}
 </style>
 </head>
 <body>
@@ -415,6 +434,11 @@ const TR = {
     copySuccess:'Copied to clipboard!',downloadImage:'Download Image',
     downloadPdf:'Download PDF',perPersonSum:'Per-person Summary',
     ate:'ate',pays:'pays',receives:'receives',tripSummary:'Trip Summary',
+    // Payment Profile
+    paymentProfile:'Payment Profile',promptpay:'PromptPay',bankAccount:'Bank Account',
+    bankName:'Bank Name',accountNumber:'Account Number',qrCode:'QR Code',
+    uploadQR:'Upload QR',rememberProfile:'Remember this profile',
+    payTo:'Pay To',searchBank:'Search bank...',
   },
   th:{
     appName:'สปลิตอีซี่',goodDay:'สวัสดี 👋',netBalance:'ยอดสุทธิ',
@@ -529,6 +553,11 @@ const TR = {
     copySuccess:'คัดลอกลงคลิปบอร์ดแล้ว!',downloadImage:'ดาวน์โหลดรูปภาพ',
     downloadPdf:'ดาวน์โหลด PDF',perPersonSum:'สรุปรายบุคคล',
     ate:'ส่วนที่ใช้ไป',pays:'ต้องจ่ายเพิ่ม',paid:'จ่ายไปแล้ว',receives:'ได้รับคืน',tripSummary:'สรุปยอดทริป',
+    // Payment Profile
+    paymentProfile:'โปรไฟล์การรับเงิน',promptpay:'พร้อมเพย์',bankAccount:'บัญชีธนาคาร',
+    bankName:'ธนาคาร',accountNumber:'เลขบัญชี',qrCode:'คิวอาร์โค้ด',
+    uploadQR:'อัปโหลดรูป QR',rememberProfile:'บันทึกโปรไฟล์นี้ไว้',
+    payTo:'จ่ายให้',searchBank:'ค้นหาธนาคาร...',
   }
 };
 function t(k){return(TR[S.lang]||TR.en)[k]||k;}
@@ -542,6 +571,25 @@ const EE=[
   {e:'🛒',l:'Grocery'},{e:'🚗',l:'Transport'},{e:'🏠',l:'Rent'},
   {e:'✈️',l:'Travel'},{e:'🎬',l:'Fun'},{e:'💊',l:'Health'},
   {e:'🎁',l:'Gift'},{e:'⚡',l:'Utilities'},{e:'📦',l:'Other'},
+];
+
+const THAI_BANKS = [
+  {name:'Kasikorn Bank',code:'KBANK',color:'#138B2E'},
+  {name:'Siam Commercial Bank',code:'SCB',color:'#4E2E7F'},
+  {name:'Bangkok Bank',code:'BBL',color:'#1E4598'},
+  {name:'Krungthai Bank',code:'KTB',color:'#00A1E0'},
+  {name:'Krungsri',code:'BAY',color:'#FFD200'},
+  {name:'TMBThanachart',code:'TTB',color:'#0056FF'},
+  {name:'UOB',code:'UOB',color:'#003876'},
+  {name:'Kiatnakin Phatra',code:'KKP',color:'#231F20'},
+  {name:'CIMB Thai',code:'CIMBT',color:'#8E1B1B'},
+  {name:'TISCO',code:'TISCO',color:'#1A4E9F'},
+  {name:'Land and Houses Bank',code:'LH Bank',color:'#646567'},
+  {name:'Thai Credit Bank',code:'Thai Credit',color:'#1A4E9F'},
+  {name:'Government Savings Bank',code:'GSB',color:'#EC068D'},
+  {name:'BAAC',code:'BAAC',color:'#008A45'},
+  {name:'Government Housing Bank',code:'GHB',color:'#F47920'},
+  {name:'Islamic Bank of Thailand',code:'IBANK',color:'#006837'}
 ];
 
 /* ═══════════════ STATE ═══════════════════════════════════ */
@@ -565,7 +613,7 @@ function save(){try{localStorage.setItem('se_v3',JSON.stringify(S.groups));}catc
 function load(){
   try{
     const r=localStorage.getItem('se_v3');
-    if(r){S.groups=JSON.parse(r);return;}
+    if(r){S.groups=JSON.parse(r).map(revalidateGroup);save();return;}
   }catch(e){}
   // seed
   const u1={id:'u1',name:'You',isMe:true},u2={id:'u2',name:'Alex'},
@@ -591,12 +639,128 @@ const stColor=ok=>ok?'var(--sage)':'var(--danger)';
 const GN=(g,id)=>{const m=g.members.find(m=>m.id===id);return m?.isMe?t('youLabel'):m?.name||'?';};
 const GI=(g,id)=>g.members.findIndex(m=>m.id===id);
 function renderAv(g,m,sz=''){
-  const idx=GI(g,m.id);const emoji=m.emoji||PXA[idx%PXA.length];
+  if(!m)return `<div class="av ${sz} av-1">?</div>`;
+  const idx=Math.max(0,GI(g,m.id));const emoji=m.emoji||PXA[idx%PXA.length];
   return `<div class="av ${sz} ${avC(idx)}">${emoji}</div>`;
 }
 function getG(id){return S.groups.find(g=>g.id===id);}
-function updG(g){S.groups=S.groups.map(x=>x.id===g.id?g:x);save();}
+function updG(g){S.groups=S.groups.map(x=>x.id===g.id?revalidateGroup(g):x);save();}
 const todayStr=()=>new Date().toISOString().slice(0,10);
+
+function uniqIds(ids){return [...new Set((ids||[]).filter(Boolean))];}
+function validMemberSet(g){return new Set((g.members||[]).map(m=>m.id));}
+function resolveMemberId(g,ref){
+  if(!ref)return ref;
+  const members=g.members||[];
+  if(members.some(m=>m.id===ref))return ref;
+  const byName=members.find(m=>m.name===ref||(m.isMe&&ref==='You'));
+  return byName?byName.id:ref;
+}
+function normalizeRefMap(g,obj){
+  const out={};
+  Object.entries(obj||{}).forEach(([id,val])=>{
+    const next=resolveMemberId(g,id);
+    out[next]=(+(out[next]||0))+(+val||0);
+  });
+  return out;
+}
+function normalizeExpenseRefs(g,exp){
+  return {
+    ...exp,
+    paidById:resolveMemberId(g,exp.paidById),
+    payers:exp.payers?uniqPayers(exp.payers.map(p=>({...p,id:resolveMemberId(g,p.id)}))):exp.payers,
+    participants:exp.participants?uniqIds(exp.participants.map(id=>resolveMemberId(g,id))):exp.participants,
+    customAmounts:normalizeRefMap(g,exp.customAmounts),
+    percentages:normalizeRefMap(g,exp.percentages),
+    subItems:(exp.subItems||[]).map(s=>({
+      ...s,
+      payerId:resolveMemberId(g,s.payerId),
+      consumers:uniqIds((s.consumers||[]).map(id=>resolveMemberId(g,id)))
+    }))
+  };
+}
+function isMemberReferenced(g,mid){
+  return (g.expenses||[]).some(e=>
+    e.paidById===mid ||
+    (e.payers||[]).some(p=>p.id===mid) ||
+    (e.participants||[]).includes(mid) ||
+    Object.prototype.hasOwnProperty.call(e.customAmounts||{},mid) ||
+    Object.prototype.hasOwnProperty.call(e.percentages||{},mid) ||
+    (e.subItems||[]).some(s=>s.payerId===mid || (s.consumers||[]).includes(mid))
+  );
+}
+function replaceIdInMap(obj,oldId,newId){
+  const out={};
+  Object.entries(obj||{}).forEach(([id,val])=>{
+    out[id===oldId?newId:id]=(+(out[id===oldId?newId:id]||0))+(+val||0);
+  });
+  return out;
+}
+function replaceMemberRefsInExpense(exp,oldId,newId){
+  return {
+    ...exp,
+    paidById:exp.paidById===oldId?newId:exp.paidById,
+    payers:uniqPayers((exp.payers||[]).map(p=>({...p,id:p.id===oldId?newId:p.id}))),
+    participants:uniqIds((exp.participants||[]).map(id=>id===oldId?newId:id)),
+    customAmounts:replaceIdInMap(exp.customAmounts,oldId,newId),
+    percentages:replaceIdInMap(exp.percentages,oldId,newId),
+    subItems:(exp.subItems||[]).map(s=>({
+      ...s,
+      payerId:s.payerId===oldId?newId:s.payerId,
+      consumers:uniqIds((s.consumers||[]).map(id=>id===oldId?newId:id))
+    }))
+  };
+}
+function removeMemberRefsFromExpense(exp,mid){
+  const customAmounts={...exp.customAmounts};delete customAmounts[mid];
+  const percentages={...exp.percentages};delete percentages[mid];
+  return {
+    ...exp,
+    paidById:exp.paidById===mid?'':exp.paidById,
+    payers:(exp.payers||[]).filter(p=>p.id!==mid),
+    participants:(exp.participants||[]).filter(id=>id!==mid),
+    customAmounts,percentages,
+    subItems:(exp.subItems||[]).map(s=>({
+      ...s,
+      payerId:s.payerId===mid?'':s.payerId,
+      consumers:(s.consumers||[]).filter(id=>id!==mid)
+    }))
+  };
+}
+function uniqPayers(payers){
+  const map={};
+  (payers||[]).forEach(p=>{if(p.id)map[p.id]=(map[p.id]||0)+(+p.amt||0);});
+  return Object.entries(map).map(([id,amt])=>({id,amt:+amt.toFixed(2)}));
+}
+function validateExpenseRefs(g,exp){
+  const ids=validMemberSet(g),issues=[];
+  const payerIds=(exp.payers&&exp.payers.length?exp.payers:[exp.paidById?{id:exp.paidById,amt:exp.amount}:null]).filter(Boolean);
+  if(!payerIds.length)issues.push('missing payer');
+  payerIds.forEach(p=>{if(!ids.has(p.id))issues.push('invalid payer');});
+  if(exp.paidById&&!ids.has(exp.paidById))issues.push('deleted payer');
+  (exp.participants||[]).forEach(id=>{if(!ids.has(id))issues.push('invalid participant');});
+  if((exp.splitType!=='subitem')&&!(exp.participants||[]).length)issues.push('missing participant');
+  (exp.subItems||[]).forEach(s=>{
+    if(!s.payerId||!ids.has(s.payerId))issues.push('invalid item payer');
+    if(!(s.consumers||[]).length)issues.push('empty item consumers');
+    (s.consumers||[]).forEach(id=>{if(!ids.has(id))issues.push('invalid item consumer');});
+  });
+  return [...new Set(issues)];
+}
+function revalidateGroup(g){
+  if(!g)return g;
+  const savedProfiles = JSON.parse(localStorage.getItem('payment_profiles')||'{}');
+  const members = (g.members||[]).map(m => {
+    if(!m.paymentProfile && savedProfiles[m.name]){
+      return {...m, paymentProfile: savedProfiles[m.name]};
+    }
+    return m;
+  });
+  const normalized={...g, members, expenses:(g.expenses||[]).map(e=>normalizeExpenseRefs(g,e))};
+  return {...normalized,expenses:normalized.expenses.map(e=>({...e,invalidReasons:validateExpenseRefs(normalized,e)}))};
+}
+function validExpenses(g){return (revalidateGroup(g).expenses||[]).filter(e=>!(e.invalidReasons||[]).length);}
+function invalidExpenses(g){return (revalidateGroup(g).expenses||[]).filter(e=>(e.invalidReasons||[]).length);}
 
 /* ── Safe Math Expression Evaluator (PEMDAS) ────────── */
 function evalMath(str) {
@@ -782,6 +946,7 @@ function getPairwise(members, expenses) {
   const debts = {}; // key: "debtorId->creditorId"
 
   expenses.forEach(exp => {
+    if(validateExpenseRefs({members},exp).length)return;
     const total = +exp.amount || 0;
     if (total <= 0) return;
 
@@ -848,16 +1013,18 @@ function getPairwise(members, expenses) {
 function getShares(exp, members) {
   const shares = {};
   const amt = +exp.amount || 0;
+  const validIds = new Set((members||[]).map(m=>m.id));
   if (exp.subItems && exp.subItems.length > 0) {
     exp.subItems.forEach(item => {
-      const c = item.consumers || [];
+      const c = (item.consumers || []).filter(id=>validIds.has(id));
       if (!c.length) return;
       const priceToSplit = item.finalPrice !== undefined ? item.finalPrice : (+item.price || 0);
       const sh = priceToSplit / c.length;
       c.forEach(id => { shares[id] = (shares[id] || 0) + sh; });
     });
   } else {
-    const ids = exp.participants || (members || []).map(m => m.id);
+    const ids = (exp.participants || (members || []).map(m => m.id)).filter(id=>validIds.has(id));
+    if(!ids.length)return shares;
     if (exp.splitType === 'custom') {
       ids.forEach(id => { shares[id] = +(+(exp.customAmounts?.[id]) || 0).toFixed(2); });
     } else if (exp.splitType === 'percentage') {
@@ -926,7 +1093,7 @@ function renderNav(){
   nav.classList.remove('hidden');
   // Compute total I-owe for badge
   let totalOwe=0;
-  S.groups.forEach(g=>{
+  S.groups.map(revalidateGroup).forEach(g=>{
     const b=calcBal(g.members,g.expenses);
     const mb=b[g.members[0]?.id]||0;
     if(mb<-0.5)totalOwe+=Math.abs(mb);
@@ -1095,7 +1262,7 @@ function scrEditGroup(){
                 :`<input class="input" value="${esc(m.name)}" style="padding:10px 12px;margin-bottom:4px" data-mid="${m.id}"/>`}
         <input type="hidden" id="eav-${m.id}" value="${m.emoji||''}"/>
       </div>
-      ${m.isMe?'':`<button onclick="document.getElementById('em-${m.id}').remove();toast(t('memberRemoved'))" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px;margin-top:6px">×</button>`}
+      ${m.isMe?'':`<button onclick="confDelMember('${g.id}','${m.id}')" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:4px;margin-top:6px">×</button>`}
     </div>`).join('');
   return `<div class="screen">
     <div class="flex items-center gap12 p20 pt56">
@@ -1132,16 +1299,130 @@ function addEGM(){
   document.getElementById('eg-m').appendChild(d);
 }
 function openAP(gid,mid){
+  const g=getG(gid); const m=g.members.find(x=>x.id===mid);
+  const p=m.paymentProfile || {};
   openSheet(`<p class="ff-s fw7" style="font-size:20px;margin-bottom:16px">${t('chooseEmoji')}</p>
-    <div class="emoji-grid" style="max-height:400px;overflow-y:auto">
-      ${PXA.map(e=>`<button onclick="pickAP('${mid}','${e}')" style="background:var(--bg);border:none;border-radius:14px;padding:12px;cursor:pointer;font-size:32px">${e}</button>`).join('')}
-    </div>`);
+    <div class="emoji-grid" style="max-height:180px;overflow-y:auto;margin-bottom:20px;padding:4px;background:var(--bg);border-radius:14px">
+      ${PXA.map(e=>`<button onclick="pickAP('${mid}','${e}')" style="background:none;border:none;padding:8px;cursor:pointer;font-size:28px">${e}</button>`).join('')}
+    </div>
+    <p class="lbl">${t('paymentProfile')}</p>
+    <div class="card gap-col" style="padding:14px">
+      <div>
+        <p class="lbl">${t('promptpay')}</p>
+        <input class="input" id="pp-num" value="${p.promptpayNumber||''}" placeholder="081-234-5678" style="padding:10px 12px"/>
+      </div>
+      <div class="search-select-wrap">
+        <p class="lbl">${t('bankName')}</p>
+        <input class="input" id="bank-search" value="${p.bankName||''}" placeholder="${t('searchBank')}" onfocus="showBanks()" oninput="filterBanks(this.value)" style="padding:10px 12px"/>
+        <input type="hidden" id="bank-code" value="${p.bankCode||''}"/>
+        <div id="bank-list" class="search-select-list hidden"></div>
+      </div>
+      <div>
+        <p class="lbl">${t('accountNumber')}</p>
+        <input class="input" id="acc-num" value="${p.accountNumber||''}" placeholder="123-4-56789-0" style="padding:10px 12px"/>
+      </div>
+      <div>
+        <p class="lbl">${t('qrCode')}</p>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm flex1" onclick="document.getElementById('qr-up').click()">${t('uploadQR')}</button>
+        </div>
+        <input type="file" id="qr-up" style="display:none" accept="image/*" onchange="upQR(this)"/>
+        <img id="qr-pre" src="${p.qrImage||''}" class="pay-qr${p.qrImage?'':' hidden'}"/>
+      </div>
+      <label style="display:flex;align-items:center;gap:10px;margin-top:4px">
+        <div class="chk-sq${p.rememberProfile?' on':''}" id="rem-prof" onclick="this.classList.toggle('on')">✓</div>
+        <span style="font-size:13px;font-weight:600">${t('rememberProfile')}</span>
+      </label>
+    </div>
+    <button class="btn btn-primary mt16" onclick="saveAP('${gid}','${mid}')">${t('saveChanges')}</button>
+  `);
+}
+function showBanks(){
+  const list=document.getElementById('bank-list'); list.classList.remove('hidden');
+  renderBanks(THAI_BANKS);
+}
+function filterBanks(v){
+  const filtered=THAI_BANKS.filter(b=>b.name.toLowerCase().includes(v.toLowerCase())||b.code.toLowerCase().includes(v.toLowerCase()));
+  renderBanks(filtered);
+}
+function renderBanks(arr){
+  const list=document.getElementById('bank-list');
+  list.innerHTML=arr.map(b=>`
+    <div class="bank-item" onclick="pickBank('${esc(b.name)}','${b.code}')">
+      <div class="bank-icon" style="background:${b.color}"></div>
+      <span class="bank-name">${b.name}</span>
+      <span class="bank-code">${b.code}</span>
+    </div>`).join('');
+}
+function pickBank(n,c){
+  document.getElementById('bank-search').value=n;
+  document.getElementById('bank-code').value=c;
+  document.getElementById('bank-list').classList.add('hidden');
+}
+function upQR(inp){
+  const file=inp.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=document.getElementById('qr-pre'); img.src=e.target.result; img.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+function saveAP(gid,mid){
+  const g=getG(gid); const m=g.members.find(x=>x.id===mid);
+  const profile = {
+    promptpayNumber: document.getElementById('pp-num').value,
+    bankName: document.getElementById('bank-search').value,
+    bankCode: document.getElementById('bank-code').value,
+    accountNumber: document.getElementById('acc-num').value,
+    qrImage: document.getElementById('qr-pre').classList.contains('hidden') ? '' : document.getElementById('qr-pre').src,
+    rememberProfile: document.getElementById('rem-prof').classList.contains('on')
+  };
+  m.paymentProfile = profile;
+  if(profile.rememberProfile){
+    let saved = JSON.parse(localStorage.getItem('payment_profiles')||'{}');
+    saved[m.name] = profile;
+    localStorage.setItem('payment_profiles', JSON.stringify(saved));
+  }
+  updG(g); closeSheet(); render(); toast(t('noteSaved'));
 }
 function pickAP(mid,e){
   const el=document.getElementById('eav-'+mid);if(el)el.value=e;
   const row=document.getElementById('em-'+mid)||document.getElementById('egm-'+mid);
   if(row){const av=row.querySelector('.av');if(av)av.textContent=e;}
+  // Don't close sheet, user might want to edit payment profile
+}
+function confDelMember(gid,mid){
+  const g=getG(gid);if(!g)return;
+  if(!isMemberReferenced(g,mid)){
+    document.getElementById('em-'+mid)?.remove();
+    toast(t('memberRemoved'));
+    return;
+  }
+  const m=g.members.find(x=>x.id===mid);
+  const opts=g.members.filter(x=>x.id!==mid);
+  const replaceUI=opts.length
+    ?`<select class="input mb12" id="replace-mid">${opts.map(x=>`<option value="${x.id}">${esc(x.isMe?t('youLabel'):x.name)}</option>`).join('')}</select>
+      <button class="btn btn-primary w-full" onclick="applyMemberDeleteChoice('${gid}','${mid}','replace')">${S.lang==='th'?'แทนที่สมาชิกนี้':'Replace member'}</button>`
+    :`<button class="btn btn-primary w-full" disabled>${S.lang==='th'?'ไม่มีสมาชิกอื่นให้แทนที่':'No replacement member'}</button>`;
+  openSheet(`
+    <p class="ff-s fw7" style="font-size:20px;margin-bottom:8px">${esc(m?.name||'Member')}</p>
+    <p class="txt-muted" style="font-size:14px;margin-bottom:16px">This member is still used in existing expenses.</p>
+    ${replaceUI}
+    <button class="btn btn-danger w-full mt8" onclick="applyMemberDeleteChoice('${gid}','${mid}','remove')">${S.lang==='th'?'ลบออกจากรายจ่ายทั้งหมด':'Remove from all expenses'}</button>
+    <button class="btn btn-ghost mt8" onclick="closeSheet()">${t('cancel')}</button>
+  `);
+}
+function applyMemberDeleteChoice(gid,mid,mode){
+  const g=getG(gid);if(!g)return;
+  const replacement=document.getElementById('replace-mid')?.value;
+  if(mode==='replace'&&!replacement){toast(t('fillTitleAmt'));return;}
+  const expenses=(g.expenses||[]).map(e=>mode==='replace'
+    ?replaceMemberRefsInExpense(e,mid,replacement)
+    :removeMemberRefsFromExpense(e,mid));
+  updG({...g,members:g.members.filter(m=>m.id!==mid),expenses});
+  document.getElementById('em-'+mid)?.remove();
   closeSheet();
+  toast(t('memberRemoved'));
 }
 function doEG(gid){
   const g=getG(gid);
@@ -1161,6 +1442,9 @@ function doEG(gid){
       members.push({...me,emoji:eav});
     }
   });
+  const removed=(g.members||[]).filter(m=>!m.isMe&&!members.some(x=>x.id===m.id));
+  const stillUsed=removed.find(m=>isMemberReferenced(g,m.id));
+  if(stillUsed){confDelMember(gid,stillUsed.id);return;}
   updG({...g,name,emoji,members});toast(t('groupUpdated'));go('group',gid);
 }
 function confDelG(gid){
@@ -1174,7 +1458,7 @@ function confDelG(gid){
    GROUP DETAIL
 ═══════════════════════════════════════════════════════════ */
 function scrGroup(){
-  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  const g=revalidateGroup(getG(S.selectedGroupId));if(!g)return go('home');
   const bals=calcBal(g.members,g.expenses);
   const myId=g.members[0]?.id,myBal=bals[myId]||0;
   const col=myBal>=0?'var(--sage)':'var(--danger)';
@@ -1188,13 +1472,15 @@ function scrGroup(){
   const expList=g.expenses.length===0
     ?`<div class="empty"><div class="ei">🧾</div><p>${S.lang==='th'?'ยังไม่มีรายจ่าย':'No expenses yet'}</p></div>`
     :[...g.expenses].reverse().map(exp=>{
+        const invalid=(exp.invalidReasons||[]).length>0;
         const payers=exp.payers||[{id:exp.paidById,amt:exp.amount}];
         const pNames=payers.slice(0,2).map(p=>GN(g,p.id)).join(', ')+(payers.length>2?'…':'');
-        return `<div class="row">
+        return `<div class="row" style="${invalid?'border-color:var(--danger);':''}">
           <div style="width:44px;height:44px;border-radius:14px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0" onclick="openExpDetail('${g.id}','${exp.id}')">${exp.emoji}</div>
           <div class="flex1" onclick="openExpDetail('${g.id}','${exp.id}')">
             <p class="fw7" style="font-size:14px">${esc(exp.title)}</p>
             <p class="txt-muted" style="font-size:12px;margin-top:2px">${pNames} · ${exp.splitType}</p>
+            ${invalid?`<p style="color:var(--danger);font-size:11px;font-weight:700;margin-top:2px">Needs member fix</p>`:''}
           </div>
           <div class="text-right">
             <p class="ff-s fw7" style="font-size:16px">${fmt(exp.amount)}</p>
@@ -1727,9 +2013,10 @@ function pickEE(e){const b=document.getElementById('ee-btn');if(b){b.textContent
    SUMMARY
 ═══════════════════════════════════════════════════════════ */
 function scrSummary(){
-  const g=getG(S.selectedGroupId);if(!g)return go('home');
-  const bals=calcBal(g.members,g.expenses);
-  const txns=getPairwise(g.members,g.expenses);
+  const g=revalidateGroup(getG(S.selectedGroupId));if(!g)return go('home');
+  const goodExpenses=validExpenses(g),badExpenses=invalidExpenses(g);
+  const bals=calcBal(g.members,goodExpenses);
+  const txns=getPairwise(g.members,goodExpenses);
   const total=g.expenses.reduce((a,e)=>a+(+e.amount||0),0);
 
   const bRows=g.members.map((m,i)=>{
@@ -1776,19 +2063,21 @@ function scrSummary(){
 
   // Per-expense breakdown
   const expBD=[...g.expenses].reverse().map(exp=>{
+    const invalid=(exp.invalidReasons||[]).length>0;
     const amt=+exp.amount||0;
     const payers=exp.payers||[{id:exp.paidById,amt}];
     const pm={};payers.forEach(p=>pm[p.id]=(pm[p.id]||0)+(+p.amt||0));
     const pStr=payers.map(p=>`${GN(g,p.id)} ${fmt(p.amt)}`).join(', ');
     // Use single source of truth — same function as calcBal
-    const shares=getShares(exp, g.members);
+    const shares=invalid?{}:getShares(exp, g.members);
     // For display: all people who paid or have a share
     const allIds=[...new Set([...Object.keys(shares),...Object.keys(pm)])];
-    return `<div class="card" style="margin-bottom:10px">
+    return `<div class="card" style="margin-bottom:10px;${invalid?'border-color:var(--danger);':''}">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <span style="font-size:22px">${exp.emoji}</span>
         <div class="flex1"><p class="fw7" style="font-size:14px">${esc(exp.title)}</p>
           <span style="background:var(--accent-lt);color:var(--accent);padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600">${pStr}${exp.splitType==='subitem'?' · 🧾':''}</span>
+          ${invalid?`<p style="color:var(--danger);font-size:11px;font-weight:700;margin-top:6px">Invalid references: ${esc((exp.invalidReasons||[]).join(', '))}</p>`:''}
         </div>
         <span class="ff-s fw7" style="font-size:16px">${fmt(amt)}</span>
       </div>
@@ -1819,6 +2108,10 @@ function scrSummary(){
       <h1 class="ff-s" style="font-size:24px;font-weight:700">${t('summaryTitle')}</h1>
     </div>
     <div class="px16 gap-col">
+      ${badExpenses.length?`<div class="card" style="border-color:var(--danger);background:#fff5f5">
+        <p class="fw7" style="font-size:14px;color:var(--danger);margin-bottom:4px">Some expenses need attention</p>
+        <p class="txt-muted" style="font-size:12px">${badExpenses.length} expense(s) contain missing or deleted member references. They are skipped in settlement until fixed.</p>
+      </div>`:''}
       <div style="display:flex;gap:8px">
         <button class="btn btn-secondary" style="flex:1" onclick="openExportModal()" ${g.expenses.length===0?'disabled':''}>📤 ${t('exportSummary')}</button>
       </div>
@@ -2462,7 +2755,7 @@ function doSettle(gid,toId){
    GROUP DETAIL with Category Filter + Note on expense
 ═══════════════════════════════════════════════════════════ */
 function scrGroupFiltered(){
-  const g=getG(S.selectedGroupId);if(!g)return go('home');
+  const g=revalidateGroup(getG(S.selectedGroupId));if(!g)return go('home');
   const bals=calcBal(g.members,g.expenses);
   const myId=g.members[0]?.id,myBal=bals[myId]||0;
   const col=myBal>=0?'var(--sage)':'var(--danger)';
@@ -2484,14 +2777,16 @@ function scrGroupFiltered(){
   const expList=filtered.length===0
     ?`<div class="empty"><div class="ei">🔍</div><p>${filter==='all'?'No expenses yet':'No expenses in this category'}</p></div>`
     :[...filtered].reverse().map(exp=>{
+        const invalid=(exp.invalidReasons||[]).length>0;
         const payers=exp.payers||[{id:exp.paidById,amt:exp.amount}];
         const pNames=payers.slice(0,2).map(p=>GN(g,p.id)).join(', ')+(payers.length>2?'…':'');
         const noteBadge=exp.note?`<span style="font-size:10px;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:100px;margin-left:4px">📝</span>`:'';
-        return `<div class="row">
+        return `<div class="row" style="${invalid?'border-color:var(--danger);':''}">
           <div style="width:44px;height:44px;border-radius:14px;background:var(--accent-lt);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0" onclick="openExpDetail('${g.id}','${exp.id}')">${exp.emoji}</div>
           <div class="flex1" onclick="openExpDetail('${g.id}','${exp.id}')">
             <div style="display:flex;align-items:center">${exp.isSettlement?'<span style="font-size:10px;background:var(--sage-lt);color:var(--sage);padding:2px 7px;border-radius:100px;font-weight:700;margin-right:6px">✓ Settled</span>':''}<p class="fw7" style="font-size:14px">${esc(exp.title)}</p>${noteBadge}</div>
             <p class="txt-muted" style="font-size:12px;margin-top:2px">${pNames} · ${exp.splitType}</p>
+            ${invalid?`<p style="color:var(--danger);font-size:11px;font-weight:700;margin-top:2px">Needs member fix</p>`:''}
           </div>
           <div class="text-right">
             <p class="ff-s fw7" style="font-size:16px">${fmt(exp.amount)}</p>
@@ -2889,17 +3184,18 @@ function openExportModal() {
 }
 
 function getExportData() {
-  const g = getG(S.selectedGroupId);
+  const g = revalidateGroup(getG(S.selectedGroupId));
+  const goodExpenses = validExpenses(g);
   const total = g.expenses.reduce((a, e) => a + (+e.amount || 0), 0);
-  const bals = calcBal(g.members, g.expenses);
-  const txns = getPairwise(g.members, g.expenses);
+  const bals = calcBal(g.members, goodExpenses);
+  const txns = getPairwise(g.members, goodExpenses);
   
   const personSummary = g.members.map((m, i) => {
-    const shares = g.expenses.reduce((acc, exp) => {
+    const shares = goodExpenses.reduce((acc, exp) => {
       const s = getShares(exp, g.members);
       return acc + (s[m.id] || 0);
     }, 0);
-    const paid = g.expenses.reduce((acc, exp) => {
+    const paid = goodExpenses.reduce((acc, exp) => {
       const pm = exp.payers || [{id: exp.paidById, amt: exp.amount}];
       const p = pm.find(x => x.id === m.id);
       return acc + (p ? +p.amt : 0);
@@ -2917,14 +3213,53 @@ function copyLineText() {
   
   txt += `📋 ${t('expenses')}\n`;
   g.expenses.forEach(e => {
-    txt += `${e.emoji} ${e.title}: ${fmt(e.amount)}\n`;
+    txt += `\n${e.emoji} ${e.title}\n`;
+    txt += `${t('total')}: ${fmt(e.amount)}\n`;
+    txt += `${t('paidBy')}: ${GN(g, e.paidById)}\n`;
+    
+    if(e.subItems && e.subItems.length > 0) {
+      e.subItems.forEach(si => {
+        txt += `\n  - ${si.name}: ${fmt(si.finalPrice||si.price)}\n`;
+        si.consumers.forEach(cid => {
+          const share = (si.finalPrice||si.price) / si.consumers.length;
+          txt += `    · ${GN(g, cid)} ${fmt(share)}\n`;
+        });
+      });
+      if(e.vat_percent) txt += `\n  VAT ${e.vat_percent}%\n`;
+      if(e.service_percent) txt += `  Service ${e.service_percent}%\n`;
+    } else {
+      const shares = getShares(e, g.members);
+      Object.entries(shares).forEach(([mid, val]) => {
+        if(val > 0) txt += `  - ${GN(g, mid)}: ${fmt(val)}\n`;
+      });
+    }
   });
-  txt += `\n💰 ${t('total')}: ${fmt(total)}\n\n`;
+  
+  txt += `\n💰 ${t('totalBill')}: ${fmt(total)}\n\n`;
   
   if (txns.length > 0) {
     txt += `🤝 ${t('settlementPlan')}\n`;
     txns.forEach(tx => {
       txt += `${GN(g, tx.from)} ➔ ${GN(g, tx.to)}: ${fmt(tx.amount)}\n`;
+    });
+    txt += `\n`;
+  }
+
+  // Payment info for receivers
+  const receiverIds = [...new Set(txns.map(tx => tx.to))];
+  if(receiverIds.length > 0) {
+    txt += `💳 ${S.lang==='th'?'ข้อมูลการโอนเงิน':'Payment Information'}\n`;
+    receiverIds.forEach(rid => {
+      const m = g.members.find(x => x.id === rid);
+      const p = m?.paymentProfile;
+      txt += `\n${t('payTo')}: ${GN(g, rid)}\n`;
+      if(p) {
+        if(p.promptpayNumber) txt += `PromptPay: ${p.promptpayNumber}\n`;
+        if(p.bankName) txt += `${t('bankName')}: ${p.bankName} (${p.bankCode})\n`;
+        if(p.accountNumber) txt += `${t('accountNumber')}: ${p.accountNumber}\n`;
+      } else {
+        txt += `(No payment profile set)\n`;
+      }
     });
     txt += `\n`;
   }
@@ -2949,57 +3284,145 @@ async function generateSummaryCanvas() {
   const { g, total, txns, personSummary } = getExportData();
   const container = document.createElement('div');
   container.style.cssText = `
-    position: fixed; left: -9999px; top: 0; width: 450px;
-    background: #fff; padding: 40px; border-radius: 0;
+    position: fixed; left: -9999px; top: 0; width: 480px;
+    background: #F7F5F0; padding: 40px; border-radius: 0;
     font-family: 'DM Sans', 'Sarabun', sans-serif; color: #1A1A2E;
     line-height: 1.5;
   `;
   
   let html = `
-    <div style="text-align:center; margin-bottom:30px; border-bottom: 2px solid #F7F5F0; padding-bottom: 20px;">
-      <div style="font-size:54px; margin-bottom:12px;">${g.emoji}</div>
-      <h1 style="font-family:'Fraunces', serif; font-size:32px; margin:0; color:#1A1A2E;">${esc(g.name)}</h1>
-      <p style="color:#8A8A9A; font-size:14px; margin-top:8px; font-weight:600;">${t('tripSummary')} • ${new Date().toLocaleDateString(S.lang==='th'?'th-TH':'en-GB')}</p>
-    </div>
-    
-    <div style="margin-bottom:30px;">
-      <h3 style="font-size:13px; color:#8A8A9A; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; font-weight:700;">${t('expenses')}</h3>
+    <div style="background:#fff; border-radius:28px; padding:30px; box-shadow:0 10px 40px rgba(0,0,0,0.05); margin-bottom:20px;">
+      <div style="text-align:center; margin-bottom:30px; border-bottom: 2px solid #F7F5F0; padding-bottom: 20px;">
+        <div style="font-size:54px; margin-bottom:12px;">${g.emoji}</div>
+        <h1 style="font-family:'Fraunces', serif; font-size:32px; margin:0; color:#1A1A2E;">${esc(g.name)}</h1>
+        <p style="color:#8A8A9A; font-size:14px; margin-top:8px; font-weight:600;">${t('tripSummary')} • ${new Date().toLocaleDateString(S.lang==='th'?'th-TH':'en-GB')}</p>
+      </div>
+      
+      <div style="margin-bottom:30px;">
+        <h3 style="font-size:13px; color:#8A8A9A; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; font-weight:700;">${t('expenses')}</h3>
   `;
   
   g.expenses.forEach(e => {
     html += `
-      <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:16px; border-bottom: 1px dashed #EDEAE4; padding-bottom: 6px;">
-        <span>${e.emoji} ${esc(e.title)}</span>
-        <span style="font-weight:700;">${fmt(e.amount)}</span>
-      </div>
+      <div style="margin-bottom:20px; background:#fff; border: 1.5px solid #EDEAE4; border-radius:18px; padding:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px;">${e.emoji}</span>
+            <span style="font-weight:700; font-size:16px;">${esc(e.title)}</span>
+          </div>
+          <span style="font-family:'Fraunces', serif; font-weight:700; font-size:18px; color:#FF5C3A;">${fmt(e.amount)}</span>
+        </div>
+        <p style="font-size:12px; color:#8A8A9A; margin-bottom:10px;">${t('paidBy')}: <strong>${GN(g, e.paidById)}</strong></p>
     `;
+    
+    if(e.subItems && e.subItems.length > 0) {
+      e.subItems.forEach(si => {
+        html += `
+          <div style="border-top:1px solid #F7F5F0; padding-top:8px; margin-top:8px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600;">
+              <span>${esc(si.name)}</span>
+              <span>${fmt(si.finalPrice||si.price)}</span>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
+              ${si.consumers.map(cid => `
+                <span style="font-size:11px; background:#F7F5F0; padding:2px 8px; border-radius:100px; color:#8A8A9A;">
+                  ${GN(g, cid)} ${fmt((si.finalPrice||si.price)/si.consumers.length)}
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+      if(e.vat_percent || e.service_percent) {
+        html += `<div style="margin-top:10px; text-align:right; font-size:11px; color:#8A8A9A; font-weight:700;">`;
+        if(e.vat_percent) html += `VAT ${e.vat_percent}% `;
+        if(e.service_percent) html += `Service ${e.service_percent}%`;
+        html += `</div>`;
+      }
+    } else {
+      const shares = getShares(e, g.members);
+      Object.entries(shares).forEach(([mid, val]) => {
+        if(val > 0) {
+          html += `
+            <div style="display:flex; justify-content:space-between; font-size:13px; color:#8A8A9A; padding-top:4px;">
+              <span>${GN(g, mid)}</span>
+              <span>${fmt(val)}</span>
+            </div>
+          `;
+        }
+      });
+    }
+    
+    html += `</div>`;
   });
   
   html += `
-      <div style="display:flex; justify-content:space-between; margin-top:20px; padding:15px; background:#FFF0ED; border-radius:12px;">
-        <span style="font-weight:700; color:#1A1A2E;">${t('total')}</span>
-        <span style="font-family:'Fraunces', serif; font-size:24px; font-weight:700; color:#FF5C3A;">${fmt(total)}</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:20px; background:linear-gradient(135deg, #1A1A2E, #2D2D4E); border-radius:18px; color:#fff;">
+          <span style="font-weight:700; font-size:15px; opacity:0.7;">${t('totalBill')}</span>
+          <span style="font-family:'Fraunces', serif; font-size:28px; font-weight:700;">${fmt(total)}</span>
+        </div>
       </div>
     </div>
   `;
   
   if (txns.length > 0) {
     html += `
-      <div style="margin-bottom:30px;">
+      <div style="background:#fff; border-radius:28px; padding:30px; box-shadow:0 10px 40px rgba(0,0,0,0.05); margin-bottom:20px;">
         <h3 style="font-size:13px; color:#8A8A9A; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; font-weight:700;">${t('settlementPlan')}</h3>
     `;
     txns.forEach(tx => {
       const f=g.members.find(m=>m.id===tx.from),t_m=g.members.find(m=>m.id===tx.to);
-      const fav = f.emoji || PXA[g.members.indexOf(f) % PXA.length];
-      const tav = t_m.emoji || PXA[g.members.indexOf(t_m) % PXA.length];
+      const fidx = g.members.indexOf(f);
+      const tidx = g.members.indexOf(t_m);
       html += `
-        <div style="display:flex; align-items:center; gap:12px; background:#F7F5F0; border-radius:14px; padding:12px 18px; margin-bottom:10px;">
-          <span style="font-size:20px;">${fav}</span>
-          <span style="font-weight:700; font-size:15px; color:#1A1A2E;">${esc(GN(g, tx.from))}</span>
-          <span style="color:#8A8A9A; font-size:12px;">➔</span>
-          <span style="font-weight:700; font-size:15px; color:#1A1A2E;">${esc(GN(g, tx.to))}</span>
-          <span style="font-size:20px;">${tav}</span>
-          <span style="margin-left:auto; font-family:'Fraunces', serif; font-weight:700; color:#FF5C3A; font-size:18px;">${fmt(tx.amount)}</span>
+        <div style="display:flex; align-items:center; gap:12px; background:#F7F5F0; border-radius:18px; padding:15px; margin-bottom:12px;">
+          <div style="width:36px; height:36px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; border:1px solid #EDEAE4;">${f.emoji || PXA[fidx % PXA.length]}</div>
+          <span style="font-weight:700; font-size:15px;">${esc(GN(g, tx.from))}</span>
+          <span style="color:#8A8A9A; font-size:14px; margin: 0 4px;">➔</span>
+          <span style="font-weight:700; font-size:15px;">${esc(GN(g, tx.to))}</span>
+          <div style="width:36px; height:36px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; border:1px solid #EDEAE4;">${t_m.emoji || PXA[tidx % PXA.length]}</div>
+          <span style="margin-left:auto; font-family:'Fraunces', serif; font-weight:700; color:#FF5C3A; font-size:20px;">${fmt(tx.amount)}</span>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  // Receiver Payment Cards
+  const receiverIds = [...new Set(txns.map(tx => tx.to))];
+  if(receiverIds.length > 0) {
+    html += `
+      <div style="margin-bottom:20px;">
+        <h3 style="font-size:13px; color:#8A8A9A; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; font-weight:700; padding-left:10px;">💳 ${S.lang==='th'?'ข้อมูลการโอนเงิน':'Payment Information'}</h3>
+    `;
+    receiverIds.forEach(rid => {
+      const m = g.members.find(x => x.id === rid);
+      const p = m?.paymentProfile;
+      const midx = g.members.indexOf(m);
+      html += `
+        <div style="background:#fff; border-radius:24px; padding:25px; box-shadow:0 8px 30px rgba(0,0,0,0.06); margin-bottom:16px; border: 1.5px solid #EDEAE4; text-align:center;">
+          <div style="display:inline-flex; align-items:center; gap:10px; margin-bottom:20px; background:#F7F5F0; padding:8px 16px; border-radius:100px;">
+            <div style="width:28px; height:28px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:14px;">${m.emoji || PXA[midx % PXA.length]}</div>
+            <span style="font-weight:700; font-size:14px;">${t('payTo')} ${esc(GN(g, rid))}</span>
+          </div>
+          
+          ${p ? `
+            <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+              ${p.promptpayNumber ? `
+                <div style="background:#EFF6FF; border-radius:16px; padding:12px;">
+                  <p style="font-size:11px; color:#3B82F6; font-weight:700; text-transform:uppercase; margin-bottom:2px;">PromptPay</p>
+                  <p style="font-size:18px; font-weight:700; letter-spacing:1px; color:#1A1A2E;">${p.promptpayNumber}</p>
+                </div>
+              ` : ''}
+              ${p.bankName ? `
+                <div style="background:#F7F5F0; border-radius:16px; padding:12px;">
+                  <p style="font-size:11px; color:#8A8A9A; font-weight:700; text-transform:uppercase; margin-bottom:2px;">${p.bankName} (${p.bankCode})</p>
+                  <p style="font-size:18px; font-weight:700; color:#1A1A2E;">${p.accountNumber || ''}</p>
+                </div>
+              ` : ''}
+            </div>
+            ${p.qrImage ? `<img src="${p.qrImage}" style="width:180px; height:180px; border-radius:16px; border: 1px solid #EDEAE4; margin:0 auto;" />` : ''}
+          ` : `<p style="color:#8A8A9A; font-style:italic; font-size:14px;">No payment profile set</p>`}
         </div>
       `;
     });
@@ -3007,7 +3430,7 @@ async function generateSummaryCanvas() {
   }
   
   html += `
-    <div style="margin-bottom:20px;">
+    <div style="background:#fff; border-radius:28px; padding:30px; box-shadow:0 10px 40px rgba(0,0,0,0.05); margin-bottom:20px;">
       <h3 style="font-size:13px; color:#8A8A9A; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; font-weight:700;">${t('perPersonSum')}</h3>
   `;
   
@@ -3016,25 +3439,25 @@ async function generateSummaryCanvas() {
     const av = m.emoji || PXA[p.idx % PXA.length];
     html += `
       <div style="margin-bottom:20px; padding-bottom: 15px; border-bottom: 1px solid #F7F5F0;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:22px;">${av}</span>
-            <span style="font-weight:700; font-size:16px; color:#1A1A2E;">${esc(p.name)}</span>
+            <div style="width:36px; height:36px; border-radius:50%; background:#F7F5F0; display:flex; align-items:center; justify-content:center; font-size:18px;">${av}</div>
+            <span style="font-weight:700; font-size:15px; color:#1A1A2E;">${esc(p.name)}</span>
           </div>
-          <span style="font-size:13px; color:#8A8A9A;">${t('ate')}: <strong>${fmt(p.share)}</strong></span>
+          <span style="font-size:13px; color:#8A8A9A;">${t('ate')}: <strong style="color:#1A1A2E;">${fmt(p.share)}</strong></span>
         </div>
-        <div style="display:flex; gap:12px; font-size:13px;">
-          ${p.paid > 0 ? `<div style="background:#E8F5EE; color:#4CAF7D; padding:4px 10px; border-radius:8px; font-weight:700;">${t('paid')} ${fmt(p.paid)}</div>` : ''}
-          ${p.net > 0.5 ? `<div style="background:#FEE2E2; color:#FF3B5C; padding:4px 10px; border-radius:8px; font-weight:700;">${t('pays')} ${fmt(p.net)}</div>` : ''}
-          ${p.net < -0.5 ? `<div style="background:#EFF6FF; color:#3B82F6; padding:4px 10px; border-radius:8px; font-weight:700;">${t('receives')} ${fmt(-p.net)}</div>` : ''}
+        <div style="display:flex; gap:10px; font-size:12px;">
+          ${p.paid > 0 ? `<div style="background:#E8F5EE; color:#4CAF7D; padding:5px 12px; border-radius:10px; font-weight:700;">${t('paid')} ${fmt(p.paid)}</div>` : ''}
+          ${p.net > 0.5 ? `<div style="background:#FEE2E2; color:#FF3B5C; padding:5px 12px; border-radius:10px; font-weight:700;">${t('pays')} ${fmt(p.net)}</div>` : ''}
+          ${p.net < -0.5 ? `<div style="background:#EFF6FF; color:#3B82F6; padding:5px 12px; border-radius:10px; font-weight:700;">${t('receives')} ${fmt(-p.net)}</div>` : ''}
         </div>
       </div>
     `;
   });
   
   html += `</div>
-    <div style="text-align:center; margin-top:40px; border-top: 1px solid #F7F5F0; padding-top: 20px;">
-      <p style="color:#8A8A9A; font-size:12px; font-weight:600;">Generated by SplitEasy</p>
+    <div style="text-align:center; margin-top:40px; border-top: 1px solid #EDEAE4; padding-top: 20px;">
+      <p style="color:#8A8A9A; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Generated by SplitEasy</p>
     </div>
   `;
   
@@ -3042,7 +3465,7 @@ async function generateSummaryCanvas() {
   document.body.appendChild(container);
   
   const canvas = await html2canvas(container, {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#F7F5F0',
     scale: 2,
     logging: false,
     useCORS: true,
