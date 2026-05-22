@@ -665,7 +665,9 @@ function normalizeRefMap(g,obj){
   return out;
 }
 function normalizeExpenseRefs(g,exp){
-  return {
+  const validIds = validMemberSet(g);
+  const fallback = g.members[0]?.id;
+  const n = {
     ...exp,
     paidById:resolveMemberId(g,exp.paidById),
     payers:exp.payers?uniqPayers(exp.payers.map(p=>({...p,id:resolveMemberId(g,p.id)}))):exp.payers,
@@ -678,6 +680,27 @@ function normalizeExpenseRefs(g,exp){
       consumers:uniqIds((s.consumers||[]).map(id=>resolveMemberId(g,id)))
     }))
   };
+  // Heal invalid payer refs
+  if((!n.paidById || !validIds.has(n.paidById)) && fallback) n.paidById = fallback;
+  if(n.payers && n.payers.length > 0){
+    const invalid = n.payers.find(p => !validIds.has(p.id));
+    if(invalid && fallback){
+      const validPayers = n.payers.filter(p => validIds.has(p.id));
+      const totalInvalid = n.payers.filter(p => !validIds.has(p.id)).reduce((a,b)=>a+(+b.amt||0),0);
+      const fp = validPayers.find(p => p.id === fallback);
+      if(fp) fp.amt += totalInvalid; else validPayers.push({id:fallback, amt:totalInvalid});
+      n.payers = validPayers;
+    }
+  } else if((+n.amount > 0) && fallback) {
+    n.payers = [{id:fallback, amt:+n.amount}];
+  }
+  // Heal invalid sub-item refs
+  n.subItems = n.subItems.map(s => {
+    if((!s.payerId || !validIds.has(s.payerId)) && fallback) s.payerId = fallback;
+    if((s.consumers||[]).length === 0 && fallback) s.consumers = [fallback];
+    return s;
+  });
+  return n;
 }
 function isMemberReferenced(g,mid){
   return (g.expenses||[]).some(e=>
@@ -711,20 +734,42 @@ function replaceMemberRefsInExpense(exp,oldId,newId){
     }))
   };
 }
-function removeMemberRefsFromExpense(exp,mid){
+function removeMemberRefsFromExpense(exp,mid,fallbackId){
   const customAmounts={...exp.customAmounts};delete customAmounts[mid];
   const percentages={...exp.percentages};delete percentages[mid];
+  
+  // If the deleted member was the primary payer, assign to fallback
+  let newPaidById = exp.paidById === mid ? fallbackId : exp.paidById;
+  
+  // Handle multi-payers: transfer deleted member's share to fallback
+  let newPayers = (exp.payers||[]).filter(p=>p.id!==mid);
+  const deletedPayer = (exp.payers||[]).find(p=>p.id===mid);
+  if(deletedPayer && fallbackId){
+    const fp = newPayers.find(p=>p.id===fallbackId);
+    if(fp) fp.amt += deletedPayer.amt;
+    else newPayers.push({id:fallbackId, amt:deletedPayer.amt});
+  }
+  // Ensure payers is never empty if there's a total amount
+  if(newPayers.length === 0 && exp.amount > 0 && fallbackId){
+    newPayers = [{id:fallbackId, amt:exp.amount}];
+  }
+
   return {
     ...exp,
-    paidById:exp.paidById===mid?'':exp.paidById,
-    payers:(exp.payers||[]).filter(p=>p.id!==mid),
+    paidById:newPaidById,
+    payers:newPayers,
     participants:(exp.participants||[]).filter(id=>id!==mid),
     customAmounts,percentages,
-    subItems:(exp.subItems||[]).map(s=>({
-      ...s,
-      payerId:s.payerId===mid?'':s.payerId,
-      consumers:(s.consumers||[]).filter(id=>id!==mid)
-    }))
+    subItems:(exp.subItems||[]).map(s=>{
+      let nc = (s.consumers||[]).filter(id=>id!==mid);
+      // If no consumers left for this sub-item, assign to fallback
+      if(nc.length === 0 && fallbackId) nc = [fallbackId];
+      return {
+        ...s,
+        payerId:s.payerId===mid?fallbackId:s.payerId,
+        consumers:nc
+      };
+    })
   };
 }
 function uniqPayers(payers){
@@ -1416,9 +1461,10 @@ function applyMemberDeleteChoice(gid,mid,mode){
   const g=getG(gid);if(!g)return;
   const replacement=document.getElementById('replace-mid')?.value;
   if(mode==='replace'&&!replacement){toast(t('fillTitleAmt'));return;}
+  const fallbackId=g.members.find(m=>m.id!==mid)?.id;
   const expenses=(g.expenses||[]).map(e=>mode==='replace'
     ?replaceMemberRefsInExpense(e,mid,replacement)
-    :removeMemberRefsFromExpense(e,mid));
+    :removeMemberRefsFromExpense(e,mid,fallbackId));
   updG({...g,members:g.members.filter(m=>m.id!==mid),expenses});
   document.getElementById('em-'+mid)?.remove();
   closeSheet();
